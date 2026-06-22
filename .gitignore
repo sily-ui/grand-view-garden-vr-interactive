@@ -1,0 +1,23 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# System files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Font repo extras
+assets/fonts/LxgwWenKai-main/documentation/
+assets/fonts/LxgwWenKai-main/.github/
+assets/fonts/LxgwWenKai-main/sources/
+assets/fonts/LxgwWenKai-main/.gitattributes
+assets/fonts/LxgwWenKai-main/.gitignore
+assets/fonts/LxgwWenKai-main/.gitmodules
+assets/fonts/LxgwWenKai-main/Makefile
+assets/fonts/LxgwWenKai-main/History.md
+assets/fonts/LxgwWenKai-main/requirements.txt
+assets/fonts/LxgwWenKai-main/README.md

@@ -1,0 +1,82 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
+radius = 0.4
+height = 1.8
+
+[node name="Player" type="CharacterBody3D" groups=["player"]]
+script = ExtResource("1_player")
+walk_speed = 3.0
+run_speed = 5.5
+mouse_sensitivity = 0.002
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_col")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="InteractionRaycast" type="RayCast3D" parent="Camera3D"]
+target_position = Vector3(0, 0, -3)
+collision_mask = 5
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Crosshair" type="CenterContainer" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+top = 0.5
+anchor_right = 0.5
+bottom = 0.5
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dot" type="ColorRect" parent="UILayer/HUD/Crosshair"]
+layout_mode = 2
+custom_minimum_size = Vector2(4, 4)
+color = Color(1, 1, 1, 0.7)
+
+[node name="LocationLabel" type="Label" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 15.0
+offset_right = 100.0
+offset_bottom = 40.0
+grow_horizontal = 2
+text = "大观园"
+horizontal_alignment = 1
+
+[node name="InteractionPrompt" type="Label" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+top = 1.0
+anchor_right = 0.5
+bottom = 1.0
+offset_left = -100.0
+offset_top = -80.0
+offset_right = 100.0
+offset_bottom = -55.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "按 [E] 交互"
+horizontal_alignment = 1

@@ -1,0 +1,2922 @@
+[gd_scene format=3 uid="uid://c83srubuatq1i"]
+
+[ext_resource type="Script" uid="uid://clcdphpoq1wn8" path="res://scripts/player/player_controller.gd" id="1_pc"]
+[ext_resource type="Script" uid="uid://dc4et6eyhsf7l" path="res://scripts/npcs/npc_base.gd" id="2_npc"]
+[ext_resource type="Script" uid="uid://cptsuro26r8d1" path="res://scripts/systems/event_trigger.gd" id="3_et"]
+[ext_resource type="Script" uid="uid://cw412ryqrs8ii" path="res://scripts/systems/time_system.gd" id="4_ts"]
+[ext_resource type="Script" uid="uid://b2nx13ps0y1id" path="res://scripts/systems/audio_system.gd" id="5_as"]
+[ext_resource type="Script" uid="uid://cymtytpu3d3gh" path="res://scripts/systems/save_system.gd" id="6_ss"]
+[ext_resource type="Script" uid="uid://c5jcqbmc2gvtn" path="res://scripts/ui/dialog_ui.gd" id="7_dui"]
+[ext_resource type="Script" uid="uid://co21we3mtv61l" path="res://scripts/buildings/building_base.gd" id="8_bb"]
+[ext_resource type="Script" uid="uid://bnik8cc6chc2r" path="res://scripts/items/interactable_item.gd" id="9_ii"]
+[ext_resource type="Script" uid="uid://h884a68fmk50" path="res://scripts/ui/pause_menu.gd" id="10_pm"]
+[ext_resource type="Script" path="res://main.gd" id="11_mg"]
+[ext_resource type="Theme" path="res://assets/fonts/wenkai_theme.tres" id="theme_wenkai"]
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
+sky_top_color = Color(0.45, 0.55, 0.7, 1)
+sky_horizon_color = Color(0.72, 0.75, 0.8, 1)
+ground_bottom_color = Color(0.25, 0.22, 0.18, 1)
+ground_horizon_color = Color(0.72, 0.75, 0.8, 1)
+
+[sub_resource type="Sky" id="sky_main"]
+sky_material = SubResource("sky_mat")
+
+[sub_resource type="Environment" id="env_main"]
+background_mode = 2
+sky = SubResource("sky_main")
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.52, 0.48, 1)
+ambient_light_energy = 0.6
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.75, 0.78, 0.82, 1)
+fog_density = 0.004
+
+[sub_resource type="NavigationMesh" id="nav_mesh_main"]
+vertices = PackedVector3Array(-100, 0.01, -50, 100, 0.01, -50, 100, 0.01, 60, -100, 0.01, 60)
+
+[sub_resource type="StandardMaterial3D" id="mat_grass"]
+albedo_color = Color(0.38, 0.48, 0.28, 1)
+roughness = 0.95
+
+[sub_resource type="PlaneMesh" id="mesh_ground"]
+material = SubResource("mat_grass")
+size = Vector2(200, 200)
+
+[sub_resource type="BoxShape3D" id="col_ground"]
+size = Vector3(200, 0.5, 200)
+
+[sub_resource type="StandardMaterial3D" id="mat_water"]
+transparency = 1
+albedo_color = Color(0.25, 0.42, 0.45, 0.75)
+metallic = 0.08
+roughness = 0.15
+
+[sub_resource type="BoxMesh" id="mesh_water_plane"]
+size = Vector3(40, 0.1, 30)
+
+[sub_resource type="BoxMesh" id="mesh_lotus_pond"]
+size = Vector3(28, 0.15, 18)
+
+[sub_resource type="StandardMaterial3D" id="mat_lotus_leaf"]
+albedo_color = Color(0.2, 0.45, 0.22, 1)
+roughness = 0.8
+
+[sub_resource type="PlaneMesh" id="mesh_lotus_pad"]
+size = Vector2(1.8, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="mat_lotus_pink"]
+albedo_color = Color(0.92, 0.7, 0.76, 1)
+roughness = 0.85
+
+[sub_resource type="SphereMesh" id="mesh_lotus_bud"]
+radius = 0.25
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="mat_bridge_stone"]
+albedo_color = Color(0.58, 0.56, 0.5, 1)
+roughness = 0.75
+
+[sub_resource type="BoxMesh" id="mesh_bridge_deck"]
+size = Vector3(3.5, 0.35, 10)
+
+[sub_resource type="BoxMesh" id="mesh_bridge_rail"]
+size = Vector3(0.2, 0.9, 10)
+
+[sub_resource type="StandardMaterial3D" id="mat_stone_path"]
+albedo_color = Color(0.5, 0.48, 0.42, 1)
+roughness = 0.8
+
+[sub_resource type="PlaneMesh" id="mesh_stone_path"]
+size = Vector2(4, 80)
+
+[sub_resource type="StandardMaterial3D" id="mat_blue_slab"]
+albedo_color = Color(0.48, 0.48, 0.44, 1)
+roughness = 0.82
+
+[sub_resource type="BoxMesh" id="mesh_ground_slab"]
+size = Vector3(2.8, 0.06, 2.8)
+
+[sub_resource type="BoxMesh" id="mesh_ground_slab_sm"]
+size = Vector3(1.4, 0.06, 1.4)
+
+[sub_resource type="BoxMesh" id="mesh_path_segment"]
+size = Vector3(3, 0.08, 10)
+
+[sub_resource type="BoxMesh" id="mesh_path_cross"]
+size = Vector3(10, 0.08, 3)
+
+[sub_resource type="StandardMaterial3D" id="mat_stone"]
+albedo_color = Color(0.55, 0.55, 0.52, 1)
+roughness = 0.78
+
+[sub_resource type="BoxMesh" id="mesh_pillar"]
+size = Vector3(0.4, 4, 0.4)
+
+[sub_resource type="BoxMesh" id="mesh_gate_beam"]
+size = Vector3(10, 0.6, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_wall"]
+albedo_color = Color(0.92, 0.88, 0.82, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="mesh_house_base"]
+size = Vector3(12, 4, 10)
+
+[sub_resource type="StandardMaterial3D" id="mat_roof"]
+albedo_color = Color(0.38, 0.4, 0.42, 1)
+roughness = 0.65
+
+[sub_resource type="BoxMesh" id="mesh_roof"]
+size = Vector3(14, 0.5, 12)
+
+[sub_resource type="BoxMesh" id="mesh_roof_layer"]
+size = Vector3(15, 0.15, 13)
+
+[sub_resource type="BoxMesh" id="mesh_foundation"]
+size = Vector3(13, 0.4, 11)
+
+[sub_resource type="StandardMaterial3D" id="mat_pillar_red"]
+albedo_color = Color(0.58, 0.12, 0.08, 1)
+roughness = 0.65
+
+[sub_resource type="CylinderMesh" id="mesh_column_round"]
+top_radius = 0.15
+bottom_radius = 0.18
+height = 3.5
+
+[sub_resource type="StandardMaterial3D" id="mat_beam_dark"]
+albedo_color = Color(0.35, 0.2, 0.12, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="mesh_beam_h"]
+size = Vector3(12, 0.22, 0.22)
+
+[sub_resource type="BoxMesh" id="mesh_beam_cross"]
+size = Vector3(0.22, 0.22, 10)
+
+[sub_resource type="BoxMesh" id="mesh_eave_tip"]
+size = Vector3(0.8, 0.2, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="mat_window_wood"]
+albedo_color = Color(0.45, 0.3, 0.18, 1)
+roughness = 0.75
+
+[sub_resource type="BoxMesh" id="mesh_window_frame"]
+size = Vector3(0.08, 1.5, 1)
+
+[sub_resource type="BoxShape3D" id="col_building"]
+size = Vector3(12, 4, 10)
+
+[sub_resource type="StandardMaterial3D" id="mat_bamboo"]
+albedo_color = Color(0.25, 0.48, 0.28, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="mesh_bamboo"]
+top_radius = 0.08
+bottom_radius = 0.08
+height = 5.0
+
+[sub_resource type="BoxShape3D" id="col_entrance"]
+size = Vector3(6, 4, 4)
+
+[sub_resource type="StandardMaterial3D" id="mat_courtyard_wall"]
+albedo_color = Color(0.9, 0.86, 0.78, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="mesh_courtyard_wall"]
+size = Vector3(0.4, 3.2, 16)
+
+[sub_resource type="StandardMaterial3D" id="mat_wall_cap"]
+albedo_color = Color(0.35, 0.35, 0.38, 1)
+roughness = 0.65
+
+[sub_resource type="BoxMesh" id="mesh_wall_cap"]
+size = Vector3(0.7, 0.2, 16.4)
+
+[sub_resource type="StandardMaterial3D" id="mat_wood"]
+albedo_color = Color(0.42, 0.25, 0.15, 1)
+roughness = 0.75
+
+[sub_resource type="CylinderMesh" id="mesh_tree_trunk"]
+top_radius = 0.2
+bottom_radius = 0.3
+height = 4.0
+
+[sub_resource type="SphereMesh" id="mesh_tree_top"]
+radius = 2.0
+height = 3.0
+
+[sub_resource type="StandardMaterial3D" id="mat_flower_red"]
+albedo_color = Color(0.82, 0.22, 0.25, 1)
+roughness = 0.85
+
+[sub_resource type="SphereMesh" id="mesh_flower"]
+radius = 0.3
+height = 0.4
+
+[sub_resource type="StandardMaterial3D" id="mat_flower_pink"]
+albedo_color = Color(0.88, 0.58, 0.65, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="mat_flower_yellow"]
+albedo_color = Color(0.92, 0.82, 0.32, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="mat_peony_red"]
+albedo_color = Color(0.88, 0.2, 0.22, 1)
+roughness = 0.85
+
+[sub_resource type="SphereMesh" id="mesh_peony_bush"]
+radius = 1.2
+height = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_peony_pink"]
+albedo_color = Color(0.92, 0.6, 0.68, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh_plum_trunk"]
+top_radius = 0.12
+bottom_radius = 0.2
+height = 3.5
+
+[sub_resource type="StandardMaterial3D" id="mat_plum_blossom"]
+albedo_color = Color(0.92, 0.78, 0.82, 1)
+roughness = 0.85
+
+[sub_resource type="SphereMesh" id="mesh_plum_canopy"]
+radius = 2.2
+height = 2.5
+
+[sub_resource type="StandardMaterial3D" id="mat_willow_leaf"]
+albedo_color = Color(0.4, 0.6, 0.32, 1)
+roughness = 0.85
+
+[sub_resource type="SphereMesh" id="mesh_willow_canopy"]
+radius = 3.5
+height = 5.0
+
+[sub_resource type="BoxMesh" id="mesh_wisteria_post"]
+size = Vector3(0.3, 3.2, 0.3)
+
+[sub_resource type="BoxMesh" id="mesh_wisteria_beam"]
+size = Vector3(8, 0.25, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="mat_wisteria_flower"]
+albedo_color = Color(0.5, 0.22, 0.6, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh_wisteria_vine"]
+top_radius = 0.04
+bottom_radius = 0.04
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="mat_rockery"]
+albedo_color = Color(0.48, 0.48, 0.44, 1)
+roughness = 0.82
+
+[sub_resource type="BoxMesh" id="mesh_rockery_large"]
+size = Vector3(4, 5.5, 3.5)
+
+[sub_resource type="BoxMesh" id="mesh_rockery_med"]
+size = Vector3(2.5, 3.5, 2)
+
+[sub_resource type="PlaneMesh" id="mesh_pavilion_floor"]
+size = Vector2(6, 6)
+
+[sub_resource type="BoxMesh" id="mesh_pavilion_pillar"]
+size = Vector3(0.35, 3.5, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="mat_pavilion_roof"]
+albedo_color = Color(0.38, 0.4, 0.42, 1)
+roughness = 0.65
+
+[sub_resource type="BoxMesh" id="mesh_pavilion_roof"]
+size = Vector3(7, 0.35, 7)
+
+[sub_resource type="StandardMaterial3D" id="mat_lantern_stone"]
+albedo_color = Color(0.65, 0.62, 0.55, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="mesh_stone_lantern_pillar"]
+top_radius = 0.2
+bottom_radius = 0.25
+height = 1.6
+
+[sub_resource type="BoxMesh" id="mesh_stone_lantern_cap"]
+size = Vector3(0.9, 0.2, 0.9)
+
+[sub_resource type="TorusMesh" id="mesh_moon_gate_ring"]
+inner_radius = 1.3
+outer_radius = 1.6
+rings = 24
+ring_segments = 12
+
+[sub_resource type="CylinderMesh" id="mesh_stone_table_top"]
+top_radius = 0.75
+bottom_radius = 0.75
+height = 0.08
+
+[sub_resource type="CylinderMesh" id="mesh_stone_table_leg"]
+top_radius = 0.1
+bottom_radius = 0.12
+height = 0.6
+
+[sub_resource type="BoxMesh" id="mesh_stone_bench"]
+size = Vector3(1.1, 0.32, 0.35)
+
+[sub_resource type="BoxMesh" id="mesh_pond_rail_bar"]
+size = Vector3(0.1, 0.1, 2.2)
+
+[sub_resource type="BoxMesh" id="mesh_pond_rail_post"]
+size = Vector3(0.18, 0.7, 0.18)
+
+[sub_resource type="CapsuleShape3D" id="col_capsule"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_jiamu"]
+albedo_color = Color(0.78, 0.62, 0.32, 1)
+roughness = 0.8
+
+[sub_resource type="CapsuleMesh" id="mesh_npc_body"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_xifeng"]
+albedo_color = Color(0.82, 0.18, 0.18, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_daiyu"]
+albedo_color = Color(0.58, 0.78, 0.62, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_baoyu"]
+albedo_color = Color(0.88, 0.52, 0.28, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_miaoyu"]
+albedo_color = Color(0.82, 0.82, 0.78, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_liwan"]
+albedo_color = Color(0.68, 0.72, 0.58, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_baochai"]
+albedo_color = Color(0.82, 0.72, 0.52, 1)
+roughness = 0.8
+
+[sub_resource type="BoxShape3D" id="col_trigger"]
+size = Vector3(6, 3, 6)
+
+[sub_resource type="BoxMesh" id="mesh_item_small"]
+size = Vector3(0.4, 0.4, 0.4)
+
+[sub_resource type="BoxShape3D" id="col_item"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="mat_door"]
+albedo_color = Color(0.55, 0.15, 0.1, 1)
+roughness = 0.7
+
+[sub_resource type="StyleBoxFlat" id="style_dialog_panel"]
+content_margin_left = 40.0
+content_margin_top = 28.0
+content_margin_right = 40.0
+content_margin_bottom = 28.0
+bg_color = Color(0.95, 0.91, 0.8, 0.97)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.35, 0.2, 0.1, 0.95)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+shadow_color = Color(0.0, 0.0, 0.0, 0.35)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="style_pause_panel"]
+content_margin_left = 40.0
+content_margin_top = 32.0
+content_margin_right = 40.0
+content_margin_bottom = 32.0
+bg_color = Color(0.1, 0.08, 0.05, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.79, 0.66, 0.3, 0.85)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0.0, 0.0, 0.0, 0.5)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="style_pause_btn_normal"]
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
+bg_color = Color(0.12, 0.1, 0.06, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.45, 0.22, 0.4)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="style_pause_btn_hover"]
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
+bg_color = Color(0.2, 0.15, 0.08, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.79, 0.66, 0.3, 0.9)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="Main" type="Node3D" unique_id=831671508]
+script = ExtResource("11_mg")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1928199966 groups=["world_environment"]]
+environment = SubResource("env_main")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=295875309 groups=["sun"]]
+transform = Transform3D(0.707, -0.5, 0.5, 0, 0.707, 0.707, -0.707, -0.5, 0.5, 0, 20, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+shadow_enabled = true
+
+[node name="Terrain" type="Node3D" parent="." unique_id=562112187]
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="Terrain" unique_id=1885698922]
+navigation_mesh = SubResource("nav_mesh_main")
+
+[node name="Ground" type="StaticBody3D" parent="Terrain" unique_id=1985366354]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Terrain/Ground" unique_id=976110837]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.233162, -1.1539383, 4.1993904)
+mesh = SubResource("mesh_ground")
+
+[node name="GroundCollision" type="CollisionShape3D" parent="Terrain/Ground" unique_id=509867638]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("col_ground")
+
+[node name="Water" type="MeshInstance3D" parent="Terrain" unique_id=828559750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.05, 0)
+material_override = SubResource("mat_water")
+mesh = SubResource("mesh_water_plane")
+
+[node name="LotusPond" type="MeshInstance3D" parent="Terrain" unique_id=477228997]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.03, -22)
+material_override = SubResource("mat_water")
+mesh = SubResource("mesh_lotus_pond")
+
+[node name="LotusPad1" type="MeshInstance3D" parent="Terrain" unique_id=553729728]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.12, -20)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusPad2" type="MeshInstance3D" parent="Terrain" unique_id=1574216970]
+transform = Transform3D(0.9, 0, 0.1, 0, 1, 0, -0.1, 0, 0.9, -8, 0.12, -24)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusPad3" type="MeshInstance3D" parent="Terrain" unique_id=221671244]
+transform = Transform3D(0.8, 0, -0.15, 0, 1, 0, 0.15, 0, 0.8, -3, 0.12, -20)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusPad4" type="MeshInstance3D" parent="Terrain" unique_id=941016399]
+transform = Transform3D(1.1, 0, 0.05, 0, 1, 0, -0.05, 0, 1.1, -6, 0.12, -25)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusPad5" type="MeshInstance3D" parent="Terrain" unique_id=1751987123]
+transform = Transform3D(0.85, 0, -0.1, 0, 1, 0, 0.1, 0, 0.85, -12, 0.12, -23)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusPad6" type="MeshInstance3D" parent="Terrain" unique_id=940353552]
+transform = Transform3D(0.95, 0, 0.08, 0, 1, 0, -0.08, 0, 0.95, -1, 0.12, -22)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusPad7" type="MeshInstance3D" parent="Terrain" unique_id=347004001]
+transform = Transform3D(1.05, 0, -0.05, 0, 1, 0, 0.05, 0, 1.05, -9, 0.12, -19)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusPad8" type="MeshInstance3D" parent="Terrain" unique_id=1086735308]
+transform = Transform3D(0.9, 0, 0.12, 0, 1, 0, -0.12, 0, 0.9, -4, 0.12, -26)
+material_override = SubResource("mat_lotus_leaf")
+mesh = SubResource("mesh_lotus_pad")
+
+[node name="LotusFlower1" type="MeshInstance3D" parent="Terrain" unique_id=1160106097]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.3, -20)
+material_override = SubResource("mat_lotus_pink")
+mesh = SubResource("mesh_lotus_bud")
+
+[node name="LotusFlower2" type="MeshInstance3D" parent="Terrain" unique_id=308410299]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.35, -25)
+material_override = SubResource("mat_lotus_pink")
+mesh = SubResource("mesh_lotus_bud")
+
+[node name="LotusFlower3" type="MeshInstance3D" parent="Terrain" unique_id=679115673]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.3, -20)
+material_override = SubResource("mat_lotus_pink")
+mesh = SubResource("mesh_lotus_bud")
+
+[node name="LotusFlower4" type="MeshInstance3D" parent="Terrain" unique_id=1351132622]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.32, -19)
+material_override = SubResource("mat_lotus_pink")
+mesh = SubResource("mesh_lotus_bud")
+
+[node name="LotusFlower5" type="MeshInstance3D" parent="Terrain" unique_id=1931684187]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.3, -22)
+material_override = SubResource("mat_lotus_pink")
+mesh = SubResource("mesh_lotus_bud")
+
+[node name="Bridge" type="Node3D" parent="Terrain" unique_id=844252204]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -22)
+
+[node name="Deck" type="MeshInstance3D" parent="Terrain/Bridge" unique_id=802212481]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+material_override = SubResource("mat_bridge_stone")
+mesh = SubResource("mesh_bridge_deck")
+
+[node name="RailLeft" type="MeshInstance3D" parent="Terrain/Bridge" unique_id=1779060821]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 1.25, 0)
+material_override = SubResource("mat_bridge_stone")
+mesh = SubResource("mesh_bridge_rail")
+
+[node name="RailRight" type="MeshInstance3D" parent="Terrain/Bridge" unique_id=916614545]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 1.25, 0)
+material_override = SubResource("mat_bridge_stone")
+mesh = SubResource("mesh_bridge_rail")
+
+[node name="StonePath" type="MeshInstance3D" parent="Terrain" unique_id=1448667315]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -10)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_stone_path")
+
+[node name="CourtyardSlab1" type="MeshInstance3D" parent="Terrain" unique_id=1741971192]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 15)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab2" type="MeshInstance3D" parent="Terrain" unique_id=278726217]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 15)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab3" type="MeshInstance3D" parent="Terrain" unique_id=923594269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 15)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab4" type="MeshInstance3D" parent="Terrain" unique_id=1677651569]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 18)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab5" type="MeshInstance3D" parent="Terrain" unique_id=1671153343]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 18)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab6" type="MeshInstance3D" parent="Terrain" unique_id=1668314211]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 18)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab7" type="MeshInstance3D" parent="Terrain" unique_id=1132650125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 21)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab8" type="MeshInstance3D" parent="Terrain" unique_id=699541913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 21)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab9" type="MeshInstance3D" parent="Terrain" unique_id=1698330031]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 21)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="CourtyardSlab10" type="MeshInstance3D" parent="Terrain" unique_id=68046916]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0.03, 5)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab_sm")
+
+[node name="CourtyardSlab11" type="MeshInstance3D" parent="Terrain" unique_id=1132612049]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0.03, 8)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab_sm")
+
+[node name="CourtyardSlab12" type="MeshInstance3D" parent="Terrain" unique_id=325949191]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0.03, 5)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab_sm")
+
+[node name="CourtyardSlab13" type="MeshInstance3D" parent="Terrain" unique_id=1588720444]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0.03, 8)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab_sm")
+
+[node name="CourtyardSlab14" type="MeshInstance3D" parent="Terrain" unique_id=230816942]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 35)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab_sm")
+
+[node name="CourtyardSlab15" type="MeshInstance3D" parent="Terrain" unique_id=1091535381]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 35)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab_sm")
+
+[node name="CourtyardSlab16" type="MeshInstance3D" parent="Terrain" unique_id=646653606]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 35)
+material_override = SubResource("mat_blue_slab")
+mesh = SubResource("mesh_ground_slab_sm")
+
+[node name="Paths" type="Node3D" parent="Terrain" unique_id=702529371]
+
+[node name="MainPath" type="MeshInstance3D" parent="Terrain/Paths" unique_id=568251778]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_segment")
+
+[node name="CrossPath" type="MeshInstance3D" parent="Terrain/Paths" unique_id=825967857]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 15)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_cross")
+
+[node name="PathToLeft" type="MeshInstance3D" parent="Terrain/Paths" unique_id=1638007065]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0.04, 12)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_segment")
+
+[node name="PathToRight" type="MeshInstance3D" parent="Terrain/Paths" unique_id=887028727]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0.04, 12)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_segment")
+
+[node name="PathToDaoxiang" type="MeshInstance3D" parent="Terrain/Paths" unique_id=2074313044]
+transform = Transform3D(0.7, 0, -0.7, 0, 1, 0, 0.7, 0, 0.7, -15, 0.04, 0)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_segment")
+
+[node name="PathToHengwu" type="MeshInstance3D" parent="Terrain/Paths" unique_id=1388483870]
+transform = Transform3D(0.7, 0, 0.7, 0, 1, 0, -0.7, 0, 0.7, 15, 0.04, 0)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_segment")
+
+[node name="PathToPond" type="MeshInstance3D" parent="Terrain/Paths" unique_id=1565834171]
+transform = Transform3D(0.7, 0, -0.7, 0, 1, 0, 0.7, 0, 0.7, -3, 0.04, -10)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_segment")
+
+[node name="PathGardenCross" type="MeshInstance3D" parent="Terrain/Paths" unique_id=1486344024]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -5)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_path_cross")
+
+[node name="Buildings" type="Node3D" parent="." unique_id=1947233900]
+
+[node name="EntranceGate" type="Node3D" parent="Buildings" unique_id=2091736796]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -40)
+
+[node name="GatePillarL" type="MeshInstance3D" parent="Buildings/EntranceGate" unique_id=1860928167]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pillar")
+
+[node name="GatePillarR" type="MeshInstance3D" parent="Buildings/EntranceGate" unique_id=1920373962]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pillar")
+
+[node name="GateBeam" type="MeshInstance3D" parent="Buildings/EntranceGate" unique_id=696065180]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_gate_beam")
+
+[node name="GateBeam2" type="MeshInstance3D" parent="Buildings/EntranceGate" unique_id=1705794922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.8, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_gate_beam")
+
+[node name="GatePillarL2" type="MeshInstance3D" parent="Buildings/EntranceGate" unique_id=352200663]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pillar")
+
+[node name="GatePillarR2" type="MeshInstance3D" parent="Buildings/EntranceGate" unique_id=723283129]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pillar")
+
+[node name="StoneLionL" type="MeshInstance3D" parent="Buildings/EntranceGate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.6, -1)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pillar")
+
+[node name="StoneLionR" type="MeshInstance3D" parent="Buildings/EntranceGate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.6, -1)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pillar")
+
+[node name="StoneLionBaseL" type="MeshInstance3D" parent="Buildings/EntranceGate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.1, -1)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="StoneLionBaseR" type="MeshInstance3D" parent="Buildings/EntranceGate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.1, -1)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_ground_slab")
+
+[node name="LanternL" type="MeshInstance3D" parent="Buildings/EntranceGate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 4.2, -0.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_lotus_bud")
+
+[node name="LanternR" type="MeshInstance3D" parent="Buildings/EntranceGate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 4.2, -0.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_lotus_bud")
+
+[node name="XiaoxiangGuan" type="StaticBody3D" parent="Buildings" unique_id=998549868 groups=["building"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 10)
+script = ExtResource("8_bb")
+building_name = "潇湘馆"
+building_description = "林黛玉居所，翠竹掩映，清幽雅致"
+
+[node name="HouseMesh" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=980310175]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_house_base")
+
+[node name="RoofMesh" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=442073404]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.25, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof")
+
+[node name="RoofLayer" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=25506667]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.45, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="Foundation" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=1379093308]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_foundation")
+
+[node name="ColumnFL" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=590735438]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnFR" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=896749133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBL" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=1124997393]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBR" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=506112498]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="BeamFront" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=1008257832]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamBack" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=2110814352]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, -4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamCrossL" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=1856673765]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="BeamCrossR" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=424235133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="EaveTipFL" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=1755746268]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, 0.05, -0.1, -0.05, 0.98, -7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipFR" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=268272505]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, -0.05, 0.1, 0.05, 0.98, 7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBL" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=228303568]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, 0.05, 0.1, -0.05, 0.98, -7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBR" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=1106117243]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, -0.05, -0.1, 0.05, 0.98, 7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="WindowL" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=2122666371]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="WindowR" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan" unique_id=1036671867]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="Collision" type="CollisionShape3D" parent="Buildings/XiaoxiangGuan" unique_id=190681688]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("col_building")
+
+[node name="BambooGrove" type="Node3D" parent="Buildings/XiaoxiangGuan" unique_id=1424655652]
+
+[node name="Bamboo1" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan/BambooGrove" unique_id=1172900274]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 2.5, 3)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_bamboo")
+
+[node name="Bamboo2" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan/BambooGrove" unique_id=835562576]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 2.5, 5)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_bamboo")
+
+[node name="Bamboo3" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan/BambooGrove" unique_id=665112410]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.5, 1)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_bamboo")
+
+[node name="Bamboo4" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan/BambooGrove" unique_id=1923500170]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2.5, 4)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_bamboo")
+
+[node name="Bamboo5" type="MeshInstance3D" parent="Buildings/XiaoxiangGuan/BambooGrove" unique_id=285742211]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2.5, 7)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_bamboo")
+
+[node name="EntranceArea" type="Area3D" parent="Buildings/XiaoxiangGuan" unique_id=1750233776]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Buildings/XiaoxiangGuan/EntranceArea" unique_id=296624820]
+shape = SubResource("col_entrance")
+
+[node name="YihongYuan" type="StaticBody3D" parent="Buildings" unique_id=671418991 groups=["building"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, 10)
+script = ExtResource("8_bb")
+building_name = "怡红院"
+building_description = "贾宝玉居所，陈设华丽，新奇玩意儿甚多"
+
+[node name="HouseMesh" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1951299186]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_house_base")
+
+[node name="RoofMesh" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=131938364]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.25, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof")
+
+[node name="RoofLayer" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1210642743]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.45, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="Foundation" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1175093609]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_foundation")
+
+[node name="ColumnFL" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=372485696]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnFR" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1956980871]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBL" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1947224981]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBR" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=2036410557]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="BeamFront" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1543095762]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamBack" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1933324126]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, -4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamCrossL" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1474583919]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="BeamCrossR" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1625476919]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="EaveTipFL" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1629374473]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, 0.05, -0.1, -0.05, 0.98, -7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipFR" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=730762519]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, -0.05, 0.1, 0.05, 0.98, 7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBL" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1853209214]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, 0.05, 0.1, -0.05, 0.98, -7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBR" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1095992504]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, -0.05, -0.1, 0.05, 0.98, 7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="WindowL" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1978352]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="WindowR" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=2054341344]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="Collision" type="CollisionShape3D" parent="Buildings/YihongYuan" unique_id=200587884]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("col_building")
+
+[node name="EntranceArea" type="Area3D" parent="Buildings/YihongYuan" unique_id=1533089723]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Buildings/YihongYuan/EntranceArea" unique_id=1810959437]
+shape = SubResource("col_entrance")
+
+[node name="WallSouth" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=168284633]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallSouthCap" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=539655131]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, -7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallNorth" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=399734108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallNorthCap" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1462632710]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallWest" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=1960039140]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 1.6, 0)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallWestCap" type="MeshInstance3D" parent="Buildings/YihongYuan" unique_id=856958447]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 3.3, 0)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="LongcuiAn" type="StaticBody3D" parent="Buildings" unique_id=328833067 groups=["building"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 40)
+script = ExtResource("8_bb")
+building_name = "栊翠庵"
+building_description = "妙玉修行处，檀香袅袅，清静之地"
+
+[node name="HouseMesh" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=19385426]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_house_base")
+
+[node name="RoofMesh" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=2130374986]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.25, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof")
+
+[node name="RoofLayer" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=687767101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.45, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="Foundation" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1305853645]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_foundation")
+
+[node name="ColumnFL" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=227200584]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnFR" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=569476295]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBL" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1380769722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBR" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1699850094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="BeamFront" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1917518922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamBack" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1419443280]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, -4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamCrossL" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1083507118]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="BeamCrossR" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1632576767]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="EaveTipFL" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=35594996]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, 0.05, -0.1, -0.05, 0.98, -7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipFR" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1171077408]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, -0.05, 0.1, 0.05, 0.98, 7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBL" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=71877329]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, 0.05, 0.1, -0.05, 0.98, -7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBR" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=817556998]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, -0.05, -0.1, 0.05, 0.98, 7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="WindowL" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=583075748]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="WindowR" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1261017912]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="Collision" type="CollisionShape3D" parent="Buildings/LongcuiAn" unique_id=404929619]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("col_building")
+
+[node name="EntranceArea" type="Area3D" parent="Buildings/LongcuiAn" unique_id=735115346]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Buildings/LongcuiAn/EntranceArea" unique_id=1146157943]
+shape = SubResource("col_entrance")
+
+[node name="WallEast" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1933730179]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 1.6, 0)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallEastCap" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1124931288]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 3.3, 0)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallWest" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=2118438936]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 1.6, 0)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallWestCap" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=563163659]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 3.3, 0)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallNorth" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=172660675]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallNorthCap" type="MeshInstance3D" parent="Buildings/LongcuiAn" unique_id=1991337791]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="DaguanLou" type="StaticBody3D" parent="Buildings" unique_id=515729323 groups=["building"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
+script = ExtResource("8_bb")
+building_name = "大观楼"
+building_description = "大观园主楼，宴会举办之地"
+
+[node name="HouseMesh" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=82636906]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_house_base")
+
+[node name="RoofMesh" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=520254897]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.25, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof")
+
+[node name="RoofLayer" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=639552545]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.45, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="Foundation" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1974315959]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_foundation")
+
+[node name="ColumnFL" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1483706916]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.65, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnFR" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1784360376]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.65, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBL" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1513895269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.65, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBR" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=2140437801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.65, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="BeamFront" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1940052303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.7, 4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamBack" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1747046489]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.7, -4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamCrossL" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1803394019]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 5.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="BeamCrossR" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=32597311]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 5.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="EaveTipFL" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1551862609]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, 0.05, -0.1, -0.05, 0.98, -7, 6.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipFR" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1984644043]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, -0.05, 0.1, 0.05, 0.98, 7, 6.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBL" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=451138190]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, 0.05, 0.1, -0.05, 0.98, -7, 6.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBR" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1121344192]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, -0.05, -0.1, 0.05, 0.98, 7, 6.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="WindowL" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=29902335]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.05, 4, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="WindowR" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=236843387]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.05, 4, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="Collision" type="CollisionShape3D" parent="Buildings/DaguanLou" unique_id=1632999639]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+shape = SubResource("col_building")
+
+[node name="EntranceArea" type="Area3D" parent="Buildings/DaguanLou" unique_id=854454113]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Buildings/DaguanLou/EntranceArea" unique_id=1511834422]
+shape = SubResource("col_entrance")
+
+[node name="WallSouthL" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1609503769]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 1.6, -5)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallSouthLCap" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=718379220]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 3.3, -5)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallSouthR" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1539345406]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 1.6, -5)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallSouthRCap" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=2040094406]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 3.3, -5)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallNorth" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1352413620]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallNorthCap" type="MeshInstance3D" parent="Buildings/DaguanLou" unique_id=1277937691]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="DaoxiangCun" type="StaticBody3D" parent="Buildings" unique_id=1546635101 groups=["building"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -15)
+script = ExtResource("8_bb")
+building_name = "稻香村"
+building_description = "李纨居所，田园风光，茅檐土壁"
+
+[node name="HouseMesh" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1772786112]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_house_base")
+
+[node name="RoofMesh" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=547427198]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.25, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof")
+
+[node name="RoofLayer" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=547352812]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.45, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="Foundation" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=940877868]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_foundation")
+
+[node name="ColumnFL" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1925703748]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnFR" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=390450081]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBL" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1827495634]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBR" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=375944407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="BeamFront" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=2122703447]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamBack" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=193654538]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, -4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamCrossL" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1550422422]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="BeamCrossR" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1032852]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="EaveTipFL" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=756499070]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, 0.05, -0.1, -0.05, 0.98, -7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipFR" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1244862303]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, -0.05, 0.1, 0.05, 0.98, 7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBL" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1213888009]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, 0.05, 0.1, -0.05, 0.98, -7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBR" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=542317772]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, -0.05, -0.1, 0.05, 0.98, 7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="WindowL" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=676980843]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="WindowR" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1957837071]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="Collision" type="CollisionShape3D" parent="Buildings/DaoxiangCun" unique_id=1025695261]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("col_building")
+
+[node name="WallSouth" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=106037572]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallSouthCap" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1318598846]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, -7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallNorth" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1427227265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallNorthCap" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=250976926]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallEast" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1094643550]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 1.6, 0)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallEastCap" type="MeshInstance3D" parent="Buildings/DaoxiangCun" unique_id=1851118290]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 3.3, 0)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="EntranceArea" type="Area3D" parent="Buildings/DaoxiangCun" unique_id=966479173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Buildings/DaoxiangCun/EntranceArea" unique_id=1832837113]
+shape = SubResource("col_entrance")
+
+[node name="HengwuYuan" type="StaticBody3D" parent="Buildings" unique_id=848514867 groups=["building"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -15)
+script = ExtResource("8_bb")
+building_name = "蘅芜苑"
+building_description = "薛宝钗居所，蘅芜满苑，异香扑鼻"
+
+[node name="HouseMesh" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=683011983]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_house_base")
+
+[node name="RoofMesh" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=825117726]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.25, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof")
+
+[node name="RoofLayer" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=525854996]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.45, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="Foundation" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=172739726]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_foundation")
+
+[node name="ColumnFL" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=463413045]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnFR" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=949225132]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, 4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBL" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1447274606]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="ColumnBR" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1200617553]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 2.15, -4.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_column_round")
+
+[node name="BeamFront" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=635425515]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamBack" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=182447355]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, -4.5)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
+
+[node name="BeamCrossL" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=666288635]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="BeamCrossR" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=995096052]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.7, 0)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_cross")
+
+[node name="EaveTipFL" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=467443519]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, 0.05, -0.1, -0.05, 0.98, -7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipFR" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=748639601]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, -0.05, 0.1, 0.05, 0.98, 7, 4.8, 6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBL" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1431214757]
+transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, 0.05, 0.1, -0.05, 0.98, -7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="EaveTipBR" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=178953699]
+transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, -0.05, -0.1, 0.05, 0.98, 7, 4.8, -6.5)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_eave_tip")
+
+[node name="WindowL" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=284509722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="WindowR" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1509787773]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.05, 2.5, 0)
+material_override = SubResource("mat_window_wood")
+mesh = SubResource("mesh_window_frame")
+
+[node name="Collision" type="CollisionShape3D" parent="Buildings/HengwuYuan" unique_id=1176495231]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("col_building")
+
+[node name="WallSouth" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1678800747]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallSouthCap" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1765730459]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, -7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallNorth" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1933743564]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 7)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallNorthCap" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=301464844]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 7)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="WallWest" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1374477965]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 1.6, 0)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_courtyard_wall")
+
+[node name="WallWestCap" type="MeshInstance3D" parent="Buildings/HengwuYuan" unique_id=1975783443]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 3.3, 0)
+material_override = SubResource("mat_wall_cap")
+mesh = SubResource("mesh_wall_cap")
+
+[node name="EntranceArea" type="Area3D" parent="Buildings/HengwuYuan" unique_id=470686996]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Buildings/HengwuYuan/EntranceArea" unique_id=1706343816]
+shape = SubResource("col_entrance")
+
+[node name="Vegetation" type="Node3D" parent="." unique_id=309601663]
+
+[node name="Tree1" type="MeshInstance3D" parent="Vegetation" unique_id=1107403001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2, -20)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="TreeTop1" type="MeshInstance3D" parent="Vegetation/Tree1" unique_id=1664646105]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_tree_top")
+
+[node name="Tree2" type="MeshInstance3D" parent="Vegetation" unique_id=828125397]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2, -15)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="TreeTop2" type="MeshInstance3D" parent="Vegetation/Tree2" unique_id=1314014504]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_tree_top")
+
+[node name="Tree3" type="MeshInstance3D" parent="Vegetation" unique_id=900887071]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 2, 30)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="TreeTop3" type="MeshInstance3D" parent="Vegetation/Tree3" unique_id=881840115]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_tree_top")
+
+[node name="Tree4" type="MeshInstance3D" parent="Vegetation" unique_id=1592337419]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 2, 35)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="TreeTop4" type="MeshInstance3D" parent="Vegetation/Tree4" unique_id=752506642]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_tree_top")
+
+[node name="Tree5" type="MeshInstance3D" parent="Vegetation" unique_id=523926272]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 2, -25)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="TreeTop5" type="MeshInstance3D" parent="Vegetation/Tree5" unique_id=387551543]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_tree_top")
+
+[node name="Tree6" type="MeshInstance3D" parent="Vegetation" unique_id=514277733]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 2, -25)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="TreeTop6" type="MeshInstance3D" parent="Vegetation/Tree6" unique_id=118466227]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_bamboo")
+mesh = SubResource("mesh_tree_top")
+
+[node name="Flowers" type="Node3D" parent="Vegetation" unique_id=206574830]
+
+[node name="Flower1" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=1691741731]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.3, -5)
+material_override = SubResource("mat_flower_red")
+mesh = SubResource("mesh_flower")
+
+[node name="Flower2" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=865049730]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.3, -3)
+material_override = SubResource("mat_flower_pink")
+mesh = SubResource("mesh_flower")
+
+[node name="Flower3" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=41635416]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.3, -5)
+material_override = SubResource("mat_flower_yellow")
+mesh = SubResource("mesh_flower")
+
+[node name="Flower4" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=740523021]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.3, -3)
+material_override = SubResource("mat_flower_red")
+mesh = SubResource("mesh_flower")
+
+[node name="Flower5" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=1666678876]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0.3, 20)
+material_override = SubResource("mat_flower_pink")
+mesh = SubResource("mesh_flower")
+
+[node name="Flower6" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=1448841058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.3, 20)
+material_override = SubResource("mat_flower_yellow")
+mesh = SubResource("mesh_flower")
+
+[node name="Peony1" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=1766242926]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.4, 22)
+material_override = SubResource("mat_peony_red")
+mesh = SubResource("mesh_peony_bush")
+
+[node name="Peony2" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=675423518]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.4, 22)
+material_override = SubResource("mat_peony_pink")
+mesh = SubResource("mesh_peony_bush")
+
+[node name="Peony3" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=688434041]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0.4, 35)
+material_override = SubResource("mat_peony_red")
+mesh = SubResource("mesh_peony_bush")
+
+[node name="Peony4" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=395861083]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.4, 35)
+material_override = SubResource("mat_peony_pink")
+mesh = SubResource("mesh_peony_bush")
+
+[node name="Peony5" type="MeshInstance3D" parent="Vegetation/Flowers" unique_id=86897584]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -15)
+material_override = SubResource("mat_peony_red")
+mesh = SubResource("mesh_peony_bush")
+
+[node name="PlumTree1" type="Node3D" parent="Vegetation" unique_id=1976305611]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, 25)
+
+[node name="Trunk" type="MeshInstance3D" parent="Vegetation/PlumTree1" unique_id=1701607239]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_plum_trunk")
+
+[node name="Canopy" type="MeshInstance3D" parent="Vegetation/PlumTree1" unique_id=1404579269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+material_override = SubResource("mat_plum_blossom")
+mesh = SubResource("mesh_plum_canopy")
+
+[node name="PlumTree2" type="Node3D" parent="Vegetation" unique_id=81139227]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0, 25)
+
+[node name="Trunk" type="MeshInstance3D" parent="Vegetation/PlumTree2" unique_id=2046173853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_plum_trunk")
+
+[node name="Canopy" type="MeshInstance3D" parent="Vegetation/PlumTree2" unique_id=447999608]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+material_override = SubResource("mat_plum_blossom")
+mesh = SubResource("mesh_plum_canopy")
+
+[node name="Willow1" type="Node3D" parent="Vegetation" unique_id=1535413106]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -5)
+
+[node name="Trunk" type="MeshInstance3D" parent="Vegetation/Willow1" unique_id=1101086120]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="Canopy" type="MeshInstance3D" parent="Vegetation/Willow1" unique_id=2115317768]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+material_override = SubResource("mat_willow_leaf")
+mesh = SubResource("mesh_willow_canopy")
+
+[node name="Willow2" type="Node3D" parent="Vegetation" unique_id=2089037795]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -5)
+
+[node name="Trunk" type="MeshInstance3D" parent="Vegetation/Willow2" unique_id=1575126151]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="Canopy" type="MeshInstance3D" parent="Vegetation/Willow2" unique_id=2145087190]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+material_override = SubResource("mat_willow_leaf")
+mesh = SubResource("mesh_willow_canopy")
+
+[node name="Willow3" type="Node3D" parent="Vegetation" unique_id=998733214]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 5)
+
+[node name="Trunk" type="MeshInstance3D" parent="Vegetation/Willow3" unique_id=791860350]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="Canopy" type="MeshInstance3D" parent="Vegetation/Willow3" unique_id=344449089]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+material_override = SubResource("mat_willow_leaf")
+mesh = SubResource("mesh_willow_canopy")
+
+[node name="Willow4" type="Node3D" parent="Vegetation" unique_id=718881278]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 5)
+
+[node name="Trunk" type="MeshInstance3D" parent="Vegetation/Willow4" unique_id=843147331]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_tree_trunk")
+
+[node name="Canopy" type="MeshInstance3D" parent="Vegetation/Willow4" unique_id=1093364266]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+material_override = SubResource("mat_willow_leaf")
+mesh = SubResource("mesh_willow_canopy")
+
+[node name="WisteriaTrellis" type="Node3D" parent="Vegetation" unique_id=1546541125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, 18)
+
+[node name="Post1" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1628930682]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.6, -1)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_wisteria_post")
+
+[node name="Post2" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1520351847]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.6, -1)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_wisteria_post")
+
+[node name="Post3" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1158202578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.6, 1)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_wisteria_post")
+
+[node name="Post4" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1042861565]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.6, 1)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_wisteria_post")
+
+[node name="Beam1" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1844246002]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, -1)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_wisteria_beam")
+
+[node name="Beam2" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=587999204]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 1)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_wisteria_beam")
+
+[node name="BeamCross1" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1243957677]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.5, 3.3, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_wisteria_beam")
+
+[node name="BeamCross2" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=210021769]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 3.3, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_wisteria_beam")
+
+[node name="BeamCross3" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=969424194]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 1.5, 3.3, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_wisteria_beam")
+
+[node name="Vine1" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=2913555]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2.3, 0)
+material_override = SubResource("mat_wisteria_flower")
+mesh = SubResource("mesh_wisteria_vine")
+
+[node name="Vine2" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=2000369580]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, -0.3)
+material_override = SubResource("mat_wisteria_flower")
+mesh = SubResource("mesh_wisteria_vine")
+
+[node name="Vine3" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1305443702]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2.4, 0.2)
+material_override = SubResource("mat_wisteria_flower")
+mesh = SubResource("mesh_wisteria_vine")
+
+[node name="Vine4" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=1868212117]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.1, 0.5)
+material_override = SubResource("mat_wisteria_flower")
+mesh = SubResource("mesh_wisteria_vine")
+
+[node name="Vine5" type="MeshInstance3D" parent="Vegetation/WisteriaTrellis" unique_id=932847522]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.3, -0.4)
+material_override = SubResource("mat_wisteria_flower")
+mesh = SubResource("mesh_wisteria_vine")
+
+[node name="GardenFeatures" type="Node3D" parent="." unique_id=516296312]
+
+[node name="Rockery" type="Node3D" parent="GardenFeatures" unique_id=19593383]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, 30)
+
+[node name="Rock1" type="MeshInstance3D" parent="GardenFeatures/Rockery" unique_id=1234215740]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.75, 0)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_large")
+
+[node name="Rock2" type="MeshInstance3D" parent="GardenFeatures/Rockery" unique_id=218201377]
+transform = Transform3D(0.9, 0.1, -0.1, -0.1, 0.95, 0.05, 0.1, -0.05, 0.9, 3, 1.75, 1.5)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+[node name="Rock3" type="MeshInstance3D" parent="GardenFeatures/Rockery" unique_id=713580472]
+transform = Transform3D(0.95, -0.05, 0.1, 0.05, 0.9, -0.1, -0.1, 0.1, 0.95, -2.5, 1.75, 1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+[node name="Rock4" type="MeshInstance3D" parent="GardenFeatures/Rockery" unique_id=436411511]
+transform = Transform3D(0.85, 0.15, -0.1, -0.15, 0.88, 0.08, 0.1, -0.08, 0.9, 1, 1, -1.5)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+[node name="Rock5" type="MeshInstance3D" parent="GardenFeatures/Rockery" unique_id=306338724]
+transform = Transform3D(1.1, 0, 0.05, 0, 0.95, -0.1, -0.05, 0.1, 1.05, -1, 2.5, -1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+[node name="Rockery2" type="Node3D" parent="GardenFeatures" unique_id=865758234]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 0, 30)
+
+[node name="Rock1" type="MeshInstance3D" parent="GardenFeatures/Rockery2" unique_id=680295115]
+transform = Transform3D(1.05, -0.05, 0.05, 0.05, 0.92, -0.08, -0.05, 0.08, 0.98, 0, 2.75, 0)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_large")
+
+[node name="Rock2" type="MeshInstance3D" parent="GardenFeatures/Rockery2" unique_id=629239672]
+transform = Transform3D(0.9, 0.1, -0.1, -0.1, 0.95, 0.05, 0.1, -0.05, 0.9, 3, 1.5, 1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+[node name="Rock3" type="MeshInstance3D" parent="GardenFeatures/Rockery2" unique_id=966766395]
+transform = Transform3D(0.95, -0.08, 0.1, 0.08, 0.88, -0.12, -0.1, 0.12, 0.92, -2, 1.75, -1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+[node name="Pavilion" type="Node3D" parent="GardenFeatures" unique_id=532372651]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, -20)
+
+[node name="Floor" type="MeshInstance3D" parent="GardenFeatures/Pavilion" unique_id=2000066971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_pavilion_floor")
+
+[node name="Pillar1" type="MeshInstance3D" parent="GardenFeatures/Pavilion" unique_id=1859633888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Pillar2" type="MeshInstance3D" parent="GardenFeatures/Pavilion" unique_id=93141736]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Pillar3" type="MeshInstance3D" parent="GardenFeatures/Pavilion" unique_id=904346470]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Pillar4" type="MeshInstance3D" parent="GardenFeatures/Pavilion" unique_id=1895110985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Roof" type="MeshInstance3D" parent="GardenFeatures/Pavilion" unique_id=1531814072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 0)
+material_override = SubResource("mat_pavilion_roof")
+mesh = SubResource("mesh_pavilion_roof")
+
+[node name="Pavilion2" type="Node3D" parent="GardenFeatures" unique_id=848852356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, -20)
+
+[node name="Floor" type="MeshInstance3D" parent="GardenFeatures/Pavilion2" unique_id=1884111718]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_pavilion_floor")
+
+[node name="Pillar1" type="MeshInstance3D" parent="GardenFeatures/Pavilion2" unique_id=1844056501]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Pillar2" type="MeshInstance3D" parent="GardenFeatures/Pavilion2" unique_id=299931530]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Pillar3" type="MeshInstance3D" parent="GardenFeatures/Pavilion2" unique_id=2109315063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Pillar4" type="MeshInstance3D" parent="GardenFeatures/Pavilion2" unique_id=632226173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+[node name="Roof" type="MeshInstance3D" parent="GardenFeatures/Pavilion2" unique_id=1130771282]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 0)
+material_override = SubResource("mat_pavilion_roof")
+mesh = SubResource("mesh_pavilion_roof")
+
+[node name="StoneLantern1" type="Node3D" parent="GardenFeatures" unique_id=198438761]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -38)
+
+[node name="Pillar" type="MeshInstance3D" parent="GardenFeatures/StoneLantern1" unique_id=404557502]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+[node name="Cap" type="MeshInstance3D" parent="GardenFeatures/StoneLantern1" unique_id=1991133182]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+[node name="StoneLantern2" type="Node3D" parent="GardenFeatures" unique_id=185230401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -38)
+
+[node name="Pillar" type="MeshInstance3D" parent="GardenFeatures/StoneLantern2" unique_id=1377358240]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+[node name="Cap" type="MeshInstance3D" parent="GardenFeatures/StoneLantern2" unique_id=1266053783]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+[node name="StoneLantern3" type="Node3D" parent="GardenFeatures" unique_id=2058021875]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 15)
+
+[node name="Pillar" type="MeshInstance3D" parent="GardenFeatures/StoneLantern3" unique_id=362353888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+[node name="Cap" type="MeshInstance3D" parent="GardenFeatures/StoneLantern3" unique_id=1033095335]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+[node name="StoneLantern4" type="Node3D" parent="GardenFeatures" unique_id=29606156]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 15)
+
+[node name="Pillar" type="MeshInstance3D" parent="GardenFeatures/StoneLantern4" unique_id=1669919741]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+[node name="Cap" type="MeshInstance3D" parent="GardenFeatures/StoneLantern4" unique_id=640076372]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+[node name="StoneLantern5" type="Node3D" parent="GardenFeatures" unique_id=1099548312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
+
+[node name="Pillar" type="MeshInstance3D" parent="GardenFeatures/StoneLantern5" unique_id=1555897197]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+[node name="Cap" type="MeshInstance3D" parent="GardenFeatures/StoneLantern5" unique_id=1064454914]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+[node name="StoneLantern6" type="Node3D" parent="GardenFeatures" unique_id=1548889252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+
+[node name="Pillar" type="MeshInstance3D" parent="GardenFeatures/StoneLantern6" unique_id=1808450188]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+[node name="Cap" type="MeshInstance3D" parent="GardenFeatures/StoneLantern6" unique_id=950419415]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+[node name="StoneLantern7" type="Node3D" parent="GardenFeatures" unique_id=626480077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 0)
+
+[node name="Pillar" type="MeshInstance3D" parent="GardenFeatures/StoneLantern7" unique_id=681478858]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+[node name="Cap" type="MeshInstance3D" parent="GardenFeatures/StoneLantern7" unique_id=203996117]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+[node name="MoonGate1" type="MeshInstance3D" parent="GardenFeatures" unique_id=686845263]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1.6, 18)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_moon_gate_ring")
+
+[node name="MoonGate2" type="MeshInstance3D" parent="GardenFeatures" unique_id=2012544805]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.6, 18)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_moon_gate_ring")
+
+[node name="MoonGate3" type="MeshInstance3D" parent="GardenFeatures" unique_id=1749488643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -10)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_moon_gate_ring")
+
+[node name="StoneTable1" type="Node3D" parent="GardenFeatures" unique_id=1972773298]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 25)
+
+[node name="TableTop" type="MeshInstance3D" parent="GardenFeatures/StoneTable1" unique_id=952228385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_top")
+
+[node name="TableLeg" type="MeshInstance3D" parent="GardenFeatures/StoneTable1" unique_id=703178570]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_leg")
+
+[node name="Bench1" type="MeshInstance3D" parent="GardenFeatures/StoneTable1" unique_id=195143372]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+[node name="Bench2" type="MeshInstance3D" parent="GardenFeatures/StoneTable1" unique_id=737494568]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+[node name="StoneTable2" type="Node3D" parent="GardenFeatures" unique_id=897600487]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 25)
+
+[node name="TableTop" type="MeshInstance3D" parent="GardenFeatures/StoneTable2" unique_id=2126121913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_top")
+
+[node name="TableLeg" type="MeshInstance3D" parent="GardenFeatures/StoneTable2" unique_id=972753397]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_leg")
+
+[node name="Bench1" type="MeshInstance3D" parent="GardenFeatures/StoneTable2" unique_id=2048786996]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+[node name="Bench2" type="MeshInstance3D" parent="GardenFeatures/StoneTable2" unique_id=1938741706]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+[node name="StoneTable3" type="Node3D" parent="GardenFeatures" unique_id=1234408986]
+
+[node name="TableTop" type="MeshInstance3D" parent="GardenFeatures/StoneTable3" unique_id=1593806800]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_top")
+
+[node name="TableLeg" type="MeshInstance3D" parent="GardenFeatures/StoneTable3" unique_id=957067376]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_leg")
+
+[node name="Bench1" type="MeshInstance3D" parent="GardenFeatures/StoneTable3" unique_id=565265796]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+[node name="Bench2" type="MeshInstance3D" parent="GardenFeatures/StoneTable3" unique_id=1221586953]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+[node name="PondRailN" type="MeshInstance3D" parent="GardenFeatures" unique_id=786137534]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.55, -13)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+[node name="PondRailPostN1" type="MeshInstance3D" parent="GardenFeatures" unique_id=214074541]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.55, -13)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="PondRailPostN2" type="MeshInstance3D" parent="GardenFeatures" unique_id=2040431804]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.55, -13)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="PondRailS" type="MeshInstance3D" parent="GardenFeatures" unique_id=1206854890]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.55, -31)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+[node name="PondRailPostS1" type="MeshInstance3D" parent="GardenFeatures" unique_id=2078318125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.55, -31)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="PondRailPostS2" type="MeshInstance3D" parent="GardenFeatures" unique_id=1843176222]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.55, -31)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="PondRailE" type="MeshInstance3D" parent="GardenFeatures" unique_id=869396117]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9, 0.55, -22)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+[node name="PondRailPostE1" type="MeshInstance3D" parent="GardenFeatures" unique_id=2019544801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.55, -23)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="PondRailPostE2" type="MeshInstance3D" parent="GardenFeatures" unique_id=69473447]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.55, -21)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="PondRailW" type="MeshInstance3D" parent="GardenFeatures" unique_id=2146772389]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -19, 0.55, -22)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+[node name="PondRailPostW1" type="MeshInstance3D" parent="GardenFeatures" unique_id=98651358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0.55, -23)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="PondRailPostW2" type="MeshInstance3D" parent="GardenFeatures" unique_id=1568144356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0.55, -21)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+[node name="Corridor" type="Node3D" parent="GardenFeatures"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -30)
+
+[node name="FloorL" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorL2" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 10)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorL3" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 20)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorL4" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 30)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorL5" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 40)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorR" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorR2" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 10)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorR3" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 20)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorR4" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 30)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="FloorR5" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 40)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+[node name="RoofL" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofL2" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 10)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofL3" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 20)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofL4" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 30)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofL5" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 40)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofR" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofR2" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 10)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofR3" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 20)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofR4" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 30)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="RoofR5" type="MeshInstance3D" parent="GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 40)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+[node name="NPCs" type="Node3D" parent="." unique_id=1178196035]
+
+[node name="JiaMu" type="CharacterBody3D" parent="NPCs" unique_id=978947410 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
+script = ExtResource("2_npc")
+npc_name = "贾母"
+npc_title = "老太太"
+dialog_id = "meet_jiamu"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/JiaMu" unique_id=1036056925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="NameLabel" type="Label3D" parent="NPCs/JiaMu" unique_id=1419133360]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.9, 0.75, 0.3, 1)
+text = "贾母"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NPCs/JiaMu" unique_id=253813057]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="NPCs/JiaMu" unique_id=373462010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_jiamu")
+mesh = SubResource("mesh_npc_body")
+
+[node name="WangXifeng" type="CharacterBody3D" parent="NPCs" unique_id=1713168195 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 20)
+script = ExtResource("2_npc")
+npc_name = "王熙凤"
+npc_title = "琏二奶奶"
+dialog_id = "meet_xifeng"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/WangXifeng" unique_id=1046605585]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="NameLabel" type="Label3D" parent="NPCs/WangXifeng" unique_id=566384389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.9, 0.3, 0.2, 1)
+text = "王熙凤"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NPCs/WangXifeng" unique_id=1036510573]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="NPCs/WangXifeng" unique_id=763082452]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_xifeng")
+mesh = SubResource("mesh_npc_body")
+
+[node name="LinDaiyu" type="CharacterBody3D" parent="NPCs" unique_id=979637015 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 15)
+script = ExtResource("2_npc")
+npc_name = "林黛玉"
+npc_title = "潇湘妃子"
+dialog_id = "visit_xiaoxiang"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/LinDaiyu" unique_id=968068976]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="NameLabel" type="Label3D" parent="NPCs/LinDaiyu" unique_id=1362768331]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.4, 0.7, 0.5, 1)
+text = "林黛玉"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NPCs/LinDaiyu" unique_id=869838160]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="NPCs/LinDaiyu" unique_id=113374107]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_daiyu")
+mesh = SubResource("mesh_npc_body")
+
+[node name="JiaBaoyu" type="CharacterBody3D" parent="NPCs" unique_id=776905380 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, 15)
+script = ExtResource("2_npc")
+npc_name = "贾宝玉"
+npc_title = "宝二爷"
+dialog_id = "visit_yihong"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/JiaBaoyu" unique_id=2011667248]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="NameLabel" type="Label3D" parent="NPCs/JiaBaoyu" unique_id=1028568251]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.9, 0.5, 0.3, 1)
+text = "贾宝玉"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NPCs/JiaBaoyu" unique_id=145756386]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="NPCs/JiaBaoyu" unique_id=381802665]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_baoyu")
+mesh = SubResource("mesh_npc_body")
+
+[node name="Miaoyu" type="CharacterBody3D" parent="NPCs" unique_id=1911914709 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 45)
+script = ExtResource("2_npc")
+npc_name = "妙玉"
+npc_title = "槛外人"
+dialog_id = "tea_ceremony"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/Miaoyu" unique_id=929194702]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="NameLabel" type="Label3D" parent="NPCs/Miaoyu" unique_id=1211485536]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.6, 0.8, 0.7, 1)
+text = "妙玉"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NPCs/Miaoyu" unique_id=770188870]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="NPCs/Miaoyu" unique_id=165483891]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_miaoyu")
+mesh = SubResource("mesh_npc_body")
+
+[node name="LiWan" type="CharacterBody3D" parent="NPCs" unique_id=922176789 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -10)
+script = ExtResource("2_npc")
+npc_name = "李纨"
+npc_title = "稻香老农"
+dialog_id = "visit_daoxiang"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/LiWan" unique_id=319806736]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="NameLabel" type="Label3D" parent="NPCs/LiWan" unique_id=1472396063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.6, 0.7, 0.5, 1)
+text = "李纨"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NPCs/LiWan" unique_id=1935797747]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="NPCs/LiWan" unique_id=1643670955]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_liwan")
+mesh = SubResource("mesh_npc_body")
+
+[node name="XueBaochai" type="CharacterBody3D" parent="NPCs" unique_id=399083162 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -10)
+script = ExtResource("2_npc")
+npc_name = "薛宝钗"
+npc_title = "蘅芜君"
+dialog_id = "visit_hengwu"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/XueBaochai" unique_id=1166819792]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="NameLabel" type="Label3D" parent="NPCs/XueBaochai" unique_id=1392703103]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.8, 0.7, 0.4, 1)
+text = "薛宝钗"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NPCs/XueBaochai" unique_id=318854341]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="NPCs/XueBaochai" unique_id=1829471751]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_baochai")
+mesh = SubResource("mesh_npc_body")
+
+[node name="TriggerZones" type="Node3D" parent="." unique_id=1870612413]
+
+[node name="IntroTrigger" type="Area3D" parent="TriggerZones" unique_id=574750377]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -38)
+script = ExtResource("3_et")
+dialog_id = "intro_arrival"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZones/IntroTrigger" unique_id=224453527]
+shape = SubResource("col_trigger")
+
+[node name="MeetJiamuTrigger" type="Area3D" parent="TriggerZones" unique_id=568422811]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 15)
+script = ExtResource("3_et")
+dialog_id = "meet_jiamu"
+required_condition = "intro_done"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZones/MeetJiamuTrigger" unique_id=997745255]
+shape = SubResource("col_trigger")
+
+[node name="BanquetTrigger" type="Area3D" parent="TriggerZones" unique_id=1557462623]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 25)
+script = ExtResource("3_et")
+dialog_id = "banquet"
+required_condition = "met_jiamu"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZones/BanquetTrigger" unique_id=919202834]
+shape = SubResource("col_trigger")
+
+[node name="FarewellTrigger" type="Area3D" parent="TriggerZones" unique_id=1253181562]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -42)
+script = ExtResource("3_et")
+dialog_id = "farewell"
+required_condition = "attended_banquet"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZones/FarewellTrigger" unique_id=1627396403]
+shape = SubResource("col_trigger")
+
+[node name="PathGateTrigger" type="Area3D" parent="TriggerZones"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -30)
+script = ExtResource("3_et")
+dialog_id = "path_gate"
+trigger_once = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZones/PathGateTrigger"]
+shape = SubResource("col_trigger")
+
+[node name="PathGardenTrigger" type="Area3D" parent="TriggerZones"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -15)
+script = ExtResource("3_et")
+dialog_id = "path_garden"
+trigger_once = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZones/PathGardenTrigger"]
+shape = SubResource("col_trigger")
+
+[node name="Items" type="Node3D" parent="." unique_id=1797691097]
+
+[node name="StoneTablet" type="StaticBody3D" parent="Items" unique_id=600632609]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.5, -38)
+script = ExtResource("9_ii")
+item_name = "石碑"
+item_description = "大观园记——贾元春省亲时所立"
+item_id = "stone_tablet"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Items/StoneTablet" unique_id=1950463045]
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_item_small")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Items/StoneTablet" unique_id=1198051885]
+shape = SubResource("col_item")
+
+[node name="NameLabel" type="Label3D" parent="Items/StoneTablet" unique_id=752544063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "石碑"
+font_size = 24
+
+[node name="FlowerVase" type="StaticBody3D" parent="Items" unique_id=1856208171]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33, 0.5, 8)
+script = ExtResource("9_ii")
+item_name = "花瓶"
+item_description = "精致的青花瓷瓶，内插数枝鲜花"
+item_id = "flower_vase"
+collectable = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Items/FlowerVase" unique_id=2021993337]
+material_override = SubResource("mat_door")
+mesh = SubResource("mesh_item_small")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Items/FlowerVase" unique_id=1266181084]
+shape = SubResource("col_item")
+
+[node name="NameLabel" type="Label3D" parent="Items/FlowerVase" unique_id=1299948308]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "花瓶"
+font_size = 24
+
+[node name="Guqin" type="StaticBody3D" parent="Items" unique_id=838174859]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 0.5, 13)
+script = ExtResource("9_ii")
+item_name = "古琴"
+item_description = "一架焦尾古琴，弦音清越，似有余韵"
+item_id = "guqin"
+collectable = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Items/Guqin" unique_id=925872566]
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_item_small")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Items/Guqin" unique_id=264543640]
+shape = SubResource("col_item")
+
+[node name="NameLabel" type="Label3D" parent="Items/Guqin" unique_id=1143035750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "古琴"
+font_size = 24
+
+[node name="TeaSet" type="StaticBody3D" parent="Items" unique_id=1354242407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.5, 42)
+script = ExtResource("9_ii")
+item_name = "茶具"
+item_description = "成窑五彩小盖钟，妙玉珍藏之物"
+item_id = "tea_set"
+collectable = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Items/TeaSet" unique_id=1885957559]
+material_override = SubResource("mat_flower_pink")
+mesh = SubResource("mesh_item_small")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Items/TeaSet" unique_id=1270302788]
+shape = SubResource("col_item")
+
+[node name="NameLabel" type="Label3D" parent="Items/TeaSet" unique_id=938837072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "茶具"
+font_size = 24
+
+[node name="PoetryBook" type="StaticBody3D" parent="Items" unique_id=1745657168]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 0.5, 12)
+script = ExtResource("9_ii")
+item_name = "诗集"
+item_description = "黛玉手抄诗集，墨迹犹新，字字含情"
+item_id = "poetry_book"
+collectable = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Items/PoetryBook" unique_id=1408960015]
+material_override = SubResource("mat_npc_daiyu")
+mesh = SubResource("mesh_item_small")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Items/PoetryBook" unique_id=1718685018]
+shape = SubResource("col_item")
+
+[node name="NameLabel" type="Label3D" parent="Items/PoetryBook" unique_id=896058270]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "诗集"
+font_size = 24
+
+[node name="Painting" type="StaticBody3D" parent="Items" unique_id=1780943259]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0.5, 13)
+script = ExtResource("9_ii")
+item_name = "画卷"
+item_description = "一幅大观园全景图，笔法精妙"
+item_id = "painting"
+collectable = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Items/Painting" unique_id=257766230]
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_item_small")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Items/Painting" unique_id=562878864]
+shape = SubResource("col_item")
+
+[node name="NameLabel" type="Label3D" parent="Items/Painting" unique_id=1270457149]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "画卷"
+font_size = 24
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1465693051 groups=["player"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -42)
+script = ExtResource("1_pc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=534133969]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+[node name="Camera3D" type="Camera3D" parent="Player" unique_id=1468144477]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="InteractionRaycast" type="RayCast3D" parent="Player/Camera3D" unique_id=1017247898]
+target_position = Vector3(0, 0, -3)
+collision_mask = 5
+
+[node name="UILayer" type="CanvasLayer" parent="Player" unique_id=2074727205]
+
+[node name="HUD" type="Control" parent="Player/UILayer" unique_id=1506296697]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme_wenkai")
+
+[node name="Crosshair" type="CenterContainer" parent="Player/UILayer/HUD" unique_id=1742181745]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dot" type="ColorRect" parent="Player/UILayer/HUD/Crosshair" unique_id=16260141]
+custom_minimum_size = Vector2(4, 4)
+layout_mode = 2
+color = Color(1, 1, 1, 0.7)
+
+[node name="LocationLabel" type="Label" parent="Player/UILayer/HUD" unique_id=1092855176]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 15.0
+offset_right = 100.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.79, 0.66, 0.3, 0.85)
+theme_override_font_sizes/font_size = 20
+text = "大观园"
+horizontal_alignment = 1
+
+[node name="InteractionPrompt" type="Label" parent="Player/UILayer/HUD" unique_id=1270599028]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -80.0
+offset_right = 100.0
+offset_bottom = -55.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.79, 0.66, 0.3, 0.75)
+theme_override_font_sizes/font_size = 18
+text = "按 [E] 交互"
+horizontal_alignment = 1
+
+[node name="TimeLabel" type="Label" parent="Player/UILayer/HUD" unique_id=382479048]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -50.0
+offset_top = 45.0
+offset_right = 50.0
+offset_bottom = 70.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.79, 0.66, 0.3, 0.65)
+theme_override_font_sizes/font_size = 18
+text = "08:00"
+horizontal_alignment = 1
+
+[node name="Systems" type="Node3D" parent="." unique_id=1849319123]
+
+[node name="TimeSystem" type="Node" parent="Systems" unique_id=1618784686 groups=["time_system"]]
+script = ExtResource("4_ts")
+
+[node name="SaveSystem" type="Node" parent="Systems" unique_id=814796676]
+script = ExtResource("6_ss")
+
+[node name="AudioSystem" type="Node" parent="Systems" unique_id=2093779465]
+script = ExtResource("5_as")
+
+[node name="BGMPlayer" type="AudioStreamPlayer" parent="Systems/AudioSystem" unique_id=161356532]
+
+[node name="SFXPlayer" type="AudioStreamPlayer" parent="Systems/AudioSystem" unique_id=2143164363]
+
+[node name="DialogUI" type="Control" parent="Systems" unique_id=840674253 groups=["dialog_ui"]]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("theme_wenkai")
+script = ExtResource("7_dui")
+
+[node name="Panel" type="PanelContainer" parent="Systems/DialogUI" unique_id=34706246]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_top = -280.0
+offset_right = -80.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("style_dialog_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="Systems/DialogUI/Panel" unique_id=1585268700]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Systems/DialogUI/Panel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="AvatarPanel" type="PanelContainer" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(168, 168)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="AvatarRect" type="TextureRect" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer/AvatarPanel"]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+stretch_mode = 5
+expand_mode = 3
+size_flags_vertical = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer" unique_id=1666115164]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SpeakerLabel" type="Label" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=74277507]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.3, 0.08, 1)
+theme_override_font_sizes/font_size = 32
+text = "说话人"
+
+[node name="TextLabel" type="RichTextLabel" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=710360932]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_colors/default_color = Color(0.2, 0.15, 0.08, 1)
+theme_override_font_sizes/normal_font_size = 26
+bbcode_enabled = true
+text = "对话内容..."
+fit_content = true
+
+[node name="ChoicesContainer" type="VBoxContainer" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=337614379]
+layout_mode = 2
+
+[node name="ContinueHint" type="Label" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=236842137]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.3, 0.12, 0.7)
+theme_override_font_sizes/font_size = 20
+text = "按 [E] 或 空格 继续..."
+horizontal_alignment = 2
+
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=462916634]
+layer = 10
+theme = ExtResource("theme_wenkai")
+script = ExtResource("10_pm")
+
+[node name="Panel" type="PanelContainer" parent="PauseMenu" unique_id=820836499]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -220.0
+offset_right = 180.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("style_pause_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu/Panel" unique_id=2024728073]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="PauseMenu/Panel/VBoxContainer" unique_id=975583157]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.79, 0.66, 0.3, 1)
+theme_override_font_sizes/font_size = 36
+text = "暂停"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PauseMenu/Panel/VBoxContainer" unique_id=2118052180]
+layout_mode = 2
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=1594985245]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_pause_btn_normal")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
+theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+text = "继续游戏"
+
+[node name="SaveButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=629317765]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_pause_btn_normal")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
+theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+text = "保存游戏"
+
+[node name="LoadButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=1041161174]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_pause_btn_normal")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
+theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+text = "读取存档"
+
+[node name="MenuButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=179019434]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_pause_btn_normal")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
+theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+text = "返回主菜单"
+
+[node name="QuitButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=2099141992]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_pause_btn_normal")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
+theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+text = "退出游戏"
+
+[node name="SaveHint" type="Label" parent="PauseMenu" unique_id=125364803]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 90.0
+offset_right = 80.0
+offset_bottom = 120.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.45, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 22
+text = "保存成功！"
+horizontal_alignment = 1

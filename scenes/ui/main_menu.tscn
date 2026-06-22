@@ -1,0 +1,160 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/main_menu.gd" id="1_menu"]
+[ext_resource type="Theme" path="res://assets/fonts/wenkai_theme.tres" id="theme_wenkai"]
+
+[sub_resource type="StyleBoxFlat" id="style_menu_btn_normal"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.12, 0.1, 0.06, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.45, 0.22, 0.4)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="style_menu_btn_hover"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.2, 0.15, 0.08, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.79, 0.66, 0.3, 0.9)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme_wenkai")
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.06, 0.04, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 120.0
+offset_right = 300.0
+offset_bottom = 200.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 64
+theme_override_colors/font_color = Color(0.79, 0.66, 0.3, 1)
+text = "刘姥姥进大观园"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 210.0
+offset_right = 200.0
+offset_bottom = 250.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.6, 0.52, 0.35, 0.75)
+text = "沉浸式3D游览体验"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+top = 0.5
+anchor_right = 0.5
+bottom = 0.5
+offset_left = -120.0
+offset_top = -60.0
+offset_right = 120.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="NewGameButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 56)
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_menu_btn_normal")
+theme_override_styles/hover = SubResource("style_menu_btn_hover")
+theme_override_styles/pressed = SubResource("style_menu_btn_hover")
+text = "新游戏"
+
+[node name="ContinueButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 56)
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_menu_btn_normal")
+theme_override_styles/hover = SubResource("style_menu_btn_hover")
+theme_override_styles/pressed = SubResource("style_menu_btn_hover")
+text = "继续游戏"
+
+[node name="SettingsButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 56)
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_menu_btn_normal")
+theme_override_styles/hover = SubResource("style_menu_btn_hover")
+theme_override_styles/pressed = SubResource("style_menu_btn_hover")
+text = "设置"
+
+[node name="QuitButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 56)
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_styles/normal = SubResource("style_menu_btn_normal")
+theme_override_styles/hover = SubResource("style_menu_btn_hover")
+theme_override_styles/pressed = SubResource("style_menu_btn_hover")
+text = "退出"
+
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -30.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.5, 0.45, 0.35, 0.6)
+text = "v1.0"
+horizontal_alignment = 2
