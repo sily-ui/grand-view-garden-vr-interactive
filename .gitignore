@@ -2,6 +2,12 @@
 .godot/
 /android/
 
+# API keys & secrets (NEVER commit)
+assets/config/tts_config.json
+
+# TTS audio cache
+user://tts_cache/
+
 # System files
 Thumbs.db
 Desktop.ini

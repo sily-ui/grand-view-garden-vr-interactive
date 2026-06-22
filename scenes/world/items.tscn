@@ -1,0 +1,185 @@
+﻿[gd_scene load_steps=9 format=3]
+
+
+[sub_resource type="StandardMaterial3D" id="mat_stone"]
+albedo_color = Color(0.55, 0.55, 0.52, 1)
+roughness = 0.78
+
+
+[sub_resource type="StandardMaterial3D" id="mat_wall"]
+albedo_color = Color(0.92, 0.88, 0.82, 1)
+roughness = 0.92
+
+
+[sub_resource type="StandardMaterial3D" id="mat_flower_pink"]
+albedo_color = Color(0.88, 0.58, 0.65, 1)
+roughness = 0.85
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_daiyu"]
+albedo_color = Color(0.58, 0.78, 0.62, 1)
+roughness = 0.8
+
+
+[sub_resource type="BoxMesh" id="mesh_item_small"]
+size = Vector3(0.4, 0.4, 0.4)
+
+
+[sub_resource type="BoxShape3D" id="col_item"]
+size = Vector3(0.5, 0.5, 0.5)
+
+
+[sub_resource type="StandardMaterial3D" id="mat_door"]
+albedo_color = Color(0.55, 0.15, 0.1, 1)
+roughness = 0.7
+
+
+[ext_resource type="Script" uid="uid://bnik8cc6chc2r" path="res://scripts/items/interactable_item.gd" id="9_ii"]
+
+[node name="items" type="Node3D"]
+
+[node name="Items" type="Node3D" parent="" unique_id=1797691097]
+
+
+[node name="StoneTablet" type="StaticBody3D" parent="items/Items" unique_id=600632609]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.5, -38)
+script = ExtResource("9_ii")
+item_name = "石碑"
+item_description = "大观园记——贾元春省亲时所立"
+item_id = "stone_tablet"
+
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="items/Items/StoneTablet" unique_id=1950463045]
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_item_small")
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="items/Items/StoneTablet" unique_id=1198051885]
+shape = SubResource("col_item")
+
+
+[node name="NameLabel" type="Label3D" parent="items/Items/StoneTablet" unique_id=752544063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "石碑"
+font_size = 24
+
+
+[node name="FlowerVase" type="StaticBody3D" parent="items/Items" unique_id=1856208171]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33, 0.5, 8)
+script = ExtResource("9_ii")
+item_name = "花瓶"
+item_description = "精致的青花瓷瓶，内插数枝鲜花"
+item_id = "flower_vase"
+collectable = true
+
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="items/Items/FlowerVase" unique_id=2021993337]
+material_override = SubResource("mat_door")
+mesh = SubResource("mesh_item_small")
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="items/Items/FlowerVase" unique_id=1266181084]
+shape = SubResource("col_item")
+
+
+[node name="NameLabel" type="Label3D" parent="items/Items/FlowerVase" unique_id=1299948308]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "花瓶"
+font_size = 24
+
+
+[node name="Guqin" type="StaticBody3D" parent="items/Items" unique_id=838174859]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 0.5, 13)
+script = ExtResource("9_ii")
+item_name = "古琴"
+item_description = "一架焦尾古琴，弦音清越，似有余韵"
+item_id = "guqin"
+collectable = true
+
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="items/Items/Guqin" unique_id=925872566]
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_item_small")
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="items/Items/Guqin" unique_id=264543640]
+shape = SubResource("col_item")
+
+
+[node name="NameLabel" type="Label3D" parent="items/Items/Guqin" unique_id=1143035750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "古琴"
+font_size = 24
+
+
+[node name="TeaSet" type="StaticBody3D" parent="items/Items" unique_id=1354242407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.5, 42)
+script = ExtResource("9_ii")
+item_name = "茶具"
+item_description = "成窑五彩小盖钟，妙玉珍藏之物"
+item_id = "tea_set"
+collectable = true
+
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="items/Items/TeaSet" unique_id=1885957559]
+material_override = SubResource("mat_flower_pink")
+mesh = SubResource("mesh_item_small")
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="items/Items/TeaSet" unique_id=1270302788]
+shape = SubResource("col_item")
+
+
+[node name="NameLabel" type="Label3D" parent="items/Items/TeaSet" unique_id=938837072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "茶具"
+font_size = 24
+
+
+[node name="PoetryBook" type="StaticBody3D" parent="items/Items" unique_id=1745657168]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 0.5, 12)
+script = ExtResource("9_ii")
+item_name = "诗集"
+item_description = "黛玉手抄诗集，墨迹犹新，字字含情"
+item_id = "poetry_book"
+collectable = true
+
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="items/Items/PoetryBook" unique_id=1408960015]
+material_override = SubResource("mat_npc_daiyu")
+mesh = SubResource("mesh_item_small")
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="items/Items/PoetryBook" unique_id=1718685018]
+shape = SubResource("col_item")
+
+
+[node name="NameLabel" type="Label3D" parent="items/Items/PoetryBook" unique_id=896058270]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "诗集"
+font_size = 24
+
+
+[node name="Painting" type="StaticBody3D" parent="items/Items" unique_id=1780943259]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0.5, 13)
+script = ExtResource("9_ii")
+item_name = "画卷"
+item_description = "一幅大观园全景图，笔法精妙"
+item_id = "painting"
+collectable = true
+
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="items/Items/Painting" unique_id=257766230]
+material_override = SubResource("mat_wall")
+mesh = SubResource("mesh_item_small")
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="items/Items/Painting" unique_id=562878864]
+shape = SubResource("col_item")
+
+
+[node name="NameLabel" type="Label3D" parent="items/Items/Painting" unique_id=1270457149]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+text = "画卷"
+font_size = 24
+

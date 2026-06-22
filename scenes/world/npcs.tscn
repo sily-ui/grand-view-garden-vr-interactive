@@ -1,0 +1,250 @@
+﻿[gd_scene load_steps=11 format=3]
+
+
+[sub_resource type="CapsuleShape3D" id="col_capsule"]
+radius = 0.4
+height = 1.8
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_jiamu"]
+albedo_color = Color(0.78, 0.62, 0.32, 1)
+roughness = 0.8
+
+
+[sub_resource type="CapsuleMesh" id="mesh_npc_body"]
+radius = 0.35
+height = 1.6
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_xifeng"]
+albedo_color = Color(0.82, 0.18, 0.18, 1)
+roughness = 0.8
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_daiyu"]
+albedo_color = Color(0.58, 0.78, 0.62, 1)
+roughness = 0.8
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_baoyu"]
+albedo_color = Color(0.88, 0.52, 0.28, 1)
+roughness = 0.8
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_miaoyu"]
+albedo_color = Color(0.82, 0.82, 0.78, 1)
+roughness = 0.8
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_liwan"]
+albedo_color = Color(0.68, 0.72, 0.58, 1)
+roughness = 0.8
+
+
+[sub_resource type="StandardMaterial3D" id="mat_npc_baochai"]
+albedo_color = Color(0.82, 0.72, 0.52, 1)
+roughness = 0.8
+
+
+[ext_resource type="Script" uid="uid://dc4et6eyhsf7l" path="res://scripts/npcs/npc_base.gd" id="2_npc"]
+
+[node name="npcs" type="Node3D"]
+
+[node name="NPCs" type="Node3D" parent="" unique_id=1178196035]
+
+
+[node name="JiaMu" type="CharacterBody3D" parent="npcs/NPCs" unique_id=978947410 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
+script = ExtResource("2_npc")
+npc_name = "贾母"
+npc_title = "老太太"
+dialog_id = "meet_jiamu"
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="npcs/NPCs/JiaMu" unique_id=1036056925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+
+[node name="NameLabel" type="Label3D" parent="npcs/NPCs/JiaMu" unique_id=1419133360]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.9, 0.75, 0.3, 1)
+text = "贾母"
+
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="npcs/NPCs/JiaMu" unique_id=253813057]
+
+
+[node name="BodyMesh" type="MeshInstance3D" parent="npcs/NPCs/JiaMu" unique_id=373462010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_jiamu")
+mesh = SubResource("mesh_npc_body")
+
+
+[node name="WangXifeng" type="CharacterBody3D" parent="npcs/NPCs" unique_id=1713168195 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 20)
+script = ExtResource("2_npc")
+npc_name = "王熙凤"
+npc_title = "琏二奶奶"
+dialog_id = "meet_xifeng"
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="npcs/NPCs/WangXifeng" unique_id=1046605585]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+
+[node name="NameLabel" type="Label3D" parent="npcs/NPCs/WangXifeng" unique_id=566384389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.9, 0.3, 0.2, 1)
+text = "王熙凤"
+
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="npcs/NPCs/WangXifeng" unique_id=1036510573]
+
+
+[node name="BodyMesh" type="MeshInstance3D" parent="npcs/NPCs/WangXifeng" unique_id=763082452]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_xifeng")
+mesh = SubResource("mesh_npc_body")
+
+
+[node name="LinDaiyu" type="CharacterBody3D" parent="npcs/NPCs" unique_id=979637015 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 15)
+script = ExtResource("2_npc")
+npc_name = "林黛玉"
+npc_title = "潇湘妃子"
+dialog_id = "visit_xiaoxiang"
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="npcs/NPCs/LinDaiyu" unique_id=968068976]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+
+[node name="NameLabel" type="Label3D" parent="npcs/NPCs/LinDaiyu" unique_id=1362768331]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.4, 0.7, 0.5, 1)
+text = "林黛玉"
+
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="npcs/NPCs/LinDaiyu" unique_id=869838160]
+
+
+[node name="BodyMesh" type="MeshInstance3D" parent="npcs/NPCs/LinDaiyu" unique_id=113374107]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_daiyu")
+mesh = SubResource("mesh_npc_body")
+
+
+[node name="JiaBaoyu" type="CharacterBody3D" parent="npcs/NPCs" unique_id=776905380 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, 15)
+script = ExtResource("2_npc")
+npc_name = "贾宝玉"
+npc_title = "宝二爷"
+dialog_id = "visit_yihong"
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="npcs/NPCs/JiaBaoyu" unique_id=2011667248]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+
+[node name="NameLabel" type="Label3D" parent="npcs/NPCs/JiaBaoyu" unique_id=1028568251]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.9, 0.5, 0.3, 1)
+text = "贾宝玉"
+
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="npcs/NPCs/JiaBaoyu" unique_id=145756386]
+
+
+[node name="BodyMesh" type="MeshInstance3D" parent="npcs/NPCs/JiaBaoyu" unique_id=381802665]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_baoyu")
+mesh = SubResource("mesh_npc_body")
+
+
+[node name="Miaoyu" type="CharacterBody3D" parent="npcs/NPCs" unique_id=1911914709 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 45)
+script = ExtResource("2_npc")
+npc_name = "妙玉"
+npc_title = "槛外人"
+dialog_id = "tea_ceremony"
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="npcs/NPCs/Miaoyu" unique_id=929194702]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+
+[node name="NameLabel" type="Label3D" parent="npcs/NPCs/Miaoyu" unique_id=1211485536]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.6, 0.8, 0.7, 1)
+text = "妙玉"
+
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="npcs/NPCs/Miaoyu" unique_id=770188870]
+
+
+[node name="BodyMesh" type="MeshInstance3D" parent="npcs/NPCs/Miaoyu" unique_id=165483891]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_miaoyu")
+mesh = SubResource("mesh_npc_body")
+
+
+[node name="LiWan" type="CharacterBody3D" parent="npcs/NPCs" unique_id=922176789 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -10)
+script = ExtResource("2_npc")
+npc_name = "李纨"
+npc_title = "稻香老农"
+dialog_id = "visit_daoxiang"
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="npcs/NPCs/LiWan" unique_id=319806736]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+
+[node name="NameLabel" type="Label3D" parent="npcs/NPCs/LiWan" unique_id=1472396063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.6, 0.7, 0.5, 1)
+text = "李纨"
+
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="npcs/NPCs/LiWan" unique_id=1935797747]
+
+
+[node name="BodyMesh" type="MeshInstance3D" parent="npcs/NPCs/LiWan" unique_id=1643670955]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_liwan")
+mesh = SubResource("mesh_npc_body")
+
+
+[node name="XueBaochai" type="CharacterBody3D" parent="npcs/NPCs" unique_id=399083162 groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -10)
+script = ExtResource("2_npc")
+npc_name = "薛宝钗"
+npc_title = "蘅芜君"
+dialog_id = "visit_hengwu"
+
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="npcs/NPCs/XueBaochai" unique_id=1166819792]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("col_capsule")
+
+
+[node name="NameLabel" type="Label3D" parent="npcs/NPCs/XueBaochai" unique_id=1392703103]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+modulate = Color(0.8, 0.7, 0.4, 1)
+text = "薛宝钗"
+
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="npcs/NPCs/XueBaochai" unique_id=318854341]
+
+
+[node name="BodyMesh" type="MeshInstance3D" parent="npcs/NPCs/XueBaochai" unique_id=1829471751]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("mat_npc_baochai")
+mesh = SubResource("mesh_npc_body")
+

@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="刘姥姥进大观园"
-run/main_scene="res://main.tscn"
+run/main_scene="res://scenes/ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -22,6 +22,7 @@ GameState="*res://scripts/autoload/game_state.gd"
 EventBus="*res://scripts/autoload/event_bus.gd"
 SaveSystem="*res://scripts/systems/save_system.gd"
 DialogManager="*res://scripts/dialog/dialog_manager.gd"
+TTSSystem="*res://scripts/systems/tts_system.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

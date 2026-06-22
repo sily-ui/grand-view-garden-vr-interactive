@@ -1,0 +1,642 @@
+﻿[gd_scene load_steps=20 format=3]
+
+
+[sub_resource type="StandardMaterial3D" id="mat_stone"]
+albedo_color = Color(0.55, 0.55, 0.52, 1)
+roughness = 0.78
+
+
+[sub_resource type="StandardMaterial3D" id="mat_courtyard_wall"]
+albedo_color = Color(0.9, 0.86, 0.78, 1)
+roughness = 0.9
+
+
+[sub_resource type="BoxMesh" id="mesh_courtyard_wall"]
+size = Vector3(0.4, 3.2, 16)
+
+
+[sub_resource type="StandardMaterial3D" id="mat_rockery"]
+albedo_color = Color(0.48, 0.48, 0.44, 1)
+roughness = 0.82
+
+
+[sub_resource type="BoxMesh" id="mesh_rockery_large"]
+size = Vector3(4, 5.5, 3.5)
+
+
+[sub_resource type="BoxMesh" id="mesh_rockery_med"]
+size = Vector3(2.5, 3.5, 2)
+
+
+[sub_resource type="PlaneMesh" id="mesh_pavilion_floor"]
+size = Vector2(6, 6)
+
+
+[sub_resource type="BoxMesh" id="mesh_pavilion_pillar"]
+size = Vector3(0.35, 3.5, 0.35)
+
+
+[sub_resource type="StandardMaterial3D" id="mat_pavilion_roof"]
+albedo_color = Color(0.38, 0.4, 0.42, 1)
+roughness = 0.65
+
+
+[sub_resource type="BoxMesh" id="mesh_pavilion_roof"]
+size = Vector3(7, 0.35, 7)
+
+
+[sub_resource type="StandardMaterial3D" id="mat_lantern_stone"]
+albedo_color = Color(0.65, 0.62, 0.55, 1)
+roughness = 0.8
+
+
+[sub_resource type="CylinderMesh" id="mesh_stone_lantern_pillar"]
+top_radius = 0.2
+bottom_radius = 0.25
+height = 1.6
+
+
+[sub_resource type="BoxMesh" id="mesh_stone_lantern_cap"]
+size = Vector3(0.9, 0.2, 0.9)
+
+
+[sub_resource type="TorusMesh" id="mesh_moon_gate_ring"]
+inner_radius = 1.3
+outer_radius = 1.6
+rings = 24
+ring_segments = 12
+
+
+[sub_resource type="CylinderMesh" id="mesh_stone_table_top"]
+top_radius = 0.75
+bottom_radius = 0.75
+height = 0.08
+
+
+[sub_resource type="CylinderMesh" id="mesh_stone_table_leg"]
+top_radius = 0.1
+bottom_radius = 0.12
+height = 0.6
+
+
+[sub_resource type="BoxMesh" id="mesh_stone_bench"]
+size = Vector3(1.1, 0.32, 0.35)
+
+
+[sub_resource type="BoxMesh" id="mesh_pond_rail_bar"]
+size = Vector3(0.1, 0.1, 2.2)
+
+
+[sub_resource type="BoxMesh" id="mesh_pond_rail_post"]
+size = Vector3(0.18, 0.7, 0.18)
+
+
+[node name="garden_features" type="Node3D"]
+
+[node name="GardenFeatures" type="Node3D" parent="" unique_id=516296312]
+
+
+[node name="Rockery" type="Node3D" parent="garden_features/GardenFeatures" unique_id=19593383]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, 30)
+
+
+[node name="Rock1" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery" unique_id=1234215740]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.75, 0)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_large")
+
+
+[node name="Rock2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery" unique_id=218201377]
+transform = Transform3D(0.9, 0.1, -0.1, -0.1, 0.95, 0.05, 0.1, -0.05, 0.9, 3, 1.75, 1.5)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+
+[node name="Rock3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery" unique_id=713580472]
+transform = Transform3D(0.95, -0.05, 0.1, 0.05, 0.9, -0.1, -0.1, 0.1, 0.95, -2.5, 1.75, 1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+
+[node name="Rock4" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery" unique_id=436411511]
+transform = Transform3D(0.85, 0.15, -0.1, -0.15, 0.88, 0.08, 0.1, -0.08, 0.9, 1, 1, -1.5)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+
+[node name="Rock5" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery" unique_id=306338724]
+transform = Transform3D(1.1, 0, 0.05, 0, 0.95, -0.1, -0.05, 0.1, 1.05, -1, 2.5, -1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+
+[node name="Rockery2" type="Node3D" parent="garden_features/GardenFeatures" unique_id=865758234]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 0, 30)
+
+
+[node name="Rock1" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery2" unique_id=680295115]
+transform = Transform3D(1.05, -0.05, 0.05, 0.05, 0.92, -0.08, -0.05, 0.08, 0.98, 0, 2.75, 0)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_large")
+
+
+[node name="Rock2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery2" unique_id=629239672]
+transform = Transform3D(0.9, 0.1, -0.1, -0.1, 0.95, 0.05, 0.1, -0.05, 0.9, 3, 1.5, 1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+
+[node name="Rock3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Rockery2" unique_id=966766395]
+transform = Transform3D(0.95, -0.08, 0.1, 0.08, 0.88, -0.12, -0.1, 0.12, 0.92, -2, 1.75, -1)
+material_override = SubResource("mat_rockery")
+mesh = SubResource("mesh_rockery_med")
+
+
+[node name="Pavilion" type="Node3D" parent="garden_features/GardenFeatures" unique_id=532372651]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, -20)
+
+
+[node name="Floor" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion" unique_id=2000066971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_pavilion_floor")
+
+
+[node name="Pillar1" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion" unique_id=1859633888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Pillar2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion" unique_id=93141736]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Pillar3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion" unique_id=904346470]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Pillar4" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion" unique_id=1895110985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Roof" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion" unique_id=1531814072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 0)
+material_override = SubResource("mat_pavilion_roof")
+mesh = SubResource("mesh_pavilion_roof")
+
+
+[node name="Pavilion2" type="Node3D" parent="garden_features/GardenFeatures" unique_id=848852356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, -20)
+
+
+[node name="Floor" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion2" unique_id=1884111718]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("mat_stone_path")
+mesh = SubResource("mesh_pavilion_floor")
+
+
+[node name="Pillar1" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion2" unique_id=1844056501]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Pillar2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion2" unique_id=299931530]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, -2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Pillar3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion2" unique_id=2109315063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Pillar4" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion2" unique_id=632226173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.75, 2.5)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pavilion_pillar")
+
+
+[node name="Roof" type="MeshInstance3D" parent="garden_features/GardenFeatures/Pavilion2" unique_id=1130771282]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7, 0)
+material_override = SubResource("mat_pavilion_roof")
+mesh = SubResource("mesh_pavilion_roof")
+
+
+[node name="StoneLantern1" type="Node3D" parent="garden_features/GardenFeatures" unique_id=198438761]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -38)
+
+
+[node name="Pillar" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern1" unique_id=404557502]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+
+[node name="Cap" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern1" unique_id=1991133182]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+
+[node name="StoneLantern2" type="Node3D" parent="garden_features/GardenFeatures" unique_id=185230401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -38)
+
+
+[node name="Pillar" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern2" unique_id=1377358240]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+
+[node name="Cap" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern2" unique_id=1266053783]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+
+[node name="StoneLantern3" type="Node3D" parent="garden_features/GardenFeatures" unique_id=2058021875]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 15)
+
+
+[node name="Pillar" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern3" unique_id=362353888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+
+[node name="Cap" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern3" unique_id=1033095335]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+
+[node name="StoneLantern4" type="Node3D" parent="garden_features/GardenFeatures" unique_id=29606156]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 15)
+
+
+[node name="Pillar" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern4" unique_id=1669919741]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+
+[node name="Cap" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern4" unique_id=640076372]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+
+[node name="StoneLantern5" type="Node3D" parent="garden_features/GardenFeatures" unique_id=1099548312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
+
+
+[node name="Pillar" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern5" unique_id=1555897197]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+
+[node name="Cap" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern5" unique_id=1064454914]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+
+[node name="StoneLantern6" type="Node3D" parent="garden_features/GardenFeatures" unique_id=1548889252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+
+
+[node name="Pillar" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern6" unique_id=1808450188]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+
+[node name="Cap" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern6" unique_id=950419415]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+
+[node name="StoneLantern7" type="Node3D" parent="garden_features/GardenFeatures" unique_id=626480077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 0)
+
+
+[node name="Pillar" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern7" unique_id=681478858]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_pillar")
+
+
+[node name="Cap" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneLantern7" unique_id=203996117]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+material_override = SubResource("mat_lantern_stone")
+mesh = SubResource("mesh_stone_lantern_cap")
+
+
+[node name="MoonGate1" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=686845263]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1.6, 18)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_moon_gate_ring")
+
+
+[node name="MoonGate2" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=2012544805]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.6, 18)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_moon_gate_ring")
+
+
+[node name="MoonGate3" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=1749488643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -10)
+material_override = SubResource("mat_courtyard_wall")
+mesh = SubResource("mesh_moon_gate_ring")
+
+
+[node name="StoneTable1" type="Node3D" parent="garden_features/GardenFeatures" unique_id=1972773298]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 25)
+
+
+[node name="TableTop" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable1" unique_id=952228385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_top")
+
+
+[node name="TableLeg" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable1" unique_id=703178570]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_leg")
+
+
+[node name="Bench1" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable1" unique_id=195143372]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+
+[node name="Bench2" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable1" unique_id=737494568]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+
+[node name="StoneTable2" type="Node3D" parent="garden_features/GardenFeatures" unique_id=897600487]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 25)
+
+
+[node name="TableTop" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable2" unique_id=2126121913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_top")
+
+
+[node name="TableLeg" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable2" unique_id=972753397]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_leg")
+
+
+[node name="Bench1" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable2" unique_id=2048786996]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+
+[node name="Bench2" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable2" unique_id=1938741706]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+
+[node name="StoneTable3" type="Node3D" parent="garden_features/GardenFeatures" unique_id=1234408986]
+
+
+[node name="TableTop" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable3" unique_id=1593806800]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_top")
+
+
+[node name="TableLeg" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable3" unique_id=957067376]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_table_leg")
+
+
+[node name="Bench1" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable3" unique_id=565265796]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+
+[node name="Bench2" type="MeshInstance3D" parent="garden_features/GardenFeatures/StoneTable3" unique_id=1221586953]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -1.2)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_stone_bench")
+
+
+[node name="PondRailN" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=786137534]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.55, -13)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+
+[node name="PondRailPostN1" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=214074541]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.55, -13)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="PondRailPostN2" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=2040431804]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.55, -13)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="PondRailS" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=1206854890]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.55, -31)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+
+[node name="PondRailPostS1" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=2078318125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.55, -31)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="PondRailPostS2" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=1843176222]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.55, -31)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="PondRailE" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=869396117]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9, 0.55, -22)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+
+[node name="PondRailPostE1" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=2019544801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.55, -23)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="PondRailPostE2" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=69473447]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.55, -21)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="PondRailW" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=2146772389]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -19, 0.55, -22)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_bar")
+
+
+[node name="PondRailPostW1" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=98651358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0.55, -23)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="PondRailPostW2" type="MeshInstance3D" parent="garden_features/GardenFeatures" unique_id=1568144356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0.55, -21)
+material_override = SubResource("mat_stone")
+mesh = SubResource("mesh_pond_rail_post")
+
+
+[node name="Corridor" type="Node3D" parent="garden_features/GardenFeatures"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -30)
+
+
+[node name="FloorL" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorL2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 10)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorL3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 20)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorL4" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 30)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorL5" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 40)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorR" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 0)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorR2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 10)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorR3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 20)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorR4" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 30)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="FloorR5" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 40)
+material_override = SubResource("mat_wood")
+mesh = SubResource("mesh_path_segment")
+
+
+[node name="RoofL" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofL2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 10)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofL3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 20)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofL4" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 30)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofL5" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 40)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofR" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 0)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofR2" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 10)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofR3" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 20)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofR4" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 30)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+
+
+[node name="RoofR5" type="MeshInstance3D" parent="garden_features/GardenFeatures/Corridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 40)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_roof_layer")
+

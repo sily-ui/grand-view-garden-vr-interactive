@@ -19,21 +19,21 @@ var story_stages: Array[Dictionary] = [
 		"name": "穿过大门",
 		"target": Vector3(0, 1.5, -32),
 		"condition": "intro_done",
-		"completion": null,
+		"completion": "",
 		"hint": "进入大门"
 	},
 	{
 		"name": "过石桥",
 		"target": Vector3(-5, 1.5, -22),
 		"condition": "intro_done",
-		"completion": null,
+		"completion": "",
 		"hint": "走左侧石桥过荷塘"
 	},
 	{
 		"name": "沿游廊前行",
 		"target": Vector3(-5, 1.5, -10),
 		"condition": "intro_done",
-		"completion": null,
+		"completion": "",
 		"hint": "沿游廊继续前行"
 	},
 	{
@@ -317,7 +317,7 @@ func _update_hud_hint() -> void:
 	var dir: Vector2 = Vector2(target.x - player_pos.x, target.z - player_pos.z).normalized()
 	var direction_text: String = _get_direction_text(dir)
 	
-	hud_hint_label.text = ">>> %s（约%d米）<<<" % [stage["hint"], int(dist)]
+	hud_hint_label.text = ">>> %s %s（约%d米）<<<" % [direction_text, stage["hint"], int(dist)]
 	hud_hint_label.visible = true
 	
 	# 闪烁效果

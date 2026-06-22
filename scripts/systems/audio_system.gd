@@ -1,10 +1,20 @@
 extends Node
 
 # 音频管理系统
-@onready var bgm_player: AudioStreamPlayer = $BGMPlayer
-@onready var sfx_player: AudioStreamPlayer = $SFXPlayer
+var bgm_player: AudioStreamPlayer
+var sfx_player: AudioStreamPlayer
 
 var current_bgm_path: String = ""
+
+# 中文建筑名 → 场景key映射
+var _building_name_map: Dictionary = {
+	"大门": "entrance", "荣国府": "entrance", "入口": "entrance",
+	"潇湘馆": "xiaoxiang_guan",
+	"怡红院": "yihong_yuan",
+	"栊翠庵": "longcui_an",
+	"大观楼": "banquet", "宴席": "banquet",
+	"稻香村": "entrance", "蘅芜苑": "entrance",
+}
 
 var scene_audio: Dictionary = {
 	"entrance": {"bgm": "", "ambient": "birds"},
@@ -15,6 +25,17 @@ var scene_audio: Dictionary = {
 }
 
 func _ready() -> void:
+	# 动态创建子节点，避免依赖场景配置
+	bgm_player = AudioStreamPlayer.new()
+	bgm_player.name = "BGMPlayer"
+	bgm_player.bus = "Master"
+	add_child(bgm_player)
+	
+	sfx_player = AudioStreamPlayer.new()
+	sfx_player.name = "SFXPlayer"
+	sfx_player.bus = "Master"
+	add_child(sfx_player)
+	
 	EventBus.building_entered.connect(_on_building_entered)
 
 func play_bgm(stream_path: String, fade_time: float = 1.0) -> void:
@@ -51,7 +72,13 @@ func play_sfx(stream_path: String) -> void:
 	sfx_player.play()
 
 func _on_building_entered(building_name: String) -> void:
-	var key := building_name.to_lower().replace(" ", "_")
+	# 先尝试中文名映射，再尝试英文key直接匹配
+	var key: String = ""
+	if _building_name_map.has(building_name):
+		key = _building_name_map[building_name]
+	else:
+		key = building_name.to_lower().replace(" ", "_")
+	
 	if scene_audio.has(key):
 		var config: Dictionary = scene_audio[key]
 		if config.has("bgm") and config.bgm != "":

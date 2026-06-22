@@ -20,12 +20,14 @@ func _ready() -> void:
 	_init_navigation_guide()
 	# 初始化场景氛围（蝴蝶、落叶、鸟鸣、锦鲤）
 	_init_scene_ambience()
+	# 初始化大观园场景构建（围墙、水系、新院落、地形、外围建筑）
+	_init_garden_builder()
 	
 	# 延迟触发入场剧情
 	await get_tree().create_timer(2.0).timeout
 	var intro_trigger := get_node_or_null("TriggerZones/IntroTrigger")
 	if intro_trigger and not intro_trigger.has_triggered:
-		pass # 玩家走到触发区域时自动触发
+		intro_trigger._on_body_entered(get_tree().get_first_node_in_group("player"))
 
 func _init_plaque_system() -> void:
 	var plaque_sys := Node3D.new()
@@ -61,3 +63,9 @@ func _init_scene_ambience() -> void:
 	ambience.name = "SceneAmbience"
 	ambience.set_script(load("res://scripts/systems/scene_ambience.gd"))
 	add_child(ambience)
+
+func _init_garden_builder() -> void:
+	var builder := Node3D.new()
+	builder.name = "GardenBuilder"
+	builder.set_script(load("res://scripts/systems/garden_builder.gd"))
+	add_child(builder)

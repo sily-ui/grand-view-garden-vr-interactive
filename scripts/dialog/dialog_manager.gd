@@ -43,11 +43,21 @@ func start_dialog(dialog_id: String) -> void:
 			current_dialog.get("choices", [])
 		)
 	
+	# AI 语音配音
+	if TTSSystem:
+		TTSSystem.speak(
+			current_dialog.get("speaker", ""),
+			current_dialog.get("text", "")
+		)
+	
 	dialog_started.emit(dialog_id)
 	
-	# 如果没有选项且有next，等待玩家点击后自动跳转
+	# 没有选项、没有next、也没有events → 直接结束
 	if not current_dialog.has("choices") and not current_dialog.has("next") and not current_dialog.has("events"):
 		end_dialog()
+	# 有events但没有next和choices → 执行事件后自动结束
+	elif current_dialog.has("events") and not current_dialog.has("next") and not current_dialog.has("choices"):
+		advance_dialog()
 
 func advance_dialog() -> void:
 	if not is_active:
@@ -91,6 +101,10 @@ func end_dialog() -> void:
 	current_dialog = {}
 	current_dialog_id = ""
 	
+	# 停止语音
+	if TTSSystem:
+		TTSSystem.stop()
+	
 	if dialog_ui:
 		dialog_ui.hide_dialog()
 	
@@ -98,6 +112,44 @@ func end_dialog() -> void:
 	dialog_ended.emit(ended_id)
 
 func _execute_event(event_id: String) -> void:
+	EventBus.trigger_event(event_id)
+	
+	match event_id:
+		# === 入场流程 ===
+		"intro_complete":
+			GameState.set_condition("intro_done", true)
+		# === 路径氛围 ===
+		"path_complete":
+			GameState.set_condition("path_done", true)
+		# === 拜见贾母 ===
+		"meet_jiamu_complete":
+			GameState.set_condition("met_jiamu", true)
+		"unlock_xiaoxiang":
+			GameState.unlock_area("xiaoxiang_guan")
+		"unlock_yihong":
+			GameState.unlock_area("yihong_yuan")
+		"unlock_longcui":
+			GameState.unlock_area("longcui_an")
+		# === 见王熙凤 ===
+		"meet_xifeng_complete":
+			GameState.set_condition("met_xifeng", true)
+		# === 参观院落 ===
+		"visit_xiaoxiang_complete":
+			GameState.set_condition("visited_xiaoxiang", true)
+		"visit_yihong_complete":
+			GameState.set_condition("visited_yihong", true)
+		"tea_ceremony_complete":
+			GameState.set_condition("completed_tea", true)
+		"collect_teacup":
+			GameState.collect_item("miaoyu_teacup")
+		# === 宴席 ===
+		"banquet_complete":
+			GameState.set_condition("attended_banquet", true)
+		# === 结局 ===
+		"game_complete":
+			GameState.set_condition("game_completed", true)
+		_:
+			push_warning("DialogManager: 未知事件 '%s'" % event_id)
 	match event_id:
 		"intro_complete":
 			GameState.set_condition("intro_done", true)

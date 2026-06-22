@@ -55,11 +55,17 @@ func _update_time(delta: float) -> void:
 
 func _update_environment() -> void:
 	var time_factor := current_hour + current_minute / 60.0
-	var preset := _get_time_preset(time_factor)
+	var preset: Dictionary = _get_time_preset(time_factor)
 	
 	if sun:
 		var sun_angle := -90.0 + (time_factor / 24.0) * 360.0
 		sun.rotation_degrees.x = clamp(sun_angle, -90.0, 0.0)
+		sun.light_color = preset["sun_color"]
+		sun.light_energy = preset["sun_energy"]
+	
+	if env_node and env_node is WorldEnvironment and env_node.environment:
+		var env: Environment = env_node.environment
+		env.fog_light_color = preset["fog_color"]
 
 func _get_time_preset(hour: float) -> Dictionary:
 	if hour < 6:

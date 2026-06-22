@@ -33,6 +33,12 @@ func _input(event: InputEvent) -> void:
 		camera.rotate_x(-event.relative.y * mouse_sensitivity)
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-look_limit), deg_to_rad(look_limit))
 	
+	# 对话中：按空格/E/鼠标左键推进对话
+	if DialogManager.is_active:
+		if event.is_action_pressed("dialog_next") or event.is_action_pressed("interact"):
+			DialogManager.advance_dialog()
+		return
+	
 	if event.is_action_pressed("interact") and can_interact and current_interactable:
 		if GameManager.is_playing():
 			current_interactable.interact(self)
