@@ -1,78 +1,79 @@
-﻿[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://cptsuro26r8d1" path="res://scripts/systems/event_trigger.gd" id="3_et"]
+
 
 
 [sub_resource type="BoxShape3D" id="col_trigger"]
 size = Vector3(6, 3, 6)
 
 
-[ext_resource type="Script" uid="uid://cptsuro26r8d1" path="res://scripts/systems/event_trigger.gd" id="3_et"]
-
-[node name="trigger_zones" type="Node3D"]
-
-[node name="TriggerZones" type="Node3D" parent="" unique_id=1870612413]
 
 
-[node name="IntroTrigger" type="Area3D" parent="trigger_zones/TriggerZones" unique_id=574750377]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -38)
+[node name="TriggerZones" type="Node3D" unique_id=1870612413]
+
+
+[node name="IntroTrigger" type="Area3D" parent="." unique_id=574750377]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -84)
 script = ExtResource("3_et")
 dialog_id = "intro_arrival"
 
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="trigger_zones/TriggerZones/IntroTrigger" unique_id=224453527]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="IntroTrigger" unique_id=224453527]
 shape = SubResource("col_trigger")
 
 
-[node name="MeetJiamuTrigger" type="Area3D" parent="trigger_zones/TriggerZones" unique_id=568422811]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 15)
+[node name="MeetJiamuTrigger" type="Area3D" parent="." unique_id=568422811]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 29)
 script = ExtResource("3_et")
 dialog_id = "meet_jiamu"
 required_condition = "intro_done"
 
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="trigger_zones/TriggerZones/MeetJiamuTrigger" unique_id=997745255]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeetJiamuTrigger" unique_id=997745255]
 shape = SubResource("col_trigger")
 
 
-[node name="BanquetTrigger" type="Area3D" parent="trigger_zones/TriggerZones" unique_id=1557462623]
+[node name="BanquetTrigger" type="Area3D" parent="." unique_id=1557462623]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 25)
 script = ExtResource("3_et")
 dialog_id = "banquet"
-required_condition = "met_jiamu"
+required_condition = "completed_tea"
 
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="trigger_zones/TriggerZones/BanquetTrigger" unique_id=919202834]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BanquetTrigger" unique_id=919202834]
 shape = SubResource("col_trigger")
 
 
-[node name="FarewellTrigger" type="Area3D" parent="trigger_zones/TriggerZones" unique_id=1253181562]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -42)
+[node name="FarewellTrigger" type="Area3D" parent="." unique_id=1253181562]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -84)
 script = ExtResource("3_et")
 dialog_id = "farewell"
 required_condition = "attended_banquet"
 
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="trigger_zones/TriggerZones/FarewellTrigger" unique_id=1627396403]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FarewellTrigger" unique_id=1627396403]
 shape = SubResource("col_trigger")
 
 
-[node name="PathGateTrigger" type="Area3D" parent="trigger_zones/TriggerZones"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -30)
+[node name="PathGateTrigger" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -62)
 script = ExtResource("3_et")
 dialog_id = "path_gate"
 trigger_once = true
 
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="trigger_zones/TriggerZones/PathGateTrigger"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PathGateTrigger"]
 shape = SubResource("col_trigger")
 
 
-[node name="PathGardenTrigger" type="Area3D" parent="trigger_zones/TriggerZones"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -15)
+[node name="PathGardenTrigger" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.5, -22)
 script = ExtResource("3_et")
 dialog_id = "path_garden"
 trigger_once = true
 
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="trigger_zones/TriggerZones/PathGardenTrigger"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PathGardenTrigger"]
 shape = SubResource("col_trigger")
 

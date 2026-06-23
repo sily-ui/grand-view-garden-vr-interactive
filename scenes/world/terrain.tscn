@@ -1,4 +1,5 @@
-﻿[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=23 format=3]
+
 
 
 [sub_resource type="NavigationMesh" id="nav_mesh_main"]
@@ -59,7 +60,7 @@ roughness = 0.75
 
 
 [sub_resource type="BoxMesh" id="mesh_bridge_deck"]
-size = Vector3(3.5, 0.35, 10)
+size = Vector3(3.5, 0.06, 10)
 
 
 [sub_resource type="BoxMesh" id="mesh_bridge_rail"]
@@ -67,7 +68,7 @@ size = Vector3(0.2, 0.9, 10)
 
 
 [sub_resource type="BoxShape3D" id="col_bridge_deck"]
-size = Vector3(3.5, 0.4, 10)
+size = Vector3(3.5, 0.06, 10)
 
 
 [sub_resource type="StandardMaterial3D" id="mat_stone_path"]
@@ -100,296 +101,295 @@ size = Vector3(3, 0.08, 10)
 size = Vector3(10, 0.08, 3)
 
 
-[node name="terrain" type="Node3D"]
 
-[node name="Terrain" type="Node3D" parent="" unique_id=562112187]
+[node name="Terrain" type="Node3D" unique_id=562112187]
 
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="terrain/Terrain" unique_id=1885698922]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1885698922]
 navigation_mesh = SubResource("nav_mesh_main")
 
 
-[node name="Ground" type="StaticBody3D" parent="terrain/Terrain" unique_id=1985366354]
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1985366354]
 
 
-[node name="GroundMesh" type="MeshInstance3D" parent="terrain/Terrain/Ground" unique_id=976110837]
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=976110837]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.233162, -1.1539383, 4.1993904)
 mesh = SubResource("mesh_ground")
 
 
-[node name="GroundCollision" type="CollisionShape3D" parent="terrain/Terrain/Ground" unique_id=509867638]
+[node name="GroundCollision" type="CollisionShape3D" parent="Ground" unique_id=509867638]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 shape = SubResource("col_ground")
 
 
-[node name="Water" type="MeshInstance3D" parent="terrain/Terrain" unique_id=828559750]
+[node name="Water" type="MeshInstance3D" parent="." unique_id=828559750]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.05, 0)
 material_override = SubResource("mat_water")
 mesh = SubResource("mesh_water_plane")
 
 
-[node name="LotusPond" type="MeshInstance3D" parent="terrain/Terrain" unique_id=477228997]
+[node name="LotusPond" type="MeshInstance3D" parent="." unique_id=477228997]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.03, -22)
 material_override = SubResource("mat_water")
 mesh = SubResource("mesh_lotus_pond")
 
 
-[node name="LotusPad1" type="MeshInstance3D" parent="terrain/Terrain" unique_id=553729728]
+[node name="LotusPad1" type="MeshInstance3D" parent="." unique_id=553729728]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.12, -20)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusPad2" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1574216970]
+[node name="LotusPad2" type="MeshInstance3D" parent="." unique_id=1574216970]
 transform = Transform3D(0.9, 0, 0.1, 0, 1, 0, -0.1, 0, 0.9, -8, 0.12, -24)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusPad3" type="MeshInstance3D" parent="terrain/Terrain" unique_id=221671244]
+[node name="LotusPad3" type="MeshInstance3D" parent="." unique_id=221671244]
 transform = Transform3D(0.8, 0, -0.15, 0, 1, 0, 0.15, 0, 0.8, -3, 0.12, -20)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusPad4" type="MeshInstance3D" parent="terrain/Terrain" unique_id=941016399]
+[node name="LotusPad4" type="MeshInstance3D" parent="." unique_id=941016399]
 transform = Transform3D(1.1, 0, 0.05, 0, 1, 0, -0.05, 0, 1.1, -6, 0.12, -25)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusPad5" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1751987123]
+[node name="LotusPad5" type="MeshInstance3D" parent="." unique_id=1751987123]
 transform = Transform3D(0.85, 0, -0.1, 0, 1, 0, 0.1, 0, 0.85, -12, 0.12, -23)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusPad6" type="MeshInstance3D" parent="terrain/Terrain" unique_id=940353552]
+[node name="LotusPad6" type="MeshInstance3D" parent="." unique_id=940353552]
 transform = Transform3D(0.95, 0, 0.08, 0, 1, 0, -0.08, 0, 0.95, -1, 0.12, -22)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusPad7" type="MeshInstance3D" parent="terrain/Terrain" unique_id=347004001]
+[node name="LotusPad7" type="MeshInstance3D" parent="." unique_id=347004001]
 transform = Transform3D(1.05, 0, -0.05, 0, 1, 0, 0.05, 0, 1.05, -9, 0.12, -19)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusPad8" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1086735308]
+[node name="LotusPad8" type="MeshInstance3D" parent="." unique_id=1086735308]
 transform = Transform3D(0.9, 0, 0.12, 0, 1, 0, -0.12, 0, 0.9, -4, 0.12, -26)
 material_override = SubResource("mat_lotus_leaf")
 mesh = SubResource("mesh_lotus_pad")
 
 
-[node name="LotusFlower1" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1160106097]
+[node name="LotusFlower1" type="MeshInstance3D" parent="." unique_id=1160106097]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.3, -20)
 material_override = SubResource("mat_lotus_pink")
 mesh = SubResource("mesh_lotus_bud")
 
 
-[node name="LotusFlower2" type="MeshInstance3D" parent="terrain/Terrain" unique_id=308410299]
+[node name="LotusFlower2" type="MeshInstance3D" parent="." unique_id=308410299]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.35, -25)
 material_override = SubResource("mat_lotus_pink")
 mesh = SubResource("mesh_lotus_bud")
 
 
-[node name="LotusFlower3" type="MeshInstance3D" parent="terrain/Terrain" unique_id=679115673]
+[node name="LotusFlower3" type="MeshInstance3D" parent="." unique_id=679115673]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.3, -20)
 material_override = SubResource("mat_lotus_pink")
 mesh = SubResource("mesh_lotus_bud")
 
 
-[node name="LotusFlower4" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1351132622]
+[node name="LotusFlower4" type="MeshInstance3D" parent="." unique_id=1351132622]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.32, -19)
 material_override = SubResource("mat_lotus_pink")
 mesh = SubResource("mesh_lotus_bud")
 
 
-[node name="LotusFlower5" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1931684187]
+[node name="LotusFlower5" type="MeshInstance3D" parent="." unique_id=1931684187]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.3, -22)
 material_override = SubResource("mat_lotus_pink")
 mesh = SubResource("mesh_lotus_bud")
 
 
-[node name="Bridge" type="Node3D" parent="terrain/Terrain" unique_id=844252204]
+[node name="Bridge" type="Node3D" parent="." unique_id=844252204]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -22)
 
 
-[node name="Deck" type="MeshInstance3D" parent="terrain/Terrain/Bridge" unique_id=802212481]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+[node name="Deck" type="MeshInstance3D" parent="Bridge" unique_id=802212481]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0)
 material_override = SubResource("mat_bridge_stone")
 mesh = SubResource("mesh_bridge_deck")
 
 
-[node name="BridgeBody" type="StaticBody3D" parent="terrain/Terrain/Bridge"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+[node name="BridgeBody" type="StaticBody3D" parent="Bridge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0)
 
 
-[node name="BridgeCollision" type="CollisionShape3D" parent="terrain/Terrain/Bridge/BridgeBody"]
+[node name="BridgeCollision" type="CollisionShape3D" parent="Bridge/BridgeBody"]
 shape = SubResource("col_bridge_deck")
 
 
-[node name="RailLeft" type="MeshInstance3D" parent="terrain/Terrain/Bridge" unique_id=1779060821]
+[node name="RailLeft" type="MeshInstance3D" parent="Bridge" unique_id=1779060821]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 1.15, 0)
 material_override = SubResource("mat_bridge_stone")
 mesh = SubResource("mesh_bridge_rail")
 
 
-[node name="RailRight" type="MeshInstance3D" parent="terrain/Terrain/Bridge" unique_id=916614545]
+[node name="RailRight" type="MeshInstance3D" parent="Bridge" unique_id=916614545]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 1.15, 0)
 material_override = SubResource("mat_bridge_stone")
 mesh = SubResource("mesh_bridge_rail")
 
 
-[node name="StonePath" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1448667315]
+[node name="StonePath" type="MeshInstance3D" parent="." unique_id=1448667315]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -10)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_stone_path")
 
 
-[node name="CourtyardSlab1" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1741971192]
+[node name="CourtyardSlab1" type="MeshInstance3D" parent="." unique_id=1741971192]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 15)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab2" type="MeshInstance3D" parent="terrain/Terrain" unique_id=278726217]
+[node name="CourtyardSlab2" type="MeshInstance3D" parent="." unique_id=278726217]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 15)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab3" type="MeshInstance3D" parent="terrain/Terrain" unique_id=923594269]
+[node name="CourtyardSlab3" type="MeshInstance3D" parent="." unique_id=923594269]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 15)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab4" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1677651569]
+[node name="CourtyardSlab4" type="MeshInstance3D" parent="." unique_id=1677651569]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 18)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab5" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1671153343]
+[node name="CourtyardSlab5" type="MeshInstance3D" parent="." unique_id=1671153343]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 18)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab6" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1668314211]
+[node name="CourtyardSlab6" type="MeshInstance3D" parent="." unique_id=1668314211]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 18)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab7" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1132650125]
+[node name="CourtyardSlab7" type="MeshInstance3D" parent="." unique_id=1132650125]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 21)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab8" type="MeshInstance3D" parent="terrain/Terrain" unique_id=699541913]
+[node name="CourtyardSlab8" type="MeshInstance3D" parent="." unique_id=699541913]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 21)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab9" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1698330031]
+[node name="CourtyardSlab9" type="MeshInstance3D" parent="." unique_id=1698330031]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 21)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab")
 
 
-[node name="CourtyardSlab10" type="MeshInstance3D" parent="terrain/Terrain" unique_id=68046916]
+[node name="CourtyardSlab10" type="MeshInstance3D" parent="." unique_id=68046916]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0.03, 5)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab_sm")
 
 
-[node name="CourtyardSlab11" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1132612049]
+[node name="CourtyardSlab11" type="MeshInstance3D" parent="." unique_id=1132612049]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0.03, 8)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab_sm")
 
 
-[node name="CourtyardSlab12" type="MeshInstance3D" parent="terrain/Terrain" unique_id=325949191]
+[node name="CourtyardSlab12" type="MeshInstance3D" parent="." unique_id=325949191]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0.03, 5)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab_sm")
 
 
-[node name="CourtyardSlab13" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1588720444]
+[node name="CourtyardSlab13" type="MeshInstance3D" parent="." unique_id=1588720444]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0.03, 8)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab_sm")
 
 
-[node name="CourtyardSlab14" type="MeshInstance3D" parent="terrain/Terrain" unique_id=230816942]
+[node name="CourtyardSlab14" type="MeshInstance3D" parent="." unique_id=230816942]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 35)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab_sm")
 
 
-[node name="CourtyardSlab15" type="MeshInstance3D" parent="terrain/Terrain" unique_id=1091535381]
+[node name="CourtyardSlab15" type="MeshInstance3D" parent="." unique_id=1091535381]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.03, 35)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab_sm")
 
 
-[node name="CourtyardSlab16" type="MeshInstance3D" parent="terrain/Terrain" unique_id=646653606]
+[node name="CourtyardSlab16" type="MeshInstance3D" parent="." unique_id=646653606]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.03, 35)
 material_override = SubResource("mat_blue_slab")
 mesh = SubResource("mesh_ground_slab_sm")
 
 
-[node name="Paths" type="Node3D" parent="terrain/Terrain" unique_id=702529371]
+[node name="Paths" type="Node3D" parent="." unique_id=702529371]
 
 
-[node name="MainPath" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=568251778]
+[node name="MainPath" type="MeshInstance3D" parent="Paths" unique_id=568251778]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_segment")
 
 
-[node name="CrossPath" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=825967857]
+[node name="CrossPath" type="MeshInstance3D" parent="Paths" unique_id=825967857]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 15)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_cross")
 
 
-[node name="PathToLeft" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=1638007065]
+[node name="PathToLeft" type="MeshInstance3D" parent="Paths" unique_id=1638007065]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0.04, 12)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_segment")
 
 
-[node name="PathToRight" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=887028727]
+[node name="PathToRight" type="MeshInstance3D" parent="Paths" unique_id=887028727]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0.04, 12)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_segment")
 
 
-[node name="PathToDaoxiang" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=2074313044]
+[node name="PathToDaoxiang" type="MeshInstance3D" parent="Paths" unique_id=2074313044]
 transform = Transform3D(0.7, 0, -0.7, 0, 1, 0, 0.7, 0, 0.7, -15, 0.04, 0)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_segment")
 
 
-[node name="PathToHengwu" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=1388483870]
+[node name="PathToHengwu" type="MeshInstance3D" parent="Paths" unique_id=1388483870]
 transform = Transform3D(0.7, 0, 0.7, 0, 1, 0, -0.7, 0, 0.7, 15, 0.04, 0)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_segment")
 
 
-[node name="PathToPond" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=1565834171]
+[node name="PathToPond" type="MeshInstance3D" parent="Paths" unique_id=1565834171]
 transform = Transform3D(0.7, 0, -0.7, 0, 1, 0, 0.7, 0, 0.7, -3, 0.04, -10)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_segment")
 
 
-[node name="PathGardenCross" type="MeshInstance3D" parent="terrain/Terrain/Paths" unique_id=1486344024]
+[node name="PathGardenCross" type="MeshInstance3D" parent="Paths" unique_id=1486344024]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -5)
 material_override = SubResource("mat_stone_path")
 mesh = SubResource("mesh_path_cross")

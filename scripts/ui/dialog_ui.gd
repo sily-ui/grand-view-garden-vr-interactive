@@ -25,6 +25,7 @@ const COLOR_WOOD_MID := Color(0.35, 0.22, 0.1, 0.95)
 const COLOR_WOOD_LIGHT := Color(0.45, 0.3, 0.15, 0.95)
 const COLOR_GOLD_TEXT := Color(0.82, 0.7, 0.35, 1)
 const COLOR_GOLD_BRIGHT := Color(1.0, 0.9, 0.5, 1)
+const TYPEWRITER_SECONDS_PER_CHAR := 0.035
 
 # 角色头像映射
 var avatar_map: Dictionary = {
@@ -155,7 +156,7 @@ func _start_typewriter() -> void:
 	var total_chars: int = full_text.length()
 	
 	typewriter_tween = create_tween()
-	typewriter_tween.tween_property(text_label, "visible_characters", total_chars, total_chars * 0.05)
+	typewriter_tween.tween_property(text_label, "visible_characters", total_chars, total_chars * TYPEWRITER_SECONDS_PER_CHAR)
 	typewriter_tween.finished.connect(_on_typewriter_finished)
 
 func _show_full_text() -> void:

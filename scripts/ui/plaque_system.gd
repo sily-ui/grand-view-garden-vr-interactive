@@ -50,16 +50,17 @@ var _mat_wall_cap: StandardMaterial3D
 # ═══════════════════════════════════════════════════════
 func _ready() -> void:
 	_init_materials()
-	# 1. 荣国府正门：替换匾额和对联
-	_setup_rongguofu()
+	_hide_legacy_entrance_gate()
 	# 2. 潇湘馆：添加匾额和对联
 	_setup_xiaoxiang()
-	# 3. 秋爽斋：新建院落 + 匾额对联
+	# 3. 怡红院：升级现有匾额和对联
+	_setup_yihong()
+	# 4. 秋爽斋：新建院落 + 匾额对联
 	_setup_qiushuang()
-	# 4. 蘅芜苑：升级现有匾额和对联
+	# 5. 蘅芜苑：升级现有匾额和对联
 	_setup_hengwu()
-	# 5. 缀锦阁：新建院落 + 匾额对联
-	_setup_zhuijin()
+	# 6. 稻香村：升级现有匾额和对联
+	_setup_daoxiang()
 
 # ═══════════════════════════════════════════════════════
 # 材质初始化
@@ -151,6 +152,9 @@ func _make_gold_label(parent: Node3D, text: String, pos: Vector3, font_size: int
 	parent.add_child(lbl)
 	return lbl
 
+func _face_south(node: Node3D) -> void:
+	node.rotation.y = PI
+
 # ═══════════════════════════════════════════════════════
 # 辅助函数：创建对联（左右两块板+文字）
 # ═══════════════════════════════════════════════════════
@@ -173,29 +177,21 @@ func _remove_old_signs(building: Node) -> void:
 			node.queue_free()
 
 # ═══════════════════════════════════════════════════════
-# 1. 荣国府正门
+# 1. 旧荣国府正门
 # ═══════════════════════════════════════════════════════
-func _setup_rongguofu() -> void:
+func _hide_legacy_entrance_gate() -> void:
 	var gate := get_node_or_null("../Buildings/EntranceGate")
 	if not gate:
-		push_warning("PlaqueSystem: 找不到 EntranceGate 节点")
 		return
+	gate.visible = false
+	gate.process_mode = Node.PROCESS_MODE_DISABLED
+	_disable_collision_shapes(gate)
 
-	# 移除旧的匾额和对联标签
-	_remove_old_signs(gate)
-
-	# 匾额面板 + 「荣国府」金字
-	_make_plaque_board(gate, Vector3(0, 5.0, 0.45))
-	_make_gold_label(gate, "荣国府", Vector3(0, 5.0, 0.55), PLAK_FONT)
-
-	# 对联（竖排，每个字独立一行）
-	# 上联（右侧柱）：座上珠玑昭日月
-	# 下联（左侧柱）：堂前黼黻焕烟霞
-	_make_couplet_pair(gate,
-		Vector3(-5.0, 3.0, 0.55),   # 左联位置（外柱旁）
-		Vector3(5.0, 3.0, 0.55),    # 右联位置
-		"堂\n前\n黼\n黻\n焕\n烟\n霞",
-		"座\n上\n珠\n玑\n昭\n日\n月")
+func _disable_collision_shapes(node: Node) -> void:
+	if node is CollisionShape3D:
+		node.disabled = true
+	for child in node.get_children():
+		_disable_collision_shapes(child)
 
 # ═══════════════════════════════════════════════════════
 # 2. 潇湘馆
@@ -223,7 +219,25 @@ func _setup_xiaoxiang() -> void:
 		"宝\n鼎\n茶\n闲\n烟\n尚\n绿")
 
 # ═══════════════════════════════════════════════════════
-# 3. 秋爽斋（新建院落 + 匾额对联）
+# 3. 怡红院
+# ═══════════════════════════════════════════════════════
+func _setup_yihong() -> void:
+	var building := get_node_or_null("../Buildings/YihongYuan")
+	if not building:
+		push_warning("PlaqueSystem: 找不到 YihongYuan 节点")
+		return
+
+	_remove_old_signs(building)
+	_make_plaque_board(building, Vector3(0, 4.8, 5.2))
+	_make_gold_label(building, "怡红院", Vector3(0, 4.8, 5.3), PLAK_FONT)
+	_make_couplet_pair(building,
+		Vector3(-5.8, 2.8, 5.2),
+		Vector3(5.8, 2.8, 5.2),
+		"绿\n蜡\n春\n犹\n卷",
+		"红\n妆\n夜\n未\n眠")
+
+# ═══════════════════════════════════════════════════════
+# 4. 秋爽斋（新建院落 + 匾额对联）
 # ═══════════════════════════════════════════════════════
 func _setup_qiushuang() -> void:
 	# 秋爽斋位于西南区域，(-25, 0, 25) - 与稻香村对称
@@ -244,7 +258,7 @@ func _setup_qiushuang() -> void:
 		"斜\n风\n细\n雨\n初\n相\n候")
 
 # ═══════════════════════════════════════════════════════
-# 4. 蘅芜苑（升级现有匾额对联）
+# 5. 蘅芜苑（升级现有匾额对联）
 # ═══════════════════════════════════════════════════════
 func _setup_hengwu() -> void:
 	var building := get_node_or_null("../Buildings/HengwuYuan")
@@ -269,25 +283,22 @@ func _setup_hengwu() -> void:
 		"吟\n成\n豆\n蔻\n诗\n犹\n艳")
 
 # ═══════════════════════════════════════════════════════
-# 5. 缀锦阁（新建院落 + 匾额对联）
+# 6. 稻香村
 # ═══════════════════════════════════════════════════════
-func _setup_zhuijin() -> void:
-	# 缀锦阁位于东南区域，(25, 0, 25) - 与秋爽斋对称
-	var pos := Vector3(25, 0, 25)
-	var building := _build_courtyard("缀锦阁", pos, "收藏锦绣之阁，华美精致", "visit_zhuijin")
+func _setup_daoxiang() -> void:
+	var building := get_node_or_null("../Buildings/DaoxiangCun")
+	if not building:
+		push_warning("PlaqueSystem: 找不到 DaoxiangCun 节点")
+		return
 
-	# 匾额
+	_remove_old_signs(building)
 	_make_plaque_board(building, Vector3(0, 4.8, 5.2))
-	_make_gold_label(building, "缀锦阁", Vector3(0, 4.8, 5.3), PLAK_FONT)
-
-	# 对联
-	# 上联：花影不离身左右
-	# 下联：鸟声只在耳东西
+	_make_gold_label(building, "稻香村", Vector3(0, 4.8, 5.3), PLAK_FONT)
 	_make_couplet_pair(building,
 		Vector3(-5.8, 2.8, 5.2),
 		Vector3(5.8, 2.8, 5.2),
-		"鸟\n声\n只\n在\n耳\n东\n西",
-		"花\n影\n不\n离\n身\n左\n右")
+		"杏\n帘\n在\n望\n香\n风\n暖",
+		"稻\n花\n深\n处\n野\n云\n闲")
 
 # ═══════════════════════════════════════════════════════
 # 建筑生成：创建完整院落（与现有建筑风格一致）

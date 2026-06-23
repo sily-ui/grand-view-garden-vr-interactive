@@ -18,19 +18,33 @@ var mat_stone: StandardMaterial3D        # 石料
 var mat_brick: StandardMaterial3D        # 地砖
 var mat_creek_bank: StandardMaterial3D   # 溪岸
 var mat_farmland: StandardMaterial3D     # 农田
+var mat_white_wall: StandardMaterial3D   # 白墙
+var mat_gold: StandardMaterial3D         # 金字
 
 func _ready() -> void:
+	# 延迟一帧，让其他系统先初始化
+	await get_tree().process_frame
 	_init_materials()
+	_build_rongfu_forecourt()
+	await get_tree().process_frame
 	_build_perimeter_wall()
+	await get_tree().process_frame
 	_build_main_gate()
-	_build_side_gates()
+	await get_tree().process_frame
 	_build_entrance_rockery()
 	_build_qinfang_creek()
+	await get_tree().process_frame
 	_build_qinfang_bridge()
 	_build_boat_dock()
+	await get_tree().process_frame
 	_build_mountain_terrain()
+	await get_tree().process_frame
 	_build_west_courtyards()
+	await get_tree().process_frame
 	_build_east_courtyards()
+	await get_tree().process_frame
+	_build_core_courtyard_optimization()
+	await get_tree().process_frame
 	_build_outer_buildings()
 	# 稻香村菜畦在 _build_west_courtyards 中已构建
 	_print_build_summary()
@@ -81,6 +95,17 @@ func _init_materials() -> void:
 	mat_farmland = StandardMaterial3D.new()
 	mat_farmland.albedo_color = Color(0.45, 0.55, 0.2)
 	mat_farmland.roughness = 0.95
+	# 大观园外围白墙
+	mat_white_wall = StandardMaterial3D.new()
+	mat_white_wall.albedo_color = Color(0.88, 0.86, 0.78)
+	mat_white_wall.roughness = 0.9
+	# 匾额和门楣金色
+	mat_gold = StandardMaterial3D.new()
+	mat_gold.albedo_color = Color(0.86, 0.68, 0.22)
+	mat_gold.roughness = 0.35
+	mat_gold.emission_enabled = true
+	mat_gold.emission = Color(0.45, 0.32, 0.08)
+	mat_gold.emission_energy_multiplier = 0.25
 
 # ============================================================
 # 辅助：创建带碰撞的静态 Box 节点
@@ -145,8 +170,56 @@ func _make_cylinder(parent: Node3D, name_s: String, pos: Vector3,
 	parent.add_child(mi)
 	return mi
 
+func _make_wall_segment(parent: Node3D, name_s: String, from_pos: Vector3, to_pos: Vector3,
+		height: float, thickness: float, material: StandardMaterial3D) -> StaticBody3D:
+	var mid: Vector3 = (from_pos + to_pos) / 2.0
+	var diff: Vector3 = to_pos - from_pos
+	var wall: StaticBody3D = _make_box(parent, name_s, Vector3(mid.x, height / 2.0, mid.z),
+		Vector3(thickness, height, diff.length()), material, true)
+	wall.rotation.y = atan2(diff.x, diff.z)
+	return wall
+
+func _make_wall_cap_segment(parent: Node3D, name_s: String, from_pos: Vector3, to_pos: Vector3,
+		height: float, thickness: float, material: StandardMaterial3D) -> MeshInstance3D:
+	var mid: Vector3 = (from_pos + to_pos) / 2.0
+	var diff: Vector3 = to_pos - from_pos
+	var cap: MeshInstance3D = _make_mesh(parent, name_s, Vector3(mid.x, height, mid.z),
+		Vector3(thickness + 0.35, 0.28, diff.length() + 0.35), material)
+	cap.rotation.y = atan2(diff.x, diff.z)
+	return cap
+
+func _make_gable_roof(parent: Node3D, name_s: String, pos: Vector3,
+		width: float, length: float, height: float, material: StandardMaterial3D) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.name = name_s
+	mi.position = pos
+	var vertices: Array[Vector3] = [
+		Vector3(-width / 2.0, 0, -length / 2.0),
+		Vector3(0, height, -length / 2.0),
+		Vector3(width / 2.0, 0, -length / 2.0),
+		Vector3(-width / 2.0, 0, length / 2.0),
+		Vector3(0, height, length / 2.0),
+		Vector3(width / 2.0, 0, length / 2.0),
+	]
+	var indices: Array[int] = [
+		0, 3, 4, 0, 4, 1,
+		1, 4, 5, 1, 5, 2,
+		0, 1, 2,
+		3, 5, 4,
+		0, 2, 5, 0, 5, 3,
+	]
+	var surface_tool := SurfaceTool.new()
+	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for index: int in indices:
+		surface_tool.add_vertex(vertices[index])
+	surface_tool.generate_normals()
+	mi.mesh = surface_tool.commit()
+	mi.material_override = material
+	parent.add_child(mi)
+	return mi
+
 # ============================================================
-# 1. 围墙系统 — 闭合青砖高墙
+# 1. 围墙系统 — 闭合白墙灰瓦高墙，设置正门、后门、侧门三处出入口
 # ============================================================
 func _build_perimeter_wall() -> void:
 	var wall_root := Node3D.new()
@@ -165,39 +238,34 @@ func _build_perimeter_wall() -> void:
 
 	# 北墙 (z = z_max)
 	_make_box(wall_root, "Wall_North", Vector3(0, wall_h / 2.0, z_max),
-		Vector3(x_max - x_min, wall_h, wall_t), mat_wall)
+		Vector3(x_max - x_min, wall_h, wall_t), mat_white_wall)
 	_make_mesh(wall_root, "Wall_North_Cap", Vector3(0, wall_h + cap_h / 2.0, z_max),
 		Vector3(x_max - x_min + 0.4, cap_h, wall_t + 0.4), mat_wall_top)
 
-	# 南墙 — 分两段，中间留正门洞 (门宽12)
-	var gate_half_w := 6.0
-	# 南墙左段
-	var left_seg_len := (x_max - gate_half_w) - x_min
-	_make_box(wall_root, "Wall_South_Left",
-		Vector3((x_min + x_max - gate_half_w) / 2.0, wall_h / 2.0, z_min),
-		Vector3(left_seg_len, wall_h, wall_t), mat_wall)
-	# 南墙右段
-	var right_seg_len := x_max - gate_half_w - x_min
-	_make_box(wall_root, "Wall_South_Right",
-		Vector3((gate_half_w + x_min) / 2.0 + left_seg_len, wall_h / 2.0, z_min),
-		Vector3(x_max - gate_half_w, wall_h, wall_t), mat_wall)
-	# 南墙帽
-	_make_mesh(wall_root, "Wall_South_Cap_L",
-		Vector3((x_min + x_max - gate_half_w) / 2.0, wall_h + cap_h / 2.0, z_min),
-		Vector3(left_seg_len + 0.4, cap_h, wall_t + 0.4), mat_wall_top)
-	_make_mesh(wall_root, "Wall_South_Cap_R",
-		Vector3((gate_half_w + x_max) / 2.0, wall_h + cap_h / 2.0, z_min),
-		Vector3(x_max - gate_half_w, cap_h, wall_t + 0.4), mat_wall_top)
+	# 南侧主正门墙 — 八字展开，正中留门楼和照壁空间
+	var gate_half_w: float = 9.0
+	var left_inner := Vector3(-gate_half_w, 0, z_min + 1.8)
+	var left_outer := Vector3(-24.0, 0, z_min - 4.0)
+	var right_inner := Vector3(gate_half_w, 0, z_min + 1.8)
+	var right_outer := Vector3(24.0, 0, z_min - 4.0)
+	_make_wall_segment(wall_root, "Wall_South_Bazi_L", left_outer, left_inner, wall_h, wall_t, mat_wall)
+	_make_wall_segment(wall_root, "Wall_South_Bazi_R", right_inner, right_outer, wall_h, wall_t, mat_wall)
+	_make_wall_cap_segment(wall_root, "Wall_South_Bazi_Cap_L", left_outer, left_inner, wall_h + cap_h / 2.0, wall_t, mat_wall_top)
+	_make_wall_cap_segment(wall_root, "Wall_South_Bazi_Cap_R", right_inner, right_outer, wall_h + cap_h / 2.0, wall_t, mat_wall_top)
+	_make_wall_segment(wall_root, "Wall_South_Left", Vector3(x_min, 0, z_min), left_outer, wall_h, wall_t, mat_wall)
+	_make_wall_segment(wall_root, "Wall_South_Right", right_outer, Vector3(x_max, 0, z_min), wall_h, wall_t, mat_wall)
+	_make_wall_cap_segment(wall_root, "Wall_South_Cap_L", Vector3(x_min, 0, z_min), left_outer, wall_h + cap_h / 2.0, wall_t, mat_wall_top)
+	_make_wall_cap_segment(wall_root, "Wall_South_Cap_R", right_outer, Vector3(x_max, 0, z_min), wall_h + cap_h / 2.0, wall_t, mat_wall_top)
 
 	# 东墙 (x = x_max)
 	_make_box(wall_root, "Wall_East", Vector3(x_max, wall_h / 2.0, 0),
-		Vector3(wall_t, wall_h, z_max - z_min), mat_wall)
+		Vector3(wall_t, wall_h, z_max - z_min), mat_white_wall)
 	_make_mesh(wall_root, "Wall_East_Cap", Vector3(x_max, wall_h + cap_h / 2.0, 0),
 		Vector3(wall_t + 0.4, cap_h, z_max - z_min + 0.4), mat_wall_top)
 
 	# 西墙 (x = x_min)
 	_make_box(wall_root, "Wall_West", Vector3(x_min, wall_h / 2.0, 0),
-		Vector3(wall_t, wall_h, z_max - z_min), mat_wall)
+		Vector3(wall_t, wall_h, z_max - z_min), mat_white_wall)
 	_make_mesh(wall_root, "Wall_West_Cap", Vector3(x_min, wall_h + cap_h / 2.0, 0),
 		Vector3(wall_t + 0.4, cap_h, z_max - z_min + 0.4), mat_wall_top)
 
@@ -211,6 +279,71 @@ func _build_perimeter_wall() -> void:
 	_make_mesh(wall_root, "Path_W", Vector3(x_min + 2, 0.01, 0),
 		Vector3(3, 0.02, z_max - z_min - 4), mat_brick)
 
+	_build_perimeter_gatehouse(wall_root, "BackGate_North", Vector3(0, 0, z_max - 0.72), PI, "后 门", false)
+	_build_perimeter_gatehouse(wall_root, "ServiceGate_East", Vector3(x_max - 0.72, 0, -20), -PI / 2.0, "侧 门", false)
+	_build_wall_corner_towers(wall_root, x_min, x_max, z_min, z_max)
+	_build_inner_boundary_reinforcement(wall_root, x_min, x_max, z_min, z_max)
+
+func _build_wall_corner_towers(parent: Node3D, x_min: float, x_max: float, z_min: float, z_max: float) -> void:
+	var corners: Array[Vector3] = [
+		Vector3(x_min, 0, z_min), Vector3(x_max, 0, z_min),
+		Vector3(x_min, 0, z_max), Vector3(x_max, 0, z_max),
+	]
+	for index: int in range(corners.size()):
+		var tower := Node3D.new()
+		tower.name = "CornerWatchTower_%d" % index
+		tower.position = corners[index]
+		parent.add_child(tower)
+		_make_box(tower, "TowerBase", Vector3(0, 2.9, 0), Vector3(5.2, 5.8, 5.2), mat_white_wall, true)
+		_make_mesh(tower, "TowerTileCap", Vector3(0, 6.05, 0), Vector3(5.8, 0.35, 5.8), mat_wall_top)
+		_make_gable_roof(tower, "TowerRoof", Vector3(0, 6.25, 0), 6.5, 6.5, 1.0, mat_roof)
+
+func _build_inner_boundary_reinforcement(parent: Node3D, x_min: float, x_max: float, z_min: float, z_max: float) -> void:
+	var low_h := 1.2
+	var low_t := 0.55
+	_make_box(parent, "EastPlayableBoundary", Vector3(x_max - 4.2, low_h / 2.0, 6),
+		Vector3(low_t, low_h, 86), mat_white_wall, true)
+	_make_mesh(parent, "EastPlayableBoundaryCap", Vector3(x_max - 4.2, low_h + 0.12, 6),
+		Vector3(low_t + 0.25, 0.22, 86.3), mat_wall_top)
+	_make_box(parent, "WestPlayableBoundary", Vector3(x_min + 4.2, low_h / 2.0, 6),
+		Vector3(low_t, low_h, 86), mat_white_wall, true)
+	_make_mesh(parent, "WestPlayableBoundaryCap", Vector3(x_min + 4.2, low_h + 0.12, 6),
+		Vector3(low_t + 0.25, 0.22, 86.3), mat_wall_top)
+	_make_box(parent, "NorthPlayableBoundary", Vector3(0, low_h / 2.0, z_max - 4.2),
+		Vector3(98, low_h, low_t), mat_white_wall, true)
+	_make_mesh(parent, "NorthPlayableBoundaryCap", Vector3(0, low_h + 0.12, z_max - 4.2),
+		Vector3(98.3, 0.22, low_t + 0.25), mat_wall_top)
+
+func _build_perimeter_gatehouse(parent: Node3D, name_s: String, pos: Vector3, rot_y: float,
+		label_text: String, open_passage: bool) -> void:
+	var gate := Node3D.new()
+	gate.name = name_s
+	gate.position = pos
+	gate.rotation.y = rot_y
+	parent.add_child(gate)
+
+	var wall_h := 4.8
+	var gap := 4.2
+	_make_box(gate, "GateWall_L", Vector3(-4.1, wall_h / 2.0, 0), Vector3(2.6, wall_h, 1.0), mat_white_wall, true)
+	_make_box(gate, "GateWall_R", Vector3(4.1, wall_h / 2.0, 0), Vector3(2.6, wall_h, 1.0), mat_white_wall, true)
+	_make_box(gate, "GateLintel", Vector3(0, wall_h - 0.35, 0), Vector3(gap + 4.0, 0.7, 1.1), mat_white_wall, true)
+	_make_mesh(gate, "GateTileCap", Vector3(0, wall_h + 0.2, 0), Vector3(gap + 4.8, 0.3, 1.45), mat_wall_top)
+	_make_gable_roof(gate, "GatehouseRoof", Vector3(0, wall_h + 0.35, 0), gap + 5.2, 2.8, 0.65, mat_roof)
+	if not open_passage:
+		_make_box(gate, "ClosedDoor_L", Vector3(-1.05, 1.65, 0.08), Vector3(2.05, 3.3, 0.22), mat_wood_red, true)
+		_make_box(gate, "ClosedDoor_R", Vector3(1.05, 1.65, 0.08), Vector3(2.05, 3.3, 0.22), mat_wood_red, true)
+	var label := Label3D.new()
+	label.name = "GatehousePlaque"
+	label.text = label_text
+	label.position = Vector3(0, 3.85, -0.62)
+	label.font_size = 36
+	label.pixel_size = 0.012
+	label.modulate = Color(0.9, 0.72, 0.22)
+	label.outline_size = 6
+	label.outline_modulate = Color(0.05, 0.03, 0.01)
+	label.double_sided = true
+	gate.add_child(label)
+
 # ============================================================
 # 2. 正门 — 五间大门楼
 # ============================================================
@@ -220,42 +353,57 @@ func _build_main_gate() -> void:
 	gate_root.position = Vector3(0, 0, -65)
 	add_child(gate_root)
 
-	var bay_w := 2.4
-	var bay_count := 5
-	var total_w := bay_w * bay_count
-	var pillar_h := 7.0
-	var roof_h := 2.5
+	var pillar_h: float = 6.2
+	var gate_w: float = 17.5
+	var gate_depth: float = 4.8
 
-	# 6根门柱 (五间六柱)
-	for i in range(bay_count + 1):
-		var x := -total_w / 2.0 + i * bay_w
-		_make_cylinder(gate_root, "GatePillar_%d" % i,
-			Vector3(x, pillar_h / 2.0, 0), 0.25, pillar_h, mat_wood_red)
+	_make_box(gate_root, "OuterStoneRoad", Vector3(0, 0.035, -9.5), Vector3(15.0, 0.07, 17.0), mat_brick, true)
+	_make_box(gate_root, "GateHallFloor", Vector3(0, 0.055, 0.2), Vector3(18.5, 0.11, 6.2), mat_stone, true)
+	_make_box(gate_root, "InnerStoneRoad", Vector3(0, 0.035, 8.8), Vector3(12.0, 0.07, 12.0), mat_brick, true)
+	for step_index in range(3):
+		var step_z: float = -4.9 - float(step_index) * 0.75
+		var step_y: float = 0.11 + float(step_index) * 0.13
+		_make_box(gate_root, "BluestoneStep_%d" % step_index, Vector3(0, step_y, step_z), Vector3(16.5 - float(step_index) * 1.3, 0.22, 0.8), mat_stone, true)
+	_make_box(gate_root, "HighThreshold", Vector3(0, 0.24, -2.35), Vector3(12.2, 0.28, 0.55), mat_stone, false)
 
-	# 前后横梁
-	_make_box(gate_root, "Beam_Front", Vector3(0, pillar_h - 0.3, 1.5),
-		Vector3(total_w + 0.6, 0.3, 0.3), mat_wood_red, false)
-	_make_box(gate_root, "Beam_Back", Vector3(0, pillar_h - 0.3, -1.5),
-		Vector3(total_w + 0.6, 0.3, 0.3), mat_wood_red, false)
+	_make_box(gate_root, "GateBaseWall_L", Vector3(-7.25, 2.45, 0), Vector3(3.0, 4.9, gate_depth), mat_wall, true)
+	_make_box(gate_root, "GateBaseWall_R", Vector3(7.25, 2.45, 0), Vector3(3.0, 4.9, gate_depth), mat_wall, true)
+	_make_box(gate_root, "GateSidePier_L", Vector3(-3.2, 2.45, 0), Vector3(0.65, 4.9, gate_depth), mat_wall, true)
+	_make_box(gate_root, "GateSidePier_R", Vector3(3.2, 2.45, 0), Vector3(0.65, 4.9, gate_depth), mat_wall, true)
+	_make_box(gate_root, "GateLintel", Vector3(0, 5.15, 0), Vector3(gate_w, 0.9, gate_depth), mat_wall, true)
 
-	# 大屋顶
-	_make_box(gate_root, "GateRoof", Vector3(0, pillar_h + roof_h / 2.0, 0),
-		Vector3(total_w + 4, roof_h, 6), mat_roof)
-	_make_box(gate_root, "GateRoofOverhang", Vector3(0, pillar_h + 0.1, 0),
-		Vector3(total_w + 6, 0.15, 8), mat_wall_top)
+	var pillar_positions: Array[Vector3] = [
+		Vector3(-8.9, pillar_h / 2.0, -2.0), Vector3(-3.8, pillar_h / 2.0, -2.0), Vector3(3.8, pillar_h / 2.0, -2.0), Vector3(8.9, pillar_h / 2.0, -2.0),
+		Vector3(-8.9, pillar_h / 2.0, 2.0), Vector3(-3.8, pillar_h / 2.0, 2.0), Vector3(3.8, pillar_h / 2.0, 2.0), Vector3(8.9, pillar_h / 2.0, 2.0)
+	]
+	for i in range(pillar_positions.size()):
+		_make_cylinder(gate_root, "GatePillar_%d" % i, pillar_positions[i], 0.22, pillar_h, mat_wood_red, false)
 
-	# 门扇 — 中间两间
-	for side in [-1, 1]:
-		var door_x: float = side * bay_w / 2.0
-		_make_box(gate_root, "Door_%s" % ("L" if side < 0 else "R"),
-			Vector3(door_x, 2.5, 0), Vector3(bay_w * 0.8, 5, 0.3), mat_wood_red, false)
+	_make_box(gate_root, "FrontBeam", Vector3(0, 5.8, -2.3), Vector3(gate_w + 1.2, 0.35, 0.35), mat_wood_red, false)
+	_make_box(gate_root, "BackBeam", Vector3(0, 5.8, 2.3), Vector3(gate_w + 1.2, 0.35, 0.35), mat_wood_red, false)
+	_make_gable_roof(gate_root, "GateMainRoof", Vector3(0, 6.55, 0), gate_w + 4.2, gate_depth + 3.2, 1.45, mat_roof)
+	_make_box(gate_root, "RoofShadow", Vector3(0, 5.95, 0), Vector3(gate_w + 4.8, 0.18, gate_depth + 3.8), mat_wall_top, false)
+	_make_box(gate_root, "FrontEave", Vector3(0, 5.78, -4.0), Vector3(gate_w + 5.2, 0.24, 0.45), mat_wall_top, false)
+	_make_box(gate_root, "BackEave", Vector3(0, 5.78, 4.0), Vector3(gate_w + 5.2, 0.24, 0.45), mat_wall_top, false)
+
+	var door_defs: Array[Array] = [["Door_L", -1.35, -1.0], ["Door_R", 1.35, 1.0], ["SideDoor_L", -5.35, -1.0], ["SideDoor_R", 5.35, 1.0]]
+	for door_def: Array in door_defs:
+		var door_name: String = door_def[0]
+		var door_x: float = door_def[1]
+		var door_side: float = door_def[2]
+		var door_width: float = 2.5 if door_name.begins_with("Door") else 1.75
+		var door_height: float = 4.55 if door_name.begins_with("Door") else 3.5
+		var door: StaticBody3D = _make_box(gate_root, door_name, Vector3(door_x, door_height / 2.0 + 0.2, -2.25), Vector3(door_width, door_height, 0.28), mat_wood_red, true)
+		door.set_meta("closed_rotation_y", 0.0)
+		door.set_meta("open_rotation_y", deg_to_rad(70.0) * door_side)
+		_make_box(gate_root, "%s_BronzeKnob" % door_name, Vector3(door_x - door_side * door_width * 0.24, 2.45, -2.43), Vector3(0.14, 0.14, 0.12), mat_gold, false)
 
 	# 门匾
 	var plaque_mi := MeshInstance3D.new()
 	plaque_mi.name = "GatePlaque"
-	plaque_mi.position = Vector3(0, pillar_h - 1.2, 2.5)
+	plaque_mi.position = Vector3(0, 5.85, -4.1)
 	var plaque_mesh := BoxMesh.new()
-	plaque_mesh.size = Vector3(6, 1.2, 0.15)
+	plaque_mesh.size = Vector3(6.5, 1.1, 0.15)
 	plaque_mi.mesh = plaque_mesh
 	var plaque_mat := StandardMaterial3D.new()
 	plaque_mat.albedo_color = Color(0.15, 0.08, 0.03)
@@ -266,57 +414,156 @@ func _build_main_gate() -> void:
 	var label := Label3D.new()
 	label.name = "GateLabel"
 	label.text = "大 观 园"
-	label.position = Vector3(0, pillar_h - 1.2, 2.7)
+	label.position = Vector3(0, 5.85, -4.28)
 	label.font_size = 60
+	label.pixel_size = 0.011
 	label.modulate = Color(0.85, 0.7, 0.2)
+	label.outline_size = 10
+	label.outline_modulate = Color(0.05, 0.025, 0.01, 1)
+	label.double_sided = true
+	label.no_depth_test = true
 	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	label.rotation.y = PI
 	gate_root.add_child(label)
+	_start_gate_auto_open(gate_root)
 
-	# 石狮一对
+	_build_gate_screen_wall(gate_root)
+	_build_gate_ceremonial_objects(gate_root)
+	_build_simple_house(gate_root, "Gatehouse_L", Vector3(-14.0, 0, -1.0), 5.8, 3.4, 4.8)
+	_build_simple_house(gate_root, "Gatehouse_R", Vector3(14.0, 0, -1.0), 5.8, 3.4, 4.8)
+
+func _build_gate_screen_wall(gate_root: Node3D) -> void:
+	var screen := Node3D.new()
+	screen.name = "EntranceScreenWall"
+	screen.position = Vector3(0, 0, 7.0)
+	gate_root.add_child(screen)
+	_make_box(screen, "ScreenWallBody_L", Vector3(-3.7, 2.25, 0), Vector3(3.1, 4.5, 0.65), mat_wall, true)
+	_make_box(screen, "ScreenWallBody_R", Vector3(3.7, 2.25, 0), Vector3(3.1, 4.5, 0.65), mat_wall, true)
+	_make_box(screen, "ScreenWhiteInset", Vector3(0, 2.35, -0.38), Vector3(8.8, 3.1, 0.16), mat_white_wall, false)
+	_make_box(screen, "ScreenCarvedPanel", Vector3(0, 2.35, -0.5), Vector3(6.8, 2.2, 0.14), mat_stone, false)
+	_make_box(screen, "ScreenLotusRelief", Vector3(0, 2.35, -0.62), Vector3(3.8, 0.75, 0.12), mat_gold, false)
+	_make_box(screen, "ScreenBase_L", Vector3(-3.7, 0.22, 0), Vector3(3.1, 0.44, 1.1), mat_stone, true)
+	_make_box(screen, "ScreenBase_R", Vector3(3.7, 0.22, 0), Vector3(3.1, 0.44, 1.1), mat_stone, true)
+	_make_box(screen, "ScreenTileCap", Vector3(0, 4.7, 0), Vector3(11.6, 0.36, 1.25), mat_wall_top, false)
+	_make_gable_roof(screen, "ScreenRoof", Vector3(0, 4.9, 0), 12.4, 1.8, 0.55, mat_roof)
+	_make_box(gate_root, "ScreenLeftBypass", Vector3(-8.8, 0.035, 7.0), Vector3(4.2, 0.07, 5.5), mat_brick, true)
+	_make_box(gate_root, "ScreenRightBypass", Vector3(8.8, 0.035, 7.0), Vector3(4.2, 0.07, 5.5), mat_brick, true)
+
+func _build_gate_ceremonial_objects(gate_root: Node3D) -> void:
 	for side in [-1, 1]:
-		var lion := StaticBody3D.new()
-		lion.name = "StoneLion_%s" % ("L" if side < 0 else "R")
-		lion.position = Vector3(side * 8, 0, 2)
-		var lion_mi := MeshInstance3D.new()
-		var lion_mesh := BoxMesh.new()
-		lion_mesh.size = Vector3(1.5, 2.5, 1.5)
-		lion_mi.mesh = lion_mesh
-		lion_mi.material_override = mat_stone
-		lion.add_child(lion_mi)
-		var lion_col := CollisionShape3D.new()
-		var lion_shape := BoxShape3D.new()
-		lion_shape.size = Vector3(1.5, 2.5, 1.5)
-		lion_col.shape = lion_shape
-		lion.add_child(lion_col)
-		gate_root.add_child(lion)
+		var side_suffix: String = "L" if side < 0 else "R"
+		_build_stone_lion(gate_root, "StoneLion_%s" % side_suffix, Vector3(float(side) * 8.8, 0, -6.1))
+		_build_stone_horse(gate_root, "StoneHorse_%s" % side_suffix, Vector3(float(side) * 12.2, 0, -9.2), deg_to_rad(-8.0 * float(side)))
+		_build_gate_stone_lantern(gate_root, "GateLantern_%s" % side_suffix, Vector3(float(side) * 6.0, 0, -7.2))
+		_build_hitching_post(gate_root, Vector3(float(side) * 13.8, 0, -5.8))
+		_make_box(gate_root, "MountingStone_%s" % side_suffix, Vector3(float(side) * 5.2, 0.38, -6.2), Vector3(1.5, 0.76, 1.7), mat_stone, true)
+		_build_gate_bamboo_cluster(gate_root, Vector3(float(side) * 17.0, 0, 1.0))
+		_build_shrub_group(gate_root, Vector3(float(side) * 16.2, 0, -5.8))
+	_build_horse_yard_fence(gate_root)
+
+func _build_stone_lion(parent: Node3D, name_s: String, pos: Vector3) -> void:
+	var lion := StaticBody3D.new()
+	lion.name = name_s
+	lion.position = pos
+	parent.add_child(lion)
+	_make_box(lion, "Pedestal", Vector3(0, 0.35, 0), Vector3(1.8, 0.7, 1.8), mat_stone, true)
+	_make_box(lion, "Body", Vector3(0, 1.35, 0), Vector3(1.25, 1.35, 1.05), mat_stone, false)
+	_make_box(lion, "Head", Vector3(0, 2.25, -0.15), Vector3(0.95, 0.9, 0.85), mat_stone, false)
+	_make_box(lion, "Mane", Vector3(0, 2.1, 0.35), Vector3(1.15, 0.7, 0.55), mat_wall_top, false)
+	_make_box(lion, "ChestRelief", Vector3(0, 1.45, -0.6), Vector3(0.75, 0.45, 0.16), mat_gold, false)
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(1.8, 2.8, 1.8)
+	var col := CollisionShape3D.new()
+	col.shape = shape
+	col.position = Vector3(0, 1.4, 0)
+	lion.add_child(col)
+
+func _build_stone_horse(parent: Node3D, name_s: String, pos: Vector3, rot_y: float) -> void:
+	var horse := Node3D.new()
+	horse.name = name_s
+	horse.position = pos
+	horse.rotation.y = rot_y
+	parent.add_child(horse)
+	_make_box(horse, "Pedestal", Vector3(0, 0.28, 0), Vector3(2.6, 0.56, 1.4), mat_stone, true)
+	_make_box(horse, "Body", Vector3(0, 1.25, 0), Vector3(1.9, 0.8, 0.62), mat_stone, false)
+	_make_box(horse, "Neck", Vector3(0.86, 1.7, 0), Vector3(0.35, 0.85, 0.35), mat_stone, false)
+	_make_box(horse, "Head", Vector3(1.16, 2.05, 0), Vector3(0.58, 0.45, 0.4), mat_stone, false)
+	for x_pos in [-0.68, 0.68]:
+		for z_pos in [-0.22, 0.22]:
+			_make_box(horse, "Leg_%s_%s" % [str(x_pos), str(z_pos)], Vector3(x_pos, 0.72, z_pos), Vector3(0.18, 0.9, 0.18), mat_stone, false)
+
+func _build_gate_stone_lantern(parent: Node3D, name_s: String, pos: Vector3) -> void:
+	var lantern := Node3D.new()
+	lantern.name = name_s
+	lantern.position = pos
+	parent.add_child(lantern)
+	_make_cylinder(lantern, "Base", Vector3(0, 0.35, 0), 0.28, 0.7, mat_stone, true)
+	_make_cylinder(lantern, "Post", Vector3(0, 1.05, 0), 0.16, 0.9, mat_stone, false)
+	_make_box(lantern, "LampBox", Vector3(0, 1.65, 0), Vector3(0.78, 0.58, 0.78), mat_stone, false)
+	_make_box(lantern, "WarmGlow", Vector3(0, 1.65, -0.41), Vector3(0.42, 0.3, 0.08), mat_gold, false)
+	_make_gable_roof(lantern, "LanternRoof", Vector3(0, 2.05, 0), 1.1, 1.1, 0.32, mat_roof)
+
+func _build_gate_bamboo_cluster(parent: Node3D, pos: Vector3) -> void:
+	var bamboo := Node3D.new()
+	bamboo.name = "GateBambooCluster"
+	bamboo.position = pos
+	parent.add_child(bamboo)
+	for i in range(7):
+		var x_pos: float = -0.9 + float(i % 3) * 0.85
+		var z_pos: float = -0.6 + float(i / 3) * 0.65
+		_make_cylinder(bamboo, "BambooStem_%d" % i, Vector3(x_pos, 1.85, z_pos), 0.045, 3.7, mat_wood_red, false)
+		_make_box(bamboo, "BambooLeaf_%d" % i, Vector3(x_pos + 0.22, 3.55, z_pos), Vector3(0.65, 0.32, 0.42), mat_farmland, false)
+
+func _build_horse_yard_fence(parent: Node3D) -> void:
+	var fence := Node3D.new()
+	fence.name = "HorseDismountYardFence"
+	parent.add_child(fence)
+	var fence_points: Array[Vector3] = [Vector3(-16.0, 0, -12.2), Vector3(-8.5, 0, -12.2), Vector3(8.5, 0, -12.2), Vector3(16.0, 0, -12.2)]
+	for i in range(fence_points.size()):
+		_make_cylinder(fence, "FencePost_%d" % i, fence_points[i] + Vector3(0, 0.55, 0), 0.08, 1.1, mat_wood_red, false)
+	_make_box(fence, "FenceRail_L", Vector3(-12.25, 0.85, -12.2), Vector3(7.3, 0.1, 0.12), mat_wood_red, false)
+	_make_box(fence, "FenceRail_R", Vector3(12.25, 0.85, -12.2), Vector3(7.3, 0.1, 0.12), mat_wood_red, false)
+	_make_box(fence, "DismountYardGround", Vector3(0, 0.025, -11.8), Vector3(36.0, 0.05, 4.8), mat_dirt, true)
+
+func _start_gate_auto_open(gate_root: Node3D) -> void:
+	var timer := Timer.new()
+	timer.name = "AutoOpenTimer"
+	timer.wait_time = 0.25
+	timer.autostart = true
+	timer.timeout.connect(_update_gate_auto_open.bind(gate_root))
+	gate_root.add_child(timer)
+
+func _update_gate_auto_open(gate_root: Node3D) -> void:
+	var player := get_tree().get_first_node_in_group("player") as Node3D
+	if not player:
+		return
+	var distance := gate_root.global_position.distance_to(player.global_position)
+	var should_open := distance <= 5.5
+	if gate_root.get_meta("is_open", false) == should_open:
+		return
+	gate_root.set_meta("is_open", should_open)
+	if should_open:
+		var audio_sys: Node = get_tree().get_first_node_in_group("audio_system")
+		if audio_sys and audio_sys.has_method("play_sfx"):
+			audio_sys.play_sfx("gate_open")
+	var tween := create_tween()
+	tween.set_parallel(true)
+	var door_names: Array[String] = ["Door_L", "Door_R", "SideDoor_L", "SideDoor_R"]
+	for door_name: String in door_names:
+		var door := gate_root.get_node_or_null(door_name) as Node3D
+		if not door:
+			continue
+		_set_gate_door_collision(door, not should_open)
+		var target: float = door.get_meta("open_rotation_y", 0.0) if should_open else door.get_meta("closed_rotation_y", 0.0)
+		tween.tween_property(door, "rotation:y", target, 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+func _set_gate_door_collision(door: Node3D, enabled: bool) -> void:
+	for child in door.get_children():
+		if child is CollisionShape3D:
+			child.disabled = not enabled
 
 # ============================================================
-# 3. 侧门 — 东西墙各一个
-# ============================================================
-func _build_side_gates() -> void:
-	# 东侧门 (通往宁国府)
-	_build_single_side_gate("SideGate_East", Vector3(60, 0, -20), 0)
-	# 西侧门 (通往荣国府)
-	_build_single_side_gate("SideGate_West", Vector3(-60, 0, -20), PI)
-
-func _build_single_side_gate(gate_name: String, pos: Vector3, rot_y: float) -> void:
-	var gate := Node3D.new()
-	gate.name = gate_name
-	gate.position = pos
-	gate.rotation.y = rot_y
-	add_child(gate)
-
-	var pillar_h := 5.0
-	# 两根门柱
-	_make_cylinder(gate, "Pillar_L", Vector3(-3, pillar_h / 2.0, 0), 0.2, pillar_h, mat_wood_red)
-	_make_cylinder(gate, "Pillar_R", Vector3(3, pillar_h / 2.0, 0), 0.2, pillar_h, mat_wood_red)
-	# 横梁
-	_make_box(gate, "Beam", Vector3(0, pillar_h - 0.2, 0), Vector3(6.6, 0.25, 0.25), mat_wood_red, false)
-	# 小屋顶
-	_make_box(gate, "Roof", Vector3(0, pillar_h + 0.8, 0), Vector3(8, 1.2, 4), mat_roof)
-
-# ============================================================
-# 4. 正门内假山 — "曲径通幽"
+# 3. 正门内假山 — "曲径通幽"
 # ============================================================
 func _build_entrance_rockery() -> void:
 	var rock_root := Node3D.new()
@@ -325,13 +572,13 @@ func _build_entrance_rockery() -> void:
 	add_child(rock_root)
 
 	# 随机堆放的假山石块
-	var rock_positions := [
+	var rock_positions: Array[Vector3] = [
 		Vector3(0, 1.5, 0), Vector3(-2.5, 2.2, 1), Vector3(2, 1.8, -0.5),
 		Vector3(-1, 3.0, -1), Vector3(1.5, 2.8, 1.5), Vector3(-3, 1.2, -2),
 		Vector3(3, 1.0, 2), Vector3(0, 3.5, 0.5), Vector3(-2, 0.8, 3),
 		Vector3(2.5, 1.5, -2.5)
 	]
-	var rock_sizes := [
+	var rock_sizes: Array[Vector3] = [
 		Vector3(3, 3, 2.5), Vector3(2.5, 4.4, 2), Vector3(2, 3.6, 3),
 		Vector3(2, 6, 2.5), Vector3(2.5, 5.6, 2), Vector3(3.5, 2.4, 3),
 		Vector3(2.5, 2, 2), Vector3(2, 7, 3), Vector3(3, 1.6, 2.5),
@@ -382,8 +629,8 @@ func _build_qinfang_creek() -> void:
 
 	# 溪岸 — 两侧土岸
 	for i in range(seg_positions.size()):
-		var s_pos := seg_positions[i]
-		var s_size := seg_sizes[i]
+		var s_pos: Vector3 = seg_positions[i]
+		var s_size: Vector3 = seg_sizes[i]
 		_make_mesh(creek_root, "Bank_L_%d" % i, Vector3(s_pos.x - s_size.x / 2.0 - 1.0, 0.02, s_pos.z),
 			Vector3(2, 0.04, s_size.z), mat_creek_bank)
 		_make_mesh(creek_root, "Bank_R_%d" % i, Vector3(s_pos.x + s_size.x / 2.0 + 1.0, 0.02, s_pos.z),
@@ -400,6 +647,10 @@ func _build_qinfang_bridge() -> void:
 
 	# 桥面
 	_make_box(bridge, "Deck", Vector3(0, 0.8, 0), Vector3(8, 0.3, 4), mat_stone)
+	_make_box(bridge, "SouthApproachRamp", Vector3(0, 0.38, -3.4), Vector3(8.4, 0.18, 3.0), mat_stone, true)
+	_make_box(bridge, "NorthApproachRamp", Vector3(0, 0.38, 3.4), Vector3(8.4, 0.18, 3.0), mat_stone, true)
+	_make_box(bridge, "SouthLanding", Vector3(0, 0.08, -5.1), Vector3(8.6, 0.12, 1.5), mat_stone, true)
+	_make_box(bridge, "NorthLanding", Vector3(0, 0.08, 5.1), Vector3(8.6, 0.12, 1.5), mat_stone, true)
 	# 桥栏杆
 	for side in [-1, 1]:
 		for i in range(4):
@@ -594,6 +845,96 @@ func _build_outer_buildings() -> void:
 		_make_mesh(outer, "NorthFarm_%d" % i, Vector3(x, 0.02, 65),
 			Vector3(14, 0.04, 10), farm_mat)
 
+func _build_rongfu_forecourt() -> void:
+	var forecourt := Node3D.new()
+	forecourt.name = "RongfuForecourt"
+	add_child(forecourt)
+
+	_make_box(forecourt, "OuterApproachRoad", Vector3(0, 0.025, -76.5), Vector3(7.0, 0.05, 27.0), mat_stone, true)
+	_make_box(forecourt, "GardenGateApproach", Vector3(0, 0.025, -60.0), Vector3(6.0, 0.05, 10.0), mat_stone, true)
+	_make_box(forecourt, "RongfuFrontCourt", Vector3(0, 0.025, -86.0), Vector3(28.0, 0.05, 12.0), mat_brick, true)
+	_make_box(forecourt, "RongfuSideCourt_L", Vector3(-18.0, 0.025, -84.0), Vector3(8.0, 0.05, 10.0), mat_brick, true)
+	_make_box(forecourt, "RongfuSideCourt_R", Vector3(18.0, 0.025, -84.0), Vector3(8.0, 0.05, 10.0), mat_brick, true)
+
+	_build_simple_house(forecourt, "RongfuGatehouse_L", Vector3(-18, 0, -88), 10, 4.5, 8)
+	_build_simple_house(forecourt, "RongfuGatehouse_R", Vector3(18, 0, -88), 10, 4.5, 8)
+	_build_simple_house(forecourt, "RongfuSideHall_L", Vector3(-32, 0, -80), 12, 4.2, 9)
+	_build_simple_house(forecourt, "RongfuSideHall_R", Vector3(32, 0, -80), 12, 4.2, 9)
+	_build_forecourt_traffic(forecourt)
+
+	_make_box(forecourt, "OuterWall_L", Vector3(-17.5, 2.2, -94), Vector3(35.0, 4.4, 0.8), mat_white_wall, true)
+	_make_box(forecourt, "OuterWall_R", Vector3(17.5, 2.2, -94), Vector3(35.0, 4.4, 0.8), mat_white_wall, true)
+	_make_mesh(forecourt, "OuterWallCap_L", Vector3(-17.5, 4.5, -94), Vector3(35.4, 0.25, 1.1), mat_wall_top)
+	_make_mesh(forecourt, "OuterWallCap_R", Vector3(17.5, 4.5, -94), Vector3(35.4, 0.25, 1.1), mat_wall_top)
+
+	var label := Label3D.new()
+	label.name = "RongfuLabel"
+	label.text = "荣 国 府"
+	label.position = Vector3(0, 5.2, -94.5)
+	label.rotation.y = PI
+	label.font_size = 48
+	label.modulate = Color(0.85, 0.7, 0.2)
+	label.outline_size = 8
+	label.outline_modulate = Color(0.05, 0.03, 0.01, 1)
+	label.double_sided = true
+	label.no_depth_test = true
+	forecourt.add_child(label)
+
+func _build_forecourt_traffic(parent: Node3D) -> void:
+	var traffic := Node3D.new()
+	traffic.name = "ForecourtTraffic"
+	parent.add_child(traffic)
+
+	_build_carriage(traffic, "CarriageWaiting", Vector3(-8.0, 0.0, -82.0), deg_to_rad(8.0))
+	_build_carriage(traffic, "CarriageArriving", Vector3(7.5, 0.0, -89.0), deg_to_rad(-5.0))
+	_build_horse(traffic, "HorseLeft", Vector3(-3.0, 0.0, -82.0), deg_to_rad(86.0))
+	_build_horse(traffic, "HorseRight", Vector3(12.5, 0.0, -89.0), deg_to_rad(94.0))
+	_build_hitching_post(traffic, Vector3(-13.0, 0.0, -80.0))
+	_build_hitching_post(traffic, Vector3(14.5, 0.0, -86.5))
+	_make_box(traffic, "PorterBundle_L", Vector3(-11.5, 0.35, -78.8), Vector3(1.2, 0.7, 0.9), mat_wood_red, false)
+	_make_box(traffic, "PorterBundle_R", Vector3(11.0, 0.35, -86.0), Vector3(1.0, 0.7, 0.8), mat_wood_red, false)
+
+func _build_carriage(parent: Node3D, name_s: String, pos: Vector3, rot_y: float) -> void:
+	var carriage := Node3D.new()
+	carriage.name = name_s
+	carriage.position = pos
+	carriage.rotation.y = rot_y
+	parent.add_child(carriage)
+
+	_make_box(carriage, "Cabin", Vector3(0, 1.35, 0), Vector3(3.2, 1.8, 2.2), mat_wood_red, false)
+	_make_box(carriage, "Roof", Vector3(0, 2.35, 0), Vector3(3.6, 0.35, 2.5), mat_roof, false)
+	_make_box(carriage, "Shaft_L", Vector3(2.7, 0.75, -0.55), Vector3(2.4, 0.12, 0.12), mat_wood_red, false)
+	_make_box(carriage, "Shaft_R", Vector3(2.7, 0.75, 0.55), Vector3(2.4, 0.12, 0.12), mat_wood_red, false)
+	for side in [-1, 1]:
+		var wheel_front := _make_cylinder(carriage, "Wheel_F_%d" % side, Vector3(1.15, 0.65, side * 1.25), 0.45, 0.16, mat_stone, false)
+		wheel_front.rotation.x = PI / 2.0
+		var wheel_back := _make_cylinder(carriage, "Wheel_B_%d" % side, Vector3(-1.15, 0.65, side * 1.25), 0.45, 0.16, mat_stone, false)
+		wheel_back.rotation.x = PI / 2.0
+
+func _build_horse(parent: Node3D, name_s: String, pos: Vector3, rot_y: float) -> void:
+	var horse := Node3D.new()
+	horse.name = name_s
+	horse.position = pos
+	horse.rotation.y = rot_y
+	parent.add_child(horse)
+
+	_make_box(horse, "Body", Vector3(0, 1.15, 0), Vector3(1.8, 0.75, 0.55), mat_dirt, false)
+	_make_box(horse, "Neck", Vector3(0.95, 1.55, 0), Vector3(0.35, 0.8, 0.35), mat_dirt, false)
+	_make_box(horse, "Head", Vector3(1.25, 1.95, 0), Vector3(0.55, 0.45, 0.38), mat_dirt, false)
+	_make_box(horse, "Tail", Vector3(-1.0, 1.35, 0), Vector3(0.45, 0.18, 0.18), mat_wall_top, false)
+	for x in [-0.65, 0.65]:
+		for z in [-0.2, 0.2]:
+			_make_box(horse, "Leg_%s_%s" % [str(x), str(z)], Vector3(x, 0.5, z), Vector3(0.16, 0.95, 0.16), mat_dirt, false)
+
+func _build_hitching_post(parent: Node3D, pos: Vector3) -> void:
+	var post := Node3D.new()
+	post.name = "HitchingPost"
+	post.position = pos
+	parent.add_child(post)
+	_make_cylinder(post, "Post_L", Vector3(-0.6, 0.7, 0), 0.08, 1.4, mat_wood_red, false)
+	_make_cylinder(post, "Post_R", Vector3(0.6, 0.7, 0), 0.08, 1.4, mat_wood_red, false)
+	_make_box(post, "Rail", Vector3(0, 1.2, 0), Vector3(1.4, 0.12, 0.12), mat_wood_red, false)
+
 # ============================================================
 # 12. 稻香村菜畦
 # ============================================================
@@ -743,46 +1084,617 @@ func _build_courtyard_wall(parent: Node3D, name_s: String, pos: Vector3,
 func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3, width: float) -> void:
 	var cr := Node3D.new()
 	cr.name = name_s
+	cr.position = (from + to) / 2.0
 	parent.add_child(cr)
 
-	var mid := (from + to) / 2.0
-	var diff := to - from
-	var length := diff.length()
-	var angle := atan2(diff.x, diff.z)
+	var diff: Vector3 = to - from
+	var length: float = diff.length()
+	var angle: float = atan2(diff.x, diff.z)
+	cr.rotation.y = angle
 
-	# 廊顶
-	_make_box(cr, "CorridorRoof", Vector3(mid.x, 3.2, mid.z),
-		Vector3(width + 1, 0.3, length + 1), mat_roof, false)
-	# 廊地面
-	_make_box(cr, "CorridorFloor", Vector3(mid.x, 0.05, mid.z),
-		Vector3(width, 0.1, length), mat_brick, true)
-	# 廊柱 (沿廊道每隔 4m 一根)
-	var count := int(length / 4.0) + 1
-	for i in range(count):
-		var t: float = float(i) / max(count - 1, 1)
-		var p := from.lerp(to, t)
-		for side in [-1, 1]:
-			var offset := Vector3(side * width / 2.0, 0, 0).rotated(Vector3.UP, angle)
+	var roof_width: float = width + 1.3
+	var eave_width: float = width + 1.8
+	var floor_width := width - 0.4
+	var post_offset := width / 2.0 - 0.25
+	var post_count: int = int(length / 3.5) + 2
+
+	# 接地铺砖，略高于地面但低于玩家可跨台阶高度
+	_make_box(cr, "CorridorFloor", Vector3(0, 0.04, 0),
+		Vector3(floor_width, 0.08, length), mat_brick, true)
+	_make_mesh(cr, "CenterStonePath", Vector3(0, 0.105, 0),
+		Vector3(floor_width - 0.45, 0.03, length - 0.35), mat_stone)
+
+	# 两端过渡踏步，避免从地面走上廊道时被碰撞边缘卡住
+	for end_side in [-1, 1]:
+		_make_box(cr, "Step_%d" % end_side,
+			Vector3(0, 0.025, end_side * (length / 2.0 + 0.45)),
+			Vector3(floor_width + 0.2, 0.05, 0.9), mat_brick, true)
+
+	# 廊顶：坡屋面 + 薄檐 + 中脊，减少大块盒子压迫感
+	_make_box(cr, "CorridorEave", Vector3(0, 3.05, 0),
+		Vector3(eave_width, 0.12, length + 1.0), mat_wall_top, false)
+	_make_gable_roof(cr, "CorridorRoof", Vector3(0, 3.08, 0),
+		roof_width, length + 0.7, 0.65, mat_roof)
+	_make_box(cr, "RoofRidge", Vector3(0, 3.78, 0),
+		Vector3(0.22, 0.16, length + 0.9), mat_wall_top, false)
+
+	# 廊柱与低栏，沿局部 Z 方向均匀排布
+	for i in range(post_count):
+		var t: float = float(i) / max(post_count - 1, 1)
+		var z := -length / 2.0 + t * length
+		for side_value in [-1.0, 1.0]:
+			var side: float = side_value
+			var x: float = side * post_offset
 			_make_cylinder(cr, "CorridorPillar_%d_%d" % [i, side],
-				Vector3(p.x + offset.x, 1.6, p.z + offset.z), 0.1, 3.2, mat_wood_red, false)
+				Vector3(x, 1.55, z), 0.09, 3.1, mat_wood_red, false)
+			_make_box(cr, "LanternBracket_%d_%d" % [i, side],
+				Vector3(x - side * 0.18, 2.55, z), Vector3(0.36, 0.08, 0.08), mat_wood_red, false)
 
-	cr.rotation.y = 0  # 已通过位置计算旋转
+	for side_value in [-1.0, 1.0]:
+		var side: float = side_value
+		var x: float = side * post_offset
+		_make_box(cr, "LowRail_%d" % side, Vector3(x, 0.9, 0),
+			Vector3(0.12, 0.12, length - 1.0), mat_wood_red, false)
+		_make_box(cr, "TopRail_%d" % side, Vector3(x, 1.55, 0),
+			Vector3(0.1, 0.1, length - 1.0), mat_wood_red, false)
+		_make_box(cr, "BenchRail_%d" % side, Vector3(x - side * 0.25, 0.45, 0),
+			Vector3(0.12, 0.12, length - 1.2), mat_wood_red, false)
+
+# ============================================================
+# 五处核心院落专项优化
+# ============================================================
+func _build_core_courtyard_optimization() -> void:
+	var root := Node3D.new()
+	root.name = "CoreCourtyardOptimization"
+	add_child(root)
+
+	_build_named_courtyard_frame(root, "XiaoxiangFrame", Vector3(-35, 0, 10), 24, 22, "潇湘馆")
+	_build_named_courtyard_frame(root, "YihongFrame", Vector3(35, 0, 10), 24, 22, "怡红院")
+	_build_named_courtyard_frame(root, "QiushuangFrame", Vector3(-40, 0, -5), 24, 20, "秋爽斋")
+	_build_named_courtyard_frame(root, "HengwuFrame", Vector3(25, 0, -15), 24, 20, "蘅芜苑")
+	_build_named_courtyard_frame(root, "DaoxiangFrame", Vector3(-25, 0, -15), 26, 22, "稻香村")
+	_build_residential_courtyard_enclosures(root)
+
+	_build_bluestone_route(root)
+	_build_pond_revetment(root)
+	_build_lotus_pond_crossing(root)
+	_build_xiaoxiang_details(root)
+	_build_yihong_details(root)
+	_build_qiushuang_details(root)
+	_build_hengwu_details(root)
+	_build_daoxiang_details(root)
+	_build_garden_ornaments(root)
+	_build_layered_garden_sequence(root)
+
+func _build_residential_courtyard_enclosures(parent: Node3D) -> void:
+	var enclosures := Node3D.new()
+	enclosures.name = "ResidentialCourtyardEnclosures"
+	parent.add_child(enclosures)
+
+	var courtyard_specs: Array[Dictionary] = [
+		{"name": "DaguanLouEnclosure", "pos": Vector3(0, 0, 25), "w": 30.0, "d": 20.0, "label": "大观楼", "gate": "south"},
+		{"name": "LongcuiAnEnclosure", "pos": Vector3(0, 0, 40), "w": 22.0, "d": 18.0, "label": "栊翠庵", "gate": "south"},
+		{"name": "ZhuijingeEnclosure", "pos": Vector3(40, 0, 25), "w": 22.0, "d": 18.0, "label": "缀锦阁", "gate": "west"},
+		{"name": "ZilingzhouEnclosure", "pos": Vector3(-25, 0, 20), "w": 20.0, "d": 18.0, "label": "紫菱洲", "gate": "east"},
+	]
+	for spec: Dictionary in courtyard_specs:
+		_build_partitioned_courtyard(enclosures, spec)
+
+func _build_partitioned_courtyard(parent: Node3D, spec: Dictionary) -> void:
+	var frame := Node3D.new()
+	frame.name = String(spec["name"])
+	frame.position = spec["pos"]
+	parent.add_child(frame)
+
+	var w: float = spec["w"]
+	var d: float = spec["d"]
+	var gate_side := String(spec["gate"])
+	var wall_h := 2.9
+	var wall_t := 0.48
+	var gate_gap := 4.4
+
+	_build_partition_wall_pair(frame, "North", Vector3(0, wall_h / 2.0, -d / 2.0), w, wall_h, wall_t, gate_gap, gate_side == "north", false)
+	_build_partition_wall_pair(frame, "South", Vector3(0, wall_h / 2.0, d / 2.0), w, wall_h, wall_t, gate_gap, gate_side == "south", false)
+	_build_partition_wall_pair(frame, "East", Vector3(w / 2.0, wall_h / 2.0, 0), d, wall_h, wall_t, gate_gap, gate_side == "east", true)
+	_build_partition_wall_pair(frame, "West", Vector3(-w / 2.0, wall_h / 2.0, 0), d, wall_h, wall_t, gate_gap, gate_side == "west", true)
+
+	var gate_pos := Vector3.ZERO
+	var gate_rot := 0.0
+	match gate_side:
+		"north":
+			gate_pos = Vector3(0, 0, -d / 2.0 + 0.1)
+			gate_rot = PI
+		"east":
+			gate_pos = Vector3(w / 2.0 - 0.1, 0, 0)
+			gate_rot = -PI / 2.0
+		"west":
+			gate_pos = Vector3(-w / 2.0 + 0.1, 0, 0)
+			gate_rot = PI / 2.0
+		_:
+			gate_pos = Vector3(0, 0, d / 2.0 - 0.1)
+			gate_rot = 0.0
+	_build_moon_gate(frame, "PartitionMoonGate", gate_pos, gate_rot, String(spec["label"]))
+
+func _build_partition_wall_pair(parent: Node3D, name_s: String, center: Vector3, length: float,
+		wall_h: float, wall_t: float, gate_gap: float, has_gate: bool, rotate: bool) -> void:
+	if has_gate:
+		var segment_length := (length - gate_gap) / 2.0
+		var offset := (gate_gap + segment_length) / 2.0
+		_build_partition_wall_segment(parent, name_s + "_A", center, segment_length, wall_h, wall_t, -offset, rotate)
+		_build_partition_wall_segment(parent, name_s + "_B", center, segment_length, wall_h, wall_t, offset, rotate)
+	else:
+		_build_partition_wall_segment(parent, name_s, center, length, wall_h, wall_t, 0.0, rotate)
+
+func _build_partition_wall_segment(parent: Node3D, name_s: String, center: Vector3, length: float,
+		wall_h: float, wall_t: float, offset: float, rotate: bool) -> void:
+	var pos := center
+	if rotate:
+		pos.z += offset
+	else:
+		pos.x += offset
+	var size := Vector3(length, wall_h, wall_t)
+	if rotate:
+		size = Vector3(wall_t, wall_h, length)
+	_make_box(parent, name_s, pos, size, mat_white_wall, true)
+	_make_mesh(parent, name_s + "_Cap", Vector3(pos.x, wall_h + 0.13, pos.z),
+		Vector3(size.x + 0.2, 0.24, size.z + 0.2), mat_wall_top)
+
+func _build_named_courtyard_frame(parent: Node3D, name_s: String, pos: Vector3,
+		w: float, d: float, display_name: String) -> void:
+	var frame := Node3D.new()
+	frame.name = name_s
+	frame.position = pos
+	parent.add_child(frame)
+
+	var wall_h := 3.2
+	var wall_t := 0.5
+	var gate_gap := 5.0
+	_make_box(frame, "Wall_N", Vector3(0, wall_h / 2.0, -d / 2.0), Vector3(w, wall_h, wall_t), mat_white_wall, true)
+	_make_box(frame, "Wall_E", Vector3(w / 2.0, wall_h / 2.0, 0), Vector3(wall_t, wall_h, d), mat_white_wall, true)
+	_make_box(frame, "Wall_W", Vector3(-w / 2.0, wall_h / 2.0, 0), Vector3(wall_t, wall_h, d), mat_white_wall, true)
+	_make_box(frame, "Wall_S_L", Vector3(-(w + gate_gap) / 4.0, wall_h / 2.0, d / 2.0), Vector3((w - gate_gap) / 2.0, wall_h, wall_t), mat_white_wall, true)
+	_make_box(frame, "Wall_S_R", Vector3((w + gate_gap) / 4.0, wall_h / 2.0, d / 2.0), Vector3((w - gate_gap) / 2.0, wall_h, wall_t), mat_white_wall, true)
+
+	for wall_name in ["Wall_N", "Wall_E", "Wall_W", "Wall_S_L", "Wall_S_R"]:
+		var wall := frame.get_node_or_null(wall_name)
+		if wall and wall is StaticBody3D:
+			var cap_size := Vector3(w, 0.25, wall_t + 0.25)
+			if wall_name in ["Wall_E", "Wall_W"]:
+				cap_size = Vector3(wall_t + 0.25, 0.25, d)
+			elif wall_name in ["Wall_S_L", "Wall_S_R"]:
+				cap_size = Vector3((w - gate_gap) / 2.0, 0.25, wall_t + 0.25)
+			_make_mesh(wall, "GreyTileCap", Vector3(0, wall_h / 2.0 + 0.15, 0), cap_size, mat_wall_top)
+
+	_build_flower_gate(frame, display_name, Vector3(0, 0, d / 2.0 - 0.25))
+	_make_mesh(frame, "CourtyardStonePath", Vector3(0, 0.035, d / 2.0 - 4), Vector3(3.2, 0.04, 8), mat_stone)
+
+func _build_flower_gate(parent: Node3D, display_name: String, pos: Vector3) -> void:
+	var gate := Node3D.new()
+	gate.name = "ChuihuaGate"
+	gate.position = pos
+	parent.add_child(gate)
+	_make_cylinder(gate, "GatePostL", Vector3(-2.2, 1.8, 0), 0.14, 3.6, mat_wood_red, false)
+	_make_cylinder(gate, "GatePostR", Vector3(2.2, 1.8, 0), 0.14, 3.6, mat_wood_red, false)
+	_make_box(gate, "GateLintel", Vector3(0, 3.4, 0), Vector3(5.2, 0.28, 0.35), mat_wood_red, false)
+	_make_gable_roof(gate, "GateRoof", Vector3(0, 3.55, 0), 5.8, 1.4, 0.55, mat_roof)
+	_make_cylinder(gate, "MoonDoorRing", Vector3(0, 1.75, 0.08), 1.35, 0.22, mat_stone, false)
+	var label := Label3D.new()
+	label.name = "CourtyardPlaque"
+	label.text = display_name
+	label.position = Vector3(0, 3.25, 0.45)
+	label.font_size = 42
+	label.pixel_size = 0.01
+	label.modulate = Color(0.9, 0.72, 0.22)
+	label.outline_size = 8
+	label.outline_modulate = Color(0.05, 0.03, 0.01)
+	label.double_sided = true
+	label.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	gate.add_child(label)
+
+func _build_bluestone_route(parent: Node3D) -> void:
+	var route := Node3D.new()
+	route.name = "BluestoneRouteOverlay"
+	parent.add_child(route)
+	_make_mesh(route, "MainBluestone", Vector3(0, 0.065, -5), Vector3(4.2, 0.035, 82), mat_stone)
+	_make_mesh(route, "WestBluestone", Vector3(-19, 0.066, 10), Vector3(32, 0.035, 3.2), mat_stone)
+	_make_mesh(route, "EastBluestone", Vector3(19, 0.066, 10), Vector3(32, 0.035, 3.2), mat_stone)
+	_make_mesh(route, "SouthCourtyardBluestone", Vector3(0, 0.067, -15), Vector3(50, 0.035, 3.0), mat_stone)
+	_make_mesh(route, "NorthCourtyardBluestone", Vector3(0, 0.067, 25), Vector3(56, 0.035, 3.0), mat_stone)
+
+func _build_pond_revetment(parent: Node3D) -> void:
+	var pond := Node3D.new()
+	pond.name = "PondRevetmentAndRails"
+	parent.add_child(pond)
+	for x in [-18, 8]:
+		_make_box(pond, "RevetmentX_%s" % str(x), Vector3(x, 0.25, -22), Vector3(0.7, 0.5, 19), mat_stone, true)
+	for z in [-31, -13]:
+		_make_box(pond, "RevetmentZ_L_%s" % str(z), Vector3(-13.0, 0.25, z), Vector3(10.0, 0.5, 0.7), mat_stone, true)
+		_make_box(pond, "RevetmentZ_R_%s" % str(z), Vector3(3.0, 0.25, z), Vector3(10.0, 0.5, 0.7), mat_stone, true)
+	for x in range(-16, 9, 4):
+		if x < -8 or x > -2:
+			_make_cylinder(pond, "RailPostN_%d" % x, Vector3(x, 0.85, -13.7), 0.06, 1.3, mat_stone, false)
+			_make_cylinder(pond, "RailPostS_%d" % x, Vector3(x, 0.85, -30.3), 0.06, 1.3, mat_stone, false)
+	_make_box(pond, "RailNorth_L", Vector3(-13.0, 1.35, -13.7), Vector3(10.0, 0.09, 0.09), mat_stone, false)
+	_make_box(pond, "RailNorth_R", Vector3(3.0, 1.35, -13.7), Vector3(10.0, 0.09, 0.09), mat_stone, false)
+	_make_box(pond, "RailSouth_L", Vector3(-13.0, 1.35, -30.3), Vector3(10.0, 0.09, 0.09), mat_stone, false)
+	_make_box(pond, "RailSouth_R", Vector3(3.0, 1.35, -30.3), Vector3(10.0, 0.09, 0.09), mat_stone, false)
+
+func _build_lotus_pond_crossing(parent: Node3D) -> void:
+	var bridge := Node3D.new()
+	bridge.name = "WalkablePondBridge"
+	bridge.position = Vector3(-5, 0, -22)
+	parent.add_child(bridge)
+
+	_make_box(bridge, "Deck", Vector3(0, 0.03, 0), Vector3(5.0, 0.06, 22.0), mat_stone, true)
+	_make_box(bridge, "SouthRamp", Vector3(0, 0.02, -12.6), Vector3(5.2, 0.04, 3.4), mat_stone, true)
+	_make_box(bridge, "NorthRamp", Vector3(0, 0.02, 12.6), Vector3(5.2, 0.04, 3.4), mat_stone, true)
+	_make_box(bridge, "SouthBridgeLanding", Vector3(0, 0.015, -15.4), Vector3(5.6, 0.03, 3.0), mat_stone, true)
+	_make_box(bridge, "NorthBridgeLanding", Vector3(0, 0.015, 15.4), Vector3(5.6, 0.03, 3.0), mat_stone, true)
+	for side_value in [-1.0, 1.0]:
+		var side: float = side_value
+		for z in [-9.0, -4.5, 0.0, 4.5, 9.0]:
+			_make_cylinder(bridge, "PondBridgePost_%s_%s" % [str(side), str(z)], Vector3(side * 2.35, 1.05, z), 0.07, 1.2, mat_stone, false)
+		_make_box(bridge, "PondBridgeRail_%s" % str(side), Vector3(side * 2.35, 1.5, 0), Vector3(0.1, 0.12, 19.0), mat_stone, false)
+
+func _build_layered_garden_sequence(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "LayeredGardenSequence"
+	parent.add_child(root)
+
+	_build_expanded_water_system(root)
+	_build_continuous_veranda_system(root)
+	_build_moon_gates_and_screen_walls(root)
+	_build_rockery_and_pavilions(root)
+	_build_winding_paths_and_planting(root)
+	_build_visual_occlusion_layers(root)
+
+func _build_expanded_water_system(parent: Node3D) -> void:
+	var water := Node3D.new()
+	water.name = "ExpandedWaterSystem"
+	parent.add_child(water)
+
+	_make_mesh(water, "GrandLakeCenter", Vector3(0, 0.045, 18), Vector3(32, 0.08, 28), mat_water)
+	_make_mesh(water, "GrandLakeWestBay", Vector3(-18, 0.046, 15), Vector3(18, 0.08, 20), mat_water)
+	_make_mesh(water, "GrandLakeEastBay", Vector3(18, 0.046, 20), Vector3(18, 0.08, 18), mat_water)
+	_make_mesh(water, "SouthCreekBend", Vector3(-8, 0.047, -2), Vector3(7, 0.08, 22), mat_water)
+	_make_mesh(water, "EastCreekBend", Vector3(12, 0.047, 2), Vector3(22, 0.08, 6), mat_water)
+	_make_mesh(water, "NorthCreekBend", Vector3(5, 0.047, 34), Vector3(10, 0.08, 20), mat_water)
+
+	var bank_points: Array[Vector3] = [
+		Vector3(-19, 0.12, 18), Vector3(19, 0.12, 18), Vector3(0, 0.12, 4), Vector3(0, 0.12, 32),
+		Vector3(-27, 0.12, 15), Vector3(27, 0.12, 20), Vector3(-8, 0.12, -13), Vector3(12, 0.12, -2)
+	]
+	var bank_sizes: Array[Vector3] = [
+		Vector3(2.0, 0.12, 28), Vector3(2.0, 0.12, 28), Vector3(34, 0.12, 2.0), Vector3(34, 0.12, 2.0),
+		Vector3(2.0, 0.12, 20), Vector3(2.0, 0.12, 18), Vector3(8, 0.12, 2.0), Vector3(22, 0.12, 2.0)
+	]
+	for i in range(bank_points.size()):
+		_make_mesh(water, "IrregularBank_%d" % i, bank_points[i], bank_sizes[i], mat_creek_bank)
+
+	for i in range(18):
+		var x := -13.0 + float(i % 6) * 5.0
+		var z := 10.0 + float(i / 6) * 7.0
+		_make_mesh(water, "LotusLeaf_%d" % i, Vector3(x, 0.13, z), Vector3(1.4, 0.025, 1.0), mat_farmland)
+		if i % 4 == 0:
+			_make_cylinder(water, "LotusBud_%d" % i, Vector3(x + 0.35, 0.45, z - 0.2), 0.16, 0.35, mat_gold, false)
+
+func _build_continuous_veranda_system(parent: Node3D) -> void:
+	var veranda := Node3D.new()
+	veranda.name = "ContinuousVerandaSystem"
+	parent.add_child(veranda)
+
+	_build_corridor(veranda, "SouthVeranda", Vector3(-24, 0, -2), Vector3(24, 0, -2), 3.2)
+	_build_corridor(veranda, "WestLakeVeranda", Vector3(-24, 0, -2), Vector3(-30, 0, 22), 3.0)
+	_build_corridor(veranda, "NorthLakeVeranda", Vector3(-30, 0, 22), Vector3(-10, 0, 34), 3.0)
+	_build_corridor(veranda, "EastLakeVeranda", Vector3(24, 0, -2), Vector3(31, 0, 18), 3.0)
+	_build_corridor(veranda, "TeaVeranda", Vector3(31, 0, 18), Vector3(12, 0, 40), 3.0)
+	_build_corridor(veranda, "MainHallVeranda", Vector3(-10, 0, 34), Vector3(10, 0, 31), 3.0)
+
+func _build_moon_gates_and_screen_walls(parent: Node3D) -> void:
+	var gates := Node3D.new()
+	gates.name = "MoonGatesAndScreenWalls"
+	parent.add_child(gates)
+
+	_build_moon_gate(gates, "SouthMoonGate", Vector3(0, 0, -5), 0.0, "入园")
+	_build_moon_gate(gates, "WestMoonGate", Vector3(-27, 0, 7), deg_to_rad(-18.0), "竹径")
+	_build_moon_gate(gates, "EastMoonGate", Vector3(27, 0, 8), deg_to_rad(18.0), "花径")
+	_build_moon_gate(gates, "NorthMoonGate", Vector3(0, 0, 34), PI, "临水")
+
+	_build_screen_wall(gates, "EntranceScreenWall", Vector3(0, 0, -39), Vector3(12, 4.2, 0.55), 0.0)
+	_build_screen_wall(gates, "LakeScreenWallWest", Vector3(-17, 0, 2), Vector3(13, 3.4, 0.45), deg_to_rad(28.0))
+	_build_screen_wall(gates, "LakeScreenWallEast", Vector3(18, 0, 6), Vector3(11, 3.4, 0.45), deg_to_rad(-24.0))
+	_build_screen_wall(gates, "NorthScreenWall", Vector3(11, 0, 29), Vector3(10, 3.2, 0.45), deg_to_rad(18.0))
+
+	_build_flower_window_wall(gates, "WestFlowerWindowWall", Vector3(-36, 0, 11), deg_to_rad(8.0), 18.0)
+	_build_flower_window_wall(gates, "EastFlowerWindowWall", Vector3(36, 0, 14), deg_to_rad(-8.0), 18.0)
+	_build_flower_window_wall(gates, "NorthFlowerWindowWall", Vector3(0, 0, 39), PI / 2.0, 24.0)
+
+func _build_moon_gate(parent: Node3D, name_s: String, pos: Vector3, rot_y: float, label_text: String) -> void:
+	var gate: Node3D = Node3D.new()
+	gate.name = name_s
+	gate.position = pos
+	gate.rotation.y = rot_y
+	parent.add_child(gate)
+	_make_box(gate, "WallL", Vector3(-3.1, 1.9, 0), Vector3(2.2, 3.8, 0.5), mat_white_wall, true)
+	_make_box(gate, "WallR", Vector3(3.1, 1.9, 0), Vector3(2.2, 3.8, 0.5), mat_white_wall, true)
+	_make_box(gate, "Lintel", Vector3(0, 3.75, 0), Vector3(7.2, 0.5, 0.55), mat_white_wall, true)
+	_make_cylinder(gate, "MoonRing", Vector3(0, 1.85, -0.02), 1.75, 0.28, mat_stone, false)
+	var label: Label3D = Label3D.new()
+	label.name = "MoonGateLabel"
+	label.text = label_text
+	label.position = Vector3(0, 3.55, -0.34)
+	label.font_size = 30
+	label.pixel_size = 0.012
+	label.modulate = Color(0.84, 0.68, 0.22)
+	label.outline_size = 6
+	label.outline_modulate = Color(0.04, 0.025, 0.01)
+	label.double_sided = true
+	gate.add_child(label)
+
+func _build_screen_wall(parent: Node3D, name_s: String, pos: Vector3, size: Vector3, rot_y: float) -> void:
+	var wall := _make_box(parent, name_s, pos + Vector3(0, size.y / 2.0, 0), size, mat_white_wall, true)
+	wall.rotation.y = rot_y
+	_make_mesh(wall, "ScreenWallCap", Vector3(0, size.y / 2.0 + 0.18, 0), Vector3(size.x + 0.4, 0.28, size.z + 0.3), mat_wall_top)
+	_make_box(wall, "ReliefPanel", Vector3(0, 0.25, -size.z / 2.0 - 0.05), Vector3(size.x - 1.2, size.y - 1.0, 0.08), mat_stone, false)
+
+func _build_flower_window_wall(parent: Node3D, name_s: String, pos: Vector3, rot_y: float, length: float) -> void:
+	var wall := Node3D.new()
+	wall.name = name_s
+	wall.position = pos
+	wall.rotation.y = rot_y
+	parent.add_child(wall)
+	_make_box(wall, "WallBase", Vector3(0, 1.65, 0), Vector3(length, 3.3, 0.45), mat_white_wall, true)
+	_make_mesh(wall, "TileCap", Vector3(0, 3.45, 0), Vector3(length + 0.4, 0.25, 0.7), mat_wall_top)
+	for i in range(4):
+		var x := -length / 2.0 + 3.0 + i * ((length - 6.0) / 3.0)
+		_make_cylinder(wall, "RoundFlowerWindow_%d" % i, Vector3(x, 1.9, -0.27), 0.75, 0.18, mat_stone, false)
+		_make_box(wall, "WindowCrossH_%d" % i, Vector3(x, 1.9, -0.39), Vector3(1.2, 0.08, 0.08), mat_wood_red, false)
+		_make_box(wall, "WindowCrossV_%d" % i, Vector3(x, 1.9, -0.39), Vector3(0.08, 1.2, 0.08), mat_wood_red, false)
+
+func _build_rockery_and_pavilions(parent: Node3D) -> void:
+	var rockery := Node3D.new()
+	rockery.name = "RockeryAndPavilionSequence"
+	parent.add_child(rockery)
+
+	_build_rockery_cluster(rockery, "WestRockery", Vector3(-28, 0, 31), 1.1)
+	_build_rockery_cluster(rockery, "EastRockery", Vector3(27, 0, 32), 0.95)
+	_build_rockery_cluster(rockery, "SouthRockery", Vector3(14, 0, -9), 0.75)
+	_build_pavilion(rockery, "LakeHeartPavilion", Vector3(4, 0.12, 19), 1.0)
+	_build_pavilion(rockery, "HillPavilion", Vector3(-32, 1.0, 37), 0.9)
+	var lake_bridge_points: Array[Vector3] = [Vector3(-16, 0.24, 12), Vector3(-9, 0.24, 18), Vector3(-2, 0.24, 15), Vector3(4, 0.24, 20), Vector3(12, 0.24, 18)]
+	var tea_bridge_points: Array[Vector3] = [Vector3(8, 0.22, 29), Vector3(13, 0.22, 33), Vector3(10, 0.22, 38), Vector3(3, 0.22, 40)]
+	_build_zigzag_bridge(rockery, "LakeZigzagBridge", lake_bridge_points)
+	_build_zigzag_bridge(rockery, "TeaZigzagBridge", tea_bridge_points)
+
+func _build_rockery_cluster(parent: Node3D, name_s: String, base_pos: Vector3, scale: float) -> void:
+	var root := Node3D.new()
+	root.name = name_s
+	root.position = base_pos
+	parent.add_child(root)
+	var positions: Array[Vector3] = [Vector3(0, 1.4, 0), Vector3(-2.3, 1.1, 1.4), Vector3(2.1, 1.3, -0.8), Vector3(-0.8, 2.0, -1.6), Vector3(1.3, 2.4, 1.5), Vector3(-3.2, 0.7, -1.5)]
+	var sizes: Array[Vector3] = [Vector3(3.6, 2.8, 2.8), Vector3(2.7, 2.2, 2.2), Vector3(2.6, 2.6, 2.0), Vector3(2.2, 4.0, 2.2), Vector3(2.0, 4.8, 2.0), Vector3(2.8, 1.4, 2.3)]
+	for i in range(positions.size()):
+		_make_box(root, "LayerRock_%d" % i, positions[i] * scale, sizes[i] * scale, mat_stone, true)
+
+func _build_pavilion(parent: Node3D, name_s: String, pos: Vector3, scale: float) -> void:
+	var pavilion := Node3D.new()
+	pavilion.name = name_s
+	pavilion.position = pos
+	parent.add_child(pavilion)
+	for x in [-1.5, 1.5]:
+		for z in [-1.5, 1.5]:
+			_make_cylinder(pavilion, "Post_%s_%s" % [str(x), str(z)], Vector3(x, 1.9, z) * scale, 0.13 * scale, 3.8 * scale, mat_wood_red, false)
+	_make_box(pavilion, "Floor", Vector3(0, 0.12, 0), Vector3(4.6, 0.18, 4.6) * scale, mat_stone, true)
+	_make_gable_roof(pavilion, "Roof", Vector3(0, 4.0, 0) * scale, 5.4 * scale, 5.4 * scale, 0.8 * scale, mat_roof)
+	_make_box(pavilion, "Seat", Vector3(0, 0.65, -1.6) * scale, Vector3(3.0, 0.28, 0.38) * scale, mat_wood_red, false)
+
+func _build_zigzag_bridge(parent: Node3D, name_s: String, points: Array[Vector3]) -> void:
+	var bridge := Node3D.new()
+	bridge.name = name_s
+	parent.add_child(bridge)
+	for i in range(points.size() - 1):
+		var from: Vector3 = points[i]
+		var to: Vector3 = points[i + 1]
+		var mid: Vector3 = (from + to) / 2.0
+		var diff: Vector3 = to - from
+		var segment: StaticBody3D = _make_box(bridge, "Deck_%d" % i, mid, Vector3(3.0, 0.16, diff.length()), mat_stone, true)
+		segment.rotation.y = atan2(diff.x, diff.z)
+		for side: float in [-1.0, 1.0]:
+			var rail: StaticBody3D = _make_box(segment, "Rail_%s" % str(side), Vector3(side * 1.35, 1.0, 0), Vector3(0.08, 0.14, diff.length() - 0.4), mat_stone, false)
+			rail.rotation.y = 0.0
+
+func _build_winding_paths_and_planting(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "WindingPathsAndPlanting"
+	parent.add_child(root)
+
+	var west_path_points: Array[Vector3] = [Vector3(-6, 0.12, -8), Vector3(-14, 0.12, -3), Vector3(-20, 0.12, 6), Vector3(-25, 0.12, 16), Vector3(-32, 0.12, 27)]
+	var east_path_points: Array[Vector3] = [Vector3(7, 0.12, -7), Vector3(15, 0.12, -2), Vector3(22, 0.12, 8), Vector3(28, 0.12, 19), Vector3(18, 0.12, 32), Vector3(8, 0.12, 39)]
+	var north_path_points: Array[Vector3] = [Vector3(-18, 0.12, 32), Vector3(-9, 0.12, 38), Vector3(0, 0.12, 35), Vector3(10, 0.12, 39)]
+	_build_stepping_stone_path(root, "WestWindingPath", west_path_points)
+	_build_stepping_stone_path(root, "EastWindingPath", east_path_points)
+	_build_stepping_stone_path(root, "NorthWindingPath", north_path_points)
+
+	var flower_bed_positions: Array[Vector3] = [Vector3(-11, 0, -6), Vector3(-18, 0, 4), Vector3(-24, 0, 13), Vector3(13, 0, -5), Vector3(21, 0, 5), Vector3(24, 0, 25), Vector3(8, 0, 35), Vector3(-11, 0, 35)]
+	for pos: Vector3 in flower_bed_positions:
+		_build_flower_bed(root, pos, Vector3(5.0, 0.12, 2.2))
+	var shrub_positions: Array[Vector3] = [Vector3(-30, 0, 6), Vector3(-34, 0, 18), Vector3(32, 0, 7), Vector3(34, 0, 24), Vector3(-4, 0, -12), Vector3(4, 0, -12)]
+	for pos: Vector3 in shrub_positions:
+		_build_shrub_group(root, pos)
+	var landscape_stone_positions: Array[Vector3] = [Vector3(-22, 0, -6), Vector3(22, 0, -7), Vector3(-15, 0, 27), Vector3(17, 0, 28), Vector3(0, 0, 41)]
+	for pos: Vector3 in landscape_stone_positions:
+		_make_box(root, "LandscapeStone", pos + Vector3(0, 0.65, 0), Vector3(1.8, 1.3, 1.1), mat_stone, true)
+
+func _build_stepping_stone_path(parent: Node3D, name_s: String, points: Array[Vector3]) -> void:
+	var path := Node3D.new()
+	path.name = name_s
+	parent.add_child(path)
+	for i in range(points.size() - 1):
+		var from: Vector3 = points[i]
+		var to: Vector3 = points[i + 1]
+		var diff: Vector3 = to - from
+		var count: int = max(2, int(diff.length() / 2.2))
+		for j in range(count):
+			var t: float = float(j) / float(count)
+			var pos: Vector3 = from.lerp(to, t)
+			pos.x += sin(float(i * 7 + j) * 1.3) * 0.25
+			pos.z += cos(float(i * 5 + j) * 1.1) * 0.2
+			var stone: StaticBody3D = _make_box(path, "Stone_%d_%d" % [i, j], pos, Vector3(1.35, 0.1, 0.95), mat_stone, true)
+			stone.rotation.y = atan2(diff.x, diff.z) + sin(float(j)) * 0.18
+
+func _build_flower_bed(parent: Node3D, pos: Vector3, size: Vector3) -> void:
+	var bed := Node3D.new()
+	bed.name = "FlowerBed"
+	bed.position = pos
+	parent.add_child(bed)
+	_make_mesh(bed, "Soil", Vector3(0, 0.04, 0), size, mat_dirt)
+	for i in range(10):
+		var x := -size.x / 2.0 + 0.5 + float(i % 5) * (size.x - 1.0) / 4.0
+		var z := -size.z / 2.0 + 0.35 + float(i / 5) * (size.z - 0.7)
+		_make_cylinder(bed, "FlowerStem_%d" % i, Vector3(x, 0.35, z), 0.035, 0.7, mat_farmland, false)
+		_make_box(bed, "FlowerHead_%d" % i, Vector3(x, 0.78, z), Vector3(0.35, 0.22, 0.35), mat_gold, false)
+
+func _build_shrub_group(parent: Node3D, pos: Vector3) -> void:
+	var shrubs := Node3D.new()
+	shrubs.name = "ShrubGroup"
+	shrubs.position = pos
+	parent.add_child(shrubs)
+	for i in range(5):
+		var x := -1.8 + float(i % 3) * 1.6
+		var z := -0.9 + float(i / 3) * 1.4
+		_make_box(shrubs, "Shrub_%d" % i, Vector3(x, 0.65, z), Vector3(1.4, 1.1, 1.2), mat_farmland, false)
+
+func _build_visual_occlusion_layers(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "VisualOcclusionLayers"
+	parent.add_child(root)
+
+	var wall_positions: Array[Vector3] = [
+		Vector3(-12, 0, -26), Vector3(13, 0, -20), Vector3(-39, 0, 2),
+		Vector3(39, 0, 4), Vector3(-20, 0, 38), Vector3(22, 0, 36)
+	]
+	var wall_rotations: Array[float] = [deg_to_rad(18.0), deg_to_rad(-16.0), deg_to_rad(-8.0), deg_to_rad(8.0), deg_to_rad(22.0), deg_to_rad(-20.0)]
+	var wall_lengths: Array[float] = [18.0, 16.0, 20.0, 20.0, 18.0, 18.0]
+	for i in range(wall_positions.size()):
+		_build_flower_window_wall(root, "OcclusionFlowerWall_%d" % i, wall_positions[i], wall_rotations[i], wall_lengths[i])
+
+	for i in range(34):
+		var angle := float(i) * 0.73
+		var radius := 28.0 + float(i % 5) * 4.0
+		var pos := Vector3(cos(angle) * radius, 0, -4 + sin(angle) * 34.0)
+		if abs(pos.x) < 7.0 and pos.z < 34.0:
+			continue
+		_build_tree(root, "LayerTree_%d" % i, pos, 3.6 + float(i % 3) * 0.8)
+
+	for i in range(30):
+		var x := -43.0 + float(i % 10) * 2.1
+		var z := 24.0 + float(i / 10) * 3.1
+		_make_cylinder(root, "WestBamboo_%d" % i, Vector3(x, 2.1, z), 0.055, 4.2, mat_wood_red, false)
+		_make_box(root, "WestBambooLeaf_%d" % i, Vector3(x + 0.25, 4.1, z), Vector3(0.7, 0.45, 0.55), mat_farmland, false)
+
+func _build_tree(parent: Node3D, name_s: String, pos: Vector3, height: float) -> void:
+	var tree := Node3D.new()
+	tree.name = name_s
+	tree.position = pos
+	parent.add_child(tree)
+	_make_cylinder(tree, "Trunk", Vector3(0, height / 2.0, 0), 0.16, height, mat_wood_red, false)
+	_make_box(tree, "CrownLower", Vector3(0, height + 0.6, 0), Vector3(2.6, 1.7, 2.6), mat_farmland, false)
+	_make_box(tree, "CrownUpper", Vector3(0.35, height + 1.5, -0.2), Vector3(2.0, 1.4, 2.0), mat_farmland, false)
+
+func _build_xiaoxiang_details(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "XiaoxiangDetails"
+	root.position = Vector3(-35, 0, 10)
+	parent.add_child(root)
+	_make_mesh(root, "WaterSidePath", Vector3(5.5, 0.075, 4), Vector3(2.4, 0.04, 12), mat_stone)
+	for i in range(18):
+		var x := -10 + (i % 6) * 2.0
+		var z := -8 + int(i / 6) * 4.0
+		_make_cylinder(root, "BambooCluster_%d" % i, Vector3(x, 2.0, z), 0.055, 4.0, mat_wood_red, false)
+
+func _build_yihong_details(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "YihongDetails"
+	root.position = Vector3(35, 0, 10)
+	parent.add_child(root)
+	_build_corridor(root, "WatersideVeranda", Vector3(-9, 0, 2), Vector3(-9, 0, 12), 2.6)
+	var begonia_positions: Array[Vector3] = [Vector3(-6, 1.8, -5), Vector3(7, 1.8, -3), Vector3(5, 1.8, 6)]
+	for pos: Vector3 in begonia_positions:
+		_make_cylinder(root, "BegoniaTrunk", pos, 0.18, 3.6, mat_wood_red, false)
+		_make_box(root, "BegoniaCrown", pos + Vector3(0, 2.1, 0), Vector3(2.8, 2.0, 2.8), mat_farmland, false)
+	var banana_positions: Array[Vector3] = [Vector3(-8, 0.9, 7), Vector3(8, 0.9, 6), Vector3(3, 0.9, -7)]
+	for pos: Vector3 in banana_positions:
+		_make_box(root, "BananaPlant", pos, Vector3(1.0, 1.8, 0.5), mat_farmland, false)
+
+func _build_qiushuang_details(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "QiushuangDetails"
+	root.position = Vector3(-40, 0, -5)
+	parent.add_child(root)
+	_make_mesh(root, "OpenCourt", Vector3(0, 0.08, 4), Vector3(16, 0.05, 10), mat_brick)
+	var wutong_positions: Array[Vector3] = [Vector3(-8, 2.8, -5), Vector3(8, 2.8, -4), Vector3(-9, 2.8, 6), Vector3(9, 2.8, 5)]
+	for pos: Vector3 in wutong_positions:
+		_make_cylinder(root, "WutongTrunk", pos, 0.22, 5.6, mat_wood_red, false)
+		_make_box(root, "WutongCrown", pos + Vector3(0, 3.0, 0), Vector3(4, 2.2, 4), mat_farmland, false)
+
+func _build_hengwu_details(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "HengwuDetails"
+	root.position = Vector3(25, 0, -15)
+	parent.add_child(root)
+	var hengwu_rock_positions: Array[Vector3] = [Vector3(-10, 1, -5), Vector3(10, 1, -4), Vector3(-8, 1, 6), Vector3(8, 1, 7), Vector3(0, 1.2, 8)]
+	for pos: Vector3 in hengwu_rock_positions:
+		_make_box(root, "Rockery", pos, Vector3(3.2, 2.2, 2.4), mat_stone, true)
+	var trellis_positions: Array[Vector3] = [Vector3(-6, 0.5, -7), Vector3(6, 0.5, -7), Vector3(-5, 0.5, 7), Vector3(5, 0.5, 7)]
+	for pos: Vector3 in trellis_positions:
+		_make_box(root, "HerbVineTrellis", pos, Vector3(2.4, 1.0, 0.35), mat_farmland, false)
+
+func _build_daoxiang_details(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "DaoxiangDetails"
+	root.position = Vector3(-25, 0, -15)
+	parent.add_child(root)
+	for row in range(2):
+		for col in range(3):
+			_make_mesh(root, "VegetablePlot_%d_%d" % [row, col], Vector3(-7 + col * 7, 0.08, -7 + row * 5), Vector3(5.5, 0.08, 3.5), mat_farmland)
+	var mulberry_positions: Array[Vector3] = [Vector3(-11, 2.2, 7), Vector3(12, 2.2, 6), Vector3(-12, 2.2, -9)]
+	for pos: Vector3 in mulberry_positions:
+		_make_cylinder(root, "MulberryElmTrunk", pos, 0.2, 4.4, mat_wood_red, false)
+		_make_box(root, "MulberryElmCrown", pos + Vector3(0, 2.4, 0), Vector3(3.2, 2.2, 3.2), mat_farmland, false)
+	_make_box(root, "RusticHouseFace", Vector3(0, 1.8, -3.8), Vector3(9, 3.2, 0.25), mat_dirt, false)
+
+func _build_garden_ornaments(parent: Node3D) -> void:
+	var root := Node3D.new()
+	root.name = "GardenOrnaments"
+	parent.add_child(root)
+	var points: Array[Vector3] = [
+		Vector3(-12, 0, -2), Vector3(12, 0, -2), Vector3(-18, 0, 24), Vector3(18, 0, 24),
+		Vector3(-48, 0, 28), Vector3(48, 0, 28), Vector3(-8, 0, -33), Vector3(8, 0, -33)
+	]
+	for i in range(points.size()):
+		var pos: Vector3 = points[i]
+		_make_cylinder(root, "StoneLanternBase_%d" % i, pos + Vector3(0, 0.35, 0), 0.25, 0.7, mat_stone, true)
+		_make_box(root, "StoneLanternTop_%d" % i, pos + Vector3(0, 0.9, 0), Vector3(0.9, 0.35, 0.9), mat_stone, false)
+		if i % 2 == 0:
+			_make_cylinder(root, "StoneTable_%d" % i, pos + Vector3(2, 0.45, 0), 0.55, 0.18, mat_stone, true)
+		else:
+			_make_box(root, "WaterJar_%d" % i, pos + Vector3(-2, 0.55, 0), Vector3(0.9, 1.1, 0.9), mat_stone, true)
 
 # ============================================================
 # 构建摘要
 # ============================================================
 func _print_build_summary() -> void:
 	print("=== GardenBuilder: 大观园场景构建完成 ===")
-	print("  围墙: 闭合青砖高墙 (120x120)")
-	print("  正门: 五间大门楼 (南侧中轴)")
-	print("  侧门: 东(宁国府) + 西(荣国府)")
+	print("  围墙: 闭合白墙灰瓦高墙 (南正门、北后门、东侧门)")
+	print("  出入口: 正门可通行，后门和侧门为锁闭门楼防止越界")
 	print("  假山: 曲径通幽 (正门内)")
 	print("  沁芳溪: 南北贯穿水系")
 	print("  石桥: 沁芳亭桥")
 	print("  码头: 游船码头")
 	print("  山体: 北侧主山 + 西北/东北山坡")
-	print("  新增院落: 秋爽斋、紫菱洲、缀锦阁")
-	print("  补充: 稻香村菜畦、栊翠庵围墙")
+	print("  五院: 怡红院、潇湘馆、秋爽斋、蘅芜苑、稻香村独立围合")
+	print("  补充: 青石板路、驳岸护栏、菜畦、假山、园林小品")
 	print("  游廊: 西片区 + 东片区")
+	print("  层次: 连续回廊、月洞门、影壁、花窗、扩湖、溪流、曲桥、竹林、遮挡墙")
 	print("  外围: 民居(南)、府邸(东西)、农田(北)")
 	print("==========================================")

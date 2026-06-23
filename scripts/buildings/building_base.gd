@@ -26,11 +26,29 @@ func _on_body_entered(body: Node3D) -> void:
 func _on_body_exited(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		EventBus.building_exited.emit(building_name)
+		_hide_info()
 
 func _show_info() -> void:
-	if building_description != "":
-		# 可以在这里显示建筑介绍UI
-		pass
+	if building_description != "" or _get_dialog_id() != "":
+		var prompt_ui := _get_prompt_ui()
+		if prompt_ui and prompt_ui.has_method("show_for_building"):
+			prompt_ui.show_for_building(self)
+
+func _hide_info() -> void:
+	var prompt_ui := _get_prompt_ui()
+	if prompt_ui and prompt_ui.has_method("hide_for_building"):
+		prompt_ui.hide_for_building(self)
+
+func _get_prompt_ui() -> CanvasLayer:
+	var current_scene := get_tree().current_scene
+	if not current_scene:
+		return null
+	var prompt_ui := current_scene.get_node_or_null("BuildingPromptUI") as BuildingPromptUI
+	if prompt_ui:
+		return prompt_ui
+	prompt_ui = BuildingPromptUI.new()
+	current_scene.add_child(prompt_ui)
+	return prompt_ui
 
 func is_unlocked() -> bool:
 	if unlock_condition == "":
@@ -41,5 +59,24 @@ func get_interaction_info() -> Dictionary:
 	return {"name": building_name, "action": "进入%s" % building_name, "key": "E"}
 
 func interact(player: Node) -> void:
-	if associated_dialog != "" and DialogManager:
-		DialogManager.start_dialog(associated_dialog)
+	var dialog_id := _get_dialog_id()
+	if dialog_id != "" and DialogManager:
+		DialogManager.start_dialog(dialog_id)
+
+func get_dialog_id() -> String:
+	return _get_dialog_id()
+
+func _get_dialog_id() -> String:
+	if associated_dialog != "":
+		return associated_dialog
+	match building_name:
+		"潇湘馆":
+			return "visit_xiaoxiang"
+		"怡红院":
+			return "visit_yihong"
+		"栊翠庵":
+			return "tea_ceremony"
+		"大观楼":
+			return "banquet"
+		_:
+			return ""

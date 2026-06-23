@@ -7,6 +7,10 @@ extends CanvasLayer
 @onready var load_btn: Button = $Panel/VBoxContainer/LoadButton
 @onready var menu_btn: Button = $Panel/VBoxContainer/MenuButton
 @onready var quit_btn: Button = $Panel/VBoxContainer/QuitButton
+@onready var menu_items: VBoxContainer = $Panel/VBoxContainer
+
+var tts_speed_label: Label = null
+var tts_speed_buttons: Array[Button] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -17,6 +21,49 @@ func _ready() -> void:
 	load_btn.pressed.connect(_on_load)
 	menu_btn.pressed.connect(_on_return_menu)
 	quit_btn.pressed.connect(_on_quit)
+	_init_tts_speed_controls()
+	_apply_tts_playback_speed(TTSSystem.playback_speed if TTSSystem else 1.0)
+
+func _init_tts_speed_controls() -> void:
+	var separator := HSeparator.new()
+	separator.name = "TTSSpeedSeparator"
+	menu_items.add_child(separator)
+	menu_items.move_child(separator, menu_btn.get_index())
+
+	tts_speed_label = Label.new()
+	tts_speed_label.name = "TTSSpeedLabel"
+	tts_speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tts_speed_label.add_theme_font_size_override("font_size", 20)
+	tts_speed_label.add_theme_color_override("font_color", Color(0.88, 0.82, 0.65, 1))
+	menu_items.add_child(tts_speed_label)
+	menu_items.move_child(tts_speed_label, menu_btn.get_index())
+
+	var speed_row := HBoxContainer.new()
+	speed_row.name = "TTSSpeedRow"
+	speed_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	speed_row.add_theme_constant_override("separation", 8)
+	menu_items.add_child(speed_row)
+	menu_items.move_child(speed_row, menu_btn.get_index())
+
+	for speed in [1.0, 1.25, 1.5]:
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(88, 40)
+		button.text = "%.2fx" % speed
+		button.add_theme_font_size_override("font_size", 20)
+		button.add_theme_color_override("font_color", Color(0.88, 0.82, 0.65, 1))
+		button.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.75, 1))
+		button.pressed.connect(func() -> void: _apply_tts_playback_speed(speed))
+		speed_row.add_child(button)
+		tts_speed_buttons.append(button)
+
+func _apply_tts_playback_speed(speed: float) -> void:
+	var clamped_speed := clampf(speed, 0.5, 2.0)
+	if TTSSystem and TTSSystem.has_method("set_playback_speed"):
+		TTSSystem.set_playback_speed(clamped_speed)
+	if tts_speed_label:
+		tts_speed_label.text = "配音速度 %.2fx" % clamped_speed
+	for button in tts_speed_buttons:
+		button.disabled = abs(float(button.text.trim_suffix("x")) - clamped_speed) < 0.01
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):

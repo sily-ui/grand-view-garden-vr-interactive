@@ -27,7 +27,7 @@ func _ready() -> void:
 	_setup_indoor_lanterns()
 	# 2. 音效系统
 	_setup_ambient_audio()
-	_setup_building_bgm_triggers()
+	# BGM 切换由 AudioSystem 单路管理，避免多系统同时淡入淡出造成叠音。
 	# 3. LOD + 遮挡剔除
 	_setup_lod_and_occlusion()
 
@@ -172,7 +172,10 @@ func _create_ambient_player(player_name: String, vol_db: float) -> void:
 		"WaterAmbient":
 			player.position = Vector3(-5, 1, -22)
 
-	get_tree().current_scene.add_child(player)
+	var parent := get_tree().current_scene
+	if not parent:
+		parent = self
+	parent.add_child(player)
 
 # ═══════════════════════════════════════════════════════
 # 2b. 院落BGM自动切换

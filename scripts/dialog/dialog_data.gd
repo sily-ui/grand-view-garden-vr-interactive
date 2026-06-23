@@ -4,12 +4,12 @@ class_name DialogData
 static var dialogs: Dictionary = {
 	"intro_arrival": {
 		"speaker": "旁白",
-		"text": "刘姥姥带着板儿，跟着荣国府仆妇周瑞家，一路来到荣国府。穿过层层院落，眼前豁然开朗——这便是大观园了。",
+		"text": "刘姥姥带着板儿，跟着荣国府仆妇周瑞家，一路来到荣国府门外。门前车马往来，两侧门房高墙相连，里头还隔着层层院门。",
 		"next": "intro_arrival_2"
 	},
 	"intro_arrival_2": {
 		"speaker": "刘姥姥",
-		"text": "哎呦喂！这院子可真大啊！比我们整个村子都大！",
+		"text": "哎呦喂！还没进门呢，就这门楼墙院，已经比我们村祠堂气派多了！",
 		"next": "intro_arrival_3"
 	},
 	"intro_arrival_3": {
@@ -20,7 +20,7 @@ static var dialogs: Dictionary = {
 	# === 路径氛围对话 ===
 	"path_gate": {
 		"speaker": "旁白",
-		"text": "眼前是一座气派的石牌坊大门，四根石柱撑起两道横梁，门廊下悬着两盏大红灯笼。门前左右各蹲一尊石狮子，威风凛凛。",
+		"text": "穿过荣府前院，眼前才是大观园门。白墙夹道，石柱撑起门楼，门廊下悬着两盏大红灯笼，门前石狮威风凛凛。",
 		"next": "path_gate_2"
 	},
 	"path_gate_2": {

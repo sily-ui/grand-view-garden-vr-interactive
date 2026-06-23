@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=3 format=3 uid="uid://c83srubuatq1i"]
+﻿[gd_scene load_steps=24 format=3 uid="uid://c83srubuatq1i"]
 
 [ext_resource type="Script" uid="uid://clcdphpoq1wn8" path="res://scripts/player/player_controller.gd" id="1_pc"]
 [ext_resource type="Script" uid="uid://cw412ryqrs8ii" path="res://scripts/systems/time_system.gd" id="4_ts"]
@@ -134,7 +134,7 @@ shadow_enabled = true
 [node name="Items" parent="." instance=ExtResource("ext_items")]
 
 [node name="Player" type="CharacterBody3D" parent="." unique_id=1465693051 groups=["player"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -42)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -88)
 script = ExtResource("1_pc")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=534133969]

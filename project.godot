@@ -13,7 +13,6 @@ config_version=5
 config/name="刘姥姥进大观园"
 run/main_scene="res://scenes/ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
 
 [autoload]
 
@@ -27,13 +26,15 @@ _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
 
+window/size/mode=3
 window/size/resizable=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/mouse_passthrough=false
 
 [dotnet]
 
-project/assembly_name="xyz"
+project/assembly_name="刘姥姥进大观园"
 
 [editor_plugins]
 
@@ -85,7 +86,3 @@ dialog_next={
 [physics]
 
 3d/physics_engine="Jolt Physics"
-
-[rendering]
-
-rendering_device/driver.windows="d3d12"

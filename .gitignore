@@ -4,9 +4,17 @@
 
 # API keys & secrets (NEVER commit)
 assets/config/tts_config.json
+assets/config/dashscope_music_config.json
 
 # TTS audio cache
 user://tts_cache/
+
+# Local debug output
+debug_*.log
+
+# Python cache
+__pycache__/
+*.pyc
 
 # System files
 Thumbs.db

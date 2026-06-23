@@ -7,10 +7,14 @@ extends Node
 # ═══════════════════════════════════════════════════════
 var _signboard_data: Array = [
 	{
-		"pos": Vector3(0, 0, 20),
+		"pos": Vector3(0, 0, 29),
 		"name": "贾母",
 		"title": "荣国府史太君",
+		"avatar": "res://assets/textures/ui/avatar_jiamu.png",
 		"trigger_radius": 2.5,
+		"dialog_id": "meet_jiamu",
+		"dialog_condition": "intro_done",
+		"dialog_completion": "met_jiamu",
 		"story_title": "刘姥姥二进大观园 —— 贾母设宴",
 		"story_body": (
 			"刘姥姥二进荣国府，贾母亲自设宴款待。席间刘姥姥说出\"老刘老刘，食量大如牛，吃个老母猪不抬头\"等乡野俚语，引得众人捧腹大笑。" +
@@ -19,10 +23,14 @@ var _signboard_data: Array = [
 		)
 	},
 	{
-		"pos": Vector3(3, 0, 20),
+		"pos": Vector3(3.2, 0, 27.5),
 		"name": "王熙凤",
 		"title": "琏二奶奶",
+		"avatar": "res://assets/textures/ui/avatar_wangxifeng.png",
 		"trigger_radius": 2.5,
+		"dialog_id": "meet_xifeng",
+		"dialog_condition": "met_jiamu",
+		"dialog_completion": "met_xifeng",
 		"story_title": "凤姐弄权 —— 簪花逗趣",
 		"story_body": (
 			"王熙凤是荣国府的实际管家人，精明强干、八面玲珑。" +
@@ -35,7 +43,11 @@ var _signboard_data: Array = [
 		"pos": Vector3(-35, 0, 15),
 		"name": "林黛玉",
 		"title": "潇湘妃子",
+		"avatar": "res://assets/textures/ui/avatar_lindaiyu.png",
 		"trigger_radius": 2.5,
+		"dialog_id": "visit_xiaoxiang",
+		"dialog_condition": "met_xifeng",
+		"dialog_completion": "visited_xiaoxiang",
 		"story_title": "潇湘馆 —— 黛玉的诗意天地",
 		"story_body": (
 			"潇湘馆是林黛玉的居所，翠竹掩映、清幽雅致，正合黛玉\"潇湘妃子\"的雅号。" +
@@ -48,7 +60,11 @@ var _signboard_data: Array = [
 		"pos": Vector3(35, 0, 15),
 		"name": "贾宝玉",
 		"title": "怡红公子",
+		"avatar": "res://assets/textures/ui/avatar_jiabaoyu.png",
 		"trigger_radius": 2.5,
+		"dialog_id": "visit_yihong",
+		"dialog_condition": "visited_xiaoxiang",
+		"dialog_completion": "visited_yihong",
 		"story_title": "怡红院 —— 宝玉的温柔乡",
 		"story_body": (
 			"怡红院是贾宝玉的居所，陈设华丽，新奇玩意儿甚多，恰合宝玉\"富贵闲人\"的性情。" +
@@ -61,7 +77,11 @@ var _signboard_data: Array = [
 		"pos": Vector3(0, 0, 45),
 		"name": "妙玉",
 		"title": "槛外人",
+		"avatar": "res://assets/textures/ui/avatar_qingwen.png",
 		"trigger_radius": 3.0,
+		"dialog_id": "tea_ceremony",
+		"dialog_condition": "visited_yihong",
+		"dialog_completion": "completed_tea",
 		"story_title": "栊翠庵 —— 妙玉奉茶",
 		"story_body": (
 			"栊翠庵是妙玉修行之处，清静之地，非一般人能入。" +
@@ -74,6 +94,7 @@ var _signboard_data: Array = [
 		"pos": Vector3(-25, 0, -10),
 		"name": "李纨",
 		"title": "稻香老农",
+		"avatar": "res://assets/textures/ui/avatar_liulaolao.png",
 		"trigger_radius": 2.5,
 		"story_title": "稻香村 —— 稻花香里说丰年",
 		"story_body": (
@@ -87,6 +108,7 @@ var _signboard_data: Array = [
 		"pos": Vector3(25, 0, -10),
 		"name": "薛宝钗",
 		"title": "蘅芜君",
+		"avatar": "res://assets/textures/ui/avatar_xuebaochai.png",
 		"trigger_radius": 2.5,
 		"story_title": "蘅芜苑 —— 冷香丸的主人",
 		"story_body": (
@@ -94,6 +116,19 @@ var _signboard_data: Array = [
 			"\n\n宝钗为人端庄稳重、藏愚守拙，与黛玉的锋芒毕露恰成对比。" +
 			"\n\n刘姥姥进园时，宝钗的蘅芜苑之素与黛玉潇湘馆之雅各有千秋。贾母赞宝钗\"稳重和平\"。" +
 			"\n\n蘅芜苑之名出自《离骚》香草意象，暗喻宝钗\"任是无情也动人\"的品格。"
+		)
+	},
+	{
+		"pos": Vector3(37, 0, 12),
+		"name": "袭人",
+		"title": "怡红院首席丫鬟",
+		"avatar": "res://assets/textures/ui/avatar_xiren.png",
+		"trigger_radius": 2.5,
+		"story_title": "怡红院内事 —— 袭人照料宝玉",
+		"story_body": (
+			"袭人是怡红院中最稳重细致的丫鬟，凡宝玉衣食起居、院内诸事，多由她照管。" +
+			"\n\n刘姥姥醉卧怡红院一节，正由袭人收拾遮掩，既保全宝玉体面，也写出怡红院内人情细密。" +
+			"\n\n此处立牌用于补足怡红院内部视角，让玩家从宝玉之外看到院中日常秩序与人物关系。"
 		)
 	},
 ]
@@ -111,11 +146,16 @@ var _mat_name_gold: StandardMaterial3D   # 金字
 # ═══════════════════════════════════════════════════════
 var _ui_layer: CanvasLayer
 var _ui_panel: PanelContainer
+var _ui_avatar_panel: PanelContainer
+var _ui_avatar_rect: TextureRect
 var _ui_title: RichTextLabel
 var _ui_body: RichTextLabel
 var _ui_close_btn: Button
 var _current_signboard_name: String = ""
 var _active_trigger: Area3D = null
+var _active_data: Dictionary = {}
+var _hint_layer: CanvasLayer
+var _hint_label: Label
 
 # ═══════════════════════════════════════════════════════
 # 生命周期
@@ -124,7 +164,9 @@ func _ready() -> void:
 	_init_materials()
 	_clear_old_npcs()
 	_create_all_signboards()
+	_create_hint_ui()
 	_create_ui_panel()
+	set_process(true)
 
 # ═══════════════════════════════════════════════════════
 # 材质初始化
@@ -276,6 +318,19 @@ func _create_one_signboard(parent: Node3D, data: Dictionary) -> void:
 	title_lbl.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	root.add_child(title_lbl)
 
+	var hint_lbl := Label3D.new()
+	hint_lbl.name = "InteractHint"
+	hint_lbl.text = "点击查看"
+	hint_lbl.font_size = 28
+	hint_lbl.pixel_size = 0.01
+	hint_lbl.position = Vector3(0, 3.58, 0.04)
+	hint_lbl.modulate = Color(1.0, 0.86, 0.28, 1)
+	hint_lbl.outline_size = 6
+	hint_lbl.outline_modulate = Color(0.08, 0.04, 0.01, 1)
+	hint_lbl.double_sided = true
+	hint_lbl.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(hint_lbl)
+
 	# ── Area3D 触发区域（限主路径内，不超出院墙） ──
 	var trigger := Area3D.new()
 	trigger.name = "TriggerZone"
@@ -305,13 +360,69 @@ func _on_trigger_entered(body: Node3D, trigger: Area3D) -> void:
 		return
 	_current_signboard_name = data.get("name", "")
 	_active_trigger = trigger
-	_show_panel(data)
+	_active_data = data
+	_try_start_story_dialog(data)
+	_show_hint(data)
 
 func _on_trigger_exited(body: Node3D, trigger: Area3D) -> void:
 	if not body.is_in_group("player"):
 		return
 	if trigger == _active_trigger:
-		_hide_panel()
+		_hide_panel(false)
+		_hide_hint()
+		_current_signboard_name = ""
+		_active_trigger = null
+		_active_data.clear()
+
+func _process(_delta: float) -> void:
+	if _active_trigger and _hint_label and _hint_label.visible and not _ui_layer.visible:
+		_hint_label.modulate.a = 0.55 + 0.45 * abs(sin(Time.get_ticks_msec() * 0.006))
+
+func _create_hint_ui() -> void:
+	_hint_layer = CanvasLayer.new()
+	_hint_layer.name = "SignboardHintLayer"
+	_hint_layer.layer = 9
+	_hint_layer.visible = false
+	_hint_label = Label.new()
+	_hint_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_hint_label.offset_left = -220
+	_hint_label.offset_top = -130
+	_hint_label.offset_right = 220
+	_hint_label.offset_bottom = -90
+	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint_label.add_theme_font_size_override("font_size", 24)
+	_hint_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.28, 1))
+	_hint_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	_hint_label.add_theme_constant_override("shadow_offset_x", 2)
+	_hint_label.add_theme_constant_override("shadow_offset_y", 2)
+	_hint_layer.add_child(_hint_label)
+	add_child(_hint_layer)
+
+func _show_hint(data: Dictionary) -> void:
+	if not _hint_layer or not _hint_label:
+		return
+	var completion: String = data.get("dialog_completion", "")
+	if completion != "" and not GameState.get_condition(completion, false):
+		_hint_label.text = "靠近触发%s剧情，按 [E] / 鼠标左键 查看小传" % data.get("name", "人物")
+	else:
+		_hint_label.text = "按 [E] / 鼠标左键 查看%s小传" % data.get("name", "人物")
+	_hint_layer.visible = true
+
+func _try_start_story_dialog(data: Dictionary) -> void:
+	var dialog_id: String = data.get("dialog_id", "")
+	if dialog_id == "" or DialogManager.is_active:
+		return
+	var completion: String = data.get("dialog_completion", "")
+	if completion != "" and GameState.get_condition(completion, false):
+		return
+	var condition: String = data.get("dialog_condition", "")
+	if condition != "" and not GameState.get_condition(condition, false):
+		return
+	DialogManager.start_dialog(dialog_id)
+
+func _hide_hint() -> void:
+	if _hint_layer:
+		_hint_layer.visible = false
 
 # ═══════════════════════════════════════════════════════
 # UI 面板：创建（中式古风VR适配大面板）
@@ -328,7 +439,7 @@ func _create_ui_panel() -> void:
 	bg.name = "DimBg"
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0, 0, 0, 0.55)
-	bg.mouse_filter = Control.MOUSE_FILTER_PASS
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	bg.theme = load("res://assets/fonts/wenkai_theme.tres")
 	_ui_layer.add_child(bg)
 
@@ -337,10 +448,10 @@ func _create_ui_panel() -> void:
 	_ui_panel.name = "Panel"
 	# 居中定位：水平50%, 垂直50%, 偏移-400x-300
 	_ui_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_ui_panel.offset_left = -420
-	_ui_panel.offset_top = -320
-	_ui_panel.offset_right = 420
-	_ui_panel.offset_bottom = 320
+	_ui_panel.offset_left = -460
+	_ui_panel.offset_top = -310
+	_ui_panel.offset_right = 460
+	_ui_panel.offset_bottom = 310
 	# 宣纸+红木面板样式（与对话框一致）
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.95, 0.91, 0.8, 0.97)
@@ -360,14 +471,40 @@ func _create_ui_panel() -> void:
 	style.content_margin_right = 32
 	style.content_margin_bottom = 24
 	_ui_panel.add_theme_stylebox_override("panel", style)
-	_ui_panel.mouse_filter = Control.MOUSE_FILTER_PASS
+	_ui_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	bg.add_child(_ui_panel)
 
 	# ── 内容容器 ──
+	var hbox := HBoxContainer.new()
+	hbox.name = "Content"
+	hbox.add_theme_constant_override("separation", 14)
+	_ui_panel.add_child(hbox)
+
+	_ui_avatar_panel = PanelContainer.new()
+	_ui_avatar_panel.name = "AvatarPanel"
+	_ui_avatar_panel.custom_minimum_size = Vector2(104, 136)
+	var avatar_style := StyleBoxFlat.new()
+	avatar_style.bg_color = Color(0.36, 0.2, 0.1, 0.28)
+	avatar_style.border_width_left = 3
+	avatar_style.border_width_top = 3
+	avatar_style.border_width_right = 3
+	avatar_style.border_width_bottom = 3
+	avatar_style.border_color = Color(0.45, 0.28, 0.12, 0.9)
+	_ui_avatar_panel.add_theme_stylebox_override("panel", avatar_style)
+	hbox.add_child(_ui_avatar_panel)
+
+	_ui_avatar_rect = TextureRect.new()
+	_ui_avatar_rect.name = "AvatarRect"
+	_ui_avatar_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	_ui_avatar_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_ui_avatar_rect.custom_minimum_size = Vector2(96, 128)
+	_ui_avatar_panel.add_child(_ui_avatar_rect)
+
 	var vbox := VBoxContainer.new()
-	vbox.name = "Content"
+	vbox.name = "TextContent"
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 16)
-	_ui_panel.add_child(vbox)
+	hbox.add_child(vbox)
 
 	# ── 标题 ──
 	_ui_title = RichTextLabel.new()
@@ -376,7 +513,7 @@ func _create_ui_panel() -> void:
 	_ui_title.fit_content = true
 	_ui_title.scroll_active = false
 	_ui_title.custom_minimum_size = Vector2(0, 50)
-	_ui_title.add_theme_font_size_override("normal_font_size", 32)
+	_ui_title.add_theme_font_size_override("normal_font_size", 28)
 	_ui_title.add_theme_color_override("default_color", Color(0.55, 0.3, 0.08, 1))
 	vbox.add_child(_ui_title)
 
@@ -395,7 +532,7 @@ func _create_ui_panel() -> void:
 	_ui_body.bbcode_enabled = true
 	_ui_body.scroll_active = true
 	_ui_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_ui_body.add_theme_font_size_override("normal_font_size", 24)
+	_ui_body.add_theme_font_size_override("normal_font_size", 22)
 	_ui_body.add_theme_color_override("default_color", Color(0.2, 0.15, 0.08, 1))
 	_ui_body.add_theme_constant_override("line_separation", 8)
 	vbox.add_child(_ui_body)
@@ -448,16 +585,26 @@ func _show_panel(data: Dictionary) -> void:
 		return
 	var title_text: String = data.get("story_title", "")
 	var body_text: String = data.get("story_body", "")
+	var avatar_path: String = data.get("avatar", "")
+	if avatar_path != "" and ResourceLoader.exists(avatar_path):
+		_ui_avatar_rect.texture = load(avatar_path)
+		_ui_avatar_panel.visible = true
+	else:
+		_ui_avatar_rect.texture = null
+		_ui_avatar_panel.visible = false
 	_ui_title.text = "[center][b]" + title_text + "[/b][/center]"
 	_ui_body.text = "\n" + body_text
 	_ui_body.scroll_to_line(0)
 	_ui_layer.visible = true
+	_hide_hint()
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
-func _hide_panel() -> void:
+func _hide_panel(show_hint_again: bool = true) -> void:
 	if _ui_layer:
 		_ui_layer.visible = false
-	_current_signboard_name = ""
-	_active_trigger = null
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if show_hint_again and _active_trigger and not _active_data.is_empty():
+		_show_hint(_active_data)
 
 func _on_close_pressed() -> void:
 	_hide_panel()
@@ -466,15 +613,22 @@ func _on_close_pressed() -> void:
 # 输入处理：VR手柄/键盘关闭
 # ═══════════════════════════════════════════════════════
 func _input(event: InputEvent) -> void:
-	if not _ui_layer or not _ui_layer.visible:
+	if not _ui_layer:
 		return
 	# ESC键 / 手柄B键关闭
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+	if _ui_layer.visible and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		_hide_panel()
+		get_viewport().set_input_as_handled()
+	if not _ui_layer.visible and event.is_action_pressed("interact") and not _active_data.is_empty():
+		_show_panel(_active_data)
 		get_viewport().set_input_as_handled()
 	# 鼠标左键点击面板外区域关闭（VR手柄映射为鼠标左键时同样生效）
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var panel_rect: Rect2 = _ui_panel.get_global_rect()
-		if not panel_rect.has_point(event.position):
-			_hide_panel()
+		if _ui_layer.visible:
+			var panel_rect: Rect2 = _ui_panel.get_global_rect()
+			if not panel_rect.has_point(event.position):
+				_hide_panel()
+			get_viewport().set_input_as_handled()
+		elif not _active_data.is_empty():
+			_show_panel(_active_data)
 			get_viewport().set_input_as_handled()

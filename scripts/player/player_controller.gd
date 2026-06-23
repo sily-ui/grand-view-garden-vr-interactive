@@ -4,6 +4,7 @@ extends CharacterBody3D
 @export var walk_speed: float = 3.0
 @export var run_speed: float = 5.5
 @export var jump_velocity: float = 4.5
+@export var step_height: float = 0.45
 @export var mouse_sensitivity: float = 0.002
 @export var look_limit: float = 80.0
 
@@ -21,6 +22,8 @@ var current_interactable: Node = null
 var current_location: String = "大观园"
 
 func _ready() -> void:
+	floor_snap_length = step_height
+	floor_max_angle = deg_to_rad(50.0)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	interaction_prompt.visible = false
 	EventBus.building_entered.connect(_on_building_entered)
@@ -28,24 +31,32 @@ func _ready() -> void:
 	EventBus.time_changed.connect(_on_time_changed)
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and GameManager.is_playing() and Input.get_mouse_mode() != Input.MOUSE_MODE_VISIBLE:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
 	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		camera.rotate_x(-event.relative.y * mouse_sensitivity)
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-look_limit), deg_to_rad(look_limit))
 	
-	# 对话中：按空格/E/鼠标左键推进对话
+	# 对话中暂停玩家交互，对话输入交给 DialogUI 统一处理
 	if DialogManager.is_active:
-		if event.is_action_pressed("dialog_next") or event.is_action_pressed("interact"):
-			DialogManager.advance_dialog()
 		return
 	
-	if event.is_action_pressed("interact") and can_interact and current_interactable:
+	var clicked_interact: bool = false
+	if event is InputEventMouseButton:
+		clicked_interact = event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	if (event.is_action_pressed("interact") or clicked_interact) and can_interact and current_interactable:
 		if GameManager.is_playing():
 			current_interactable.interact(self)
 
 func _physics_process(delta: float) -> void:
 	if not GameManager.is_playing():
 		return
+	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+		if get_viewport().gui_get_focus_owner() != null:
+			return
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	# 重力
 	if not is_on_floor():
@@ -79,7 +90,7 @@ func check_interaction() -> void:
 			current_interactable = collider
 			can_interact = true
 			var info: Dictionary = collider.get_interaction_info()
-			interaction_prompt.text = "按 [E] %s" % info.get("action", "交互")
+			interaction_prompt.text = "按 [E] / 鼠标左键 %s：%s" % [info.get("action", "交互"), info.get("name", "目标")]
 			interaction_prompt.visible = true
 			return
 	current_interactable = null

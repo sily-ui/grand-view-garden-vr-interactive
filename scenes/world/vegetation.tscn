@@ -1,4 +1,5 @@
-﻿[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
+
 
 
 [sub_resource type="StandardMaterial3D" id="mat_bamboo"]
@@ -9,6 +10,11 @@ roughness = 0.8
 [sub_resource type="StandardMaterial3D" id="mat_wood"]
 albedo_color = Color(0.42, 0.25, 0.15, 1)
 roughness = 0.75
+
+
+[sub_resource type="StandardMaterial3D" id="mat_pillar_red"]
+albedo_color = Color(0.58, 0.12, 0.08, 1)
+roughness = 0.65
 
 
 [sub_resource type="CylinderMesh" id="mesh_tree_trunk"]
@@ -102,331 +108,330 @@ bottom_radius = 0.04
 height = 1.8
 
 
-[node name="vegetation" type="Node3D"]
 
-[node name="Vegetation" type="Node3D" parent="" unique_id=309601663]
+[node name="Vegetation" type="Node3D" unique_id=309601663]
 
 
-[node name="Tree1" type="MeshInstance3D" parent="vegetation/Vegetation" unique_id=1107403001]
+[node name="Tree1" type="MeshInstance3D" parent="." unique_id=1107403001]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2, -20)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="TreeTop1" type="MeshInstance3D" parent="vegetation/Vegetation/Tree1" unique_id=1664646105]
+[node name="TreeTop1" type="MeshInstance3D" parent="Tree1" unique_id=1664646105]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 material_override = SubResource("mat_bamboo")
 mesh = SubResource("mesh_tree_top")
 
 
-[node name="Tree2" type="MeshInstance3D" parent="vegetation/Vegetation" unique_id=828125397]
+[node name="Tree2" type="MeshInstance3D" parent="." unique_id=828125397]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2, -15)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="TreeTop2" type="MeshInstance3D" parent="vegetation/Vegetation/Tree2" unique_id=1314014504]
+[node name="TreeTop2" type="MeshInstance3D" parent="Tree2" unique_id=1314014504]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 material_override = SubResource("mat_bamboo")
 mesh = SubResource("mesh_tree_top")
 
 
-[node name="Tree3" type="MeshInstance3D" parent="vegetation/Vegetation" unique_id=900887071]
+[node name="Tree3" type="MeshInstance3D" parent="." unique_id=900887071]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 2, 30)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="TreeTop3" type="MeshInstance3D" parent="vegetation/Vegetation/Tree3" unique_id=881840115]
+[node name="TreeTop3" type="MeshInstance3D" parent="Tree3" unique_id=881840115]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 material_override = SubResource("mat_bamboo")
 mesh = SubResource("mesh_tree_top")
 
 
-[node name="Tree4" type="MeshInstance3D" parent="vegetation/Vegetation" unique_id=1592337419]
+[node name="Tree4" type="MeshInstance3D" parent="." unique_id=1592337419]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 2, 35)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="TreeTop4" type="MeshInstance3D" parent="vegetation/Vegetation/Tree4" unique_id=752506642]
+[node name="TreeTop4" type="MeshInstance3D" parent="Tree4" unique_id=752506642]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 material_override = SubResource("mat_bamboo")
 mesh = SubResource("mesh_tree_top")
 
 
-[node name="Tree5" type="MeshInstance3D" parent="vegetation/Vegetation" unique_id=523926272]
+[node name="Tree5" type="MeshInstance3D" parent="." unique_id=523926272]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 2, -25)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="TreeTop5" type="MeshInstance3D" parent="vegetation/Vegetation/Tree5" unique_id=387551543]
+[node name="TreeTop5" type="MeshInstance3D" parent="Tree5" unique_id=387551543]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 material_override = SubResource("mat_bamboo")
 mesh = SubResource("mesh_tree_top")
 
 
-[node name="Tree6" type="MeshInstance3D" parent="vegetation/Vegetation" unique_id=514277733]
+[node name="Tree6" type="MeshInstance3D" parent="." unique_id=514277733]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 2, -25)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="TreeTop6" type="MeshInstance3D" parent="vegetation/Vegetation/Tree6" unique_id=118466227]
+[node name="TreeTop6" type="MeshInstance3D" parent="Tree6" unique_id=118466227]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 material_override = SubResource("mat_bamboo")
 mesh = SubResource("mesh_tree_top")
 
 
-[node name="Flowers" type="Node3D" parent="vegetation/Vegetation" unique_id=206574830]
+[node name="Flowers" type="Node3D" parent="." unique_id=206574830]
 
 
-[node name="Flower1" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=1691741731]
+[node name="Flower1" type="MeshInstance3D" parent="Flowers" unique_id=1691741731]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.3, -5)
 material_override = SubResource("mat_flower_red")
 mesh = SubResource("mesh_flower")
 
 
-[node name="Flower2" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=865049730]
+[node name="Flower2" type="MeshInstance3D" parent="Flowers" unique_id=865049730]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.3, -3)
 material_override = SubResource("mat_flower_pink")
 mesh = SubResource("mesh_flower")
 
 
-[node name="Flower3" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=41635416]
+[node name="Flower3" type="MeshInstance3D" parent="Flowers" unique_id=41635416]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.3, -5)
 material_override = SubResource("mat_flower_yellow")
 mesh = SubResource("mesh_flower")
 
 
-[node name="Flower4" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=740523021]
+[node name="Flower4" type="MeshInstance3D" parent="Flowers" unique_id=740523021]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.3, -3)
 material_override = SubResource("mat_flower_red")
 mesh = SubResource("mesh_flower")
 
 
-[node name="Flower5" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=1666678876]
+[node name="Flower5" type="MeshInstance3D" parent="Flowers" unique_id=1666678876]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0.3, 20)
 material_override = SubResource("mat_flower_pink")
 mesh = SubResource("mesh_flower")
 
 
-[node name="Flower6" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=1448841058]
+[node name="Flower6" type="MeshInstance3D" parent="Flowers" unique_id=1448841058]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.3, 20)
 material_override = SubResource("mat_flower_yellow")
 mesh = SubResource("mesh_flower")
 
 
-[node name="Peony1" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=1766242926]
+[node name="Peony1" type="MeshInstance3D" parent="Flowers" unique_id=1766242926]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.4, 22)
 material_override = SubResource("mat_peony_red")
 mesh = SubResource("mesh_peony_bush")
 
 
-[node name="Peony2" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=675423518]
+[node name="Peony2" type="MeshInstance3D" parent="Flowers" unique_id=675423518]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.4, 22)
 material_override = SubResource("mat_peony_pink")
 mesh = SubResource("mesh_peony_bush")
 
 
-[node name="Peony3" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=688434041]
+[node name="Peony3" type="MeshInstance3D" parent="Flowers" unique_id=688434041]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0.4, 35)
 material_override = SubResource("mat_peony_red")
 mesh = SubResource("mesh_peony_bush")
 
 
-[node name="Peony4" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=395861083]
+[node name="Peony4" type="MeshInstance3D" parent="Flowers" unique_id=395861083]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.4, 35)
 material_override = SubResource("mat_peony_pink")
 mesh = SubResource("mesh_peony_bush")
 
 
-[node name="Peony5" type="MeshInstance3D" parent="vegetation/Vegetation/Flowers" unique_id=86897584]
+[node name="Peony5" type="MeshInstance3D" parent="Flowers" unique_id=86897584]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -15)
 material_override = SubResource("mat_peony_red")
 mesh = SubResource("mesh_peony_bush")
 
 
-[node name="PlumTree1" type="Node3D" parent="vegetation/Vegetation" unique_id=1976305611]
+[node name="PlumTree1" type="Node3D" parent="." unique_id=1976305611]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, 25)
 
 
-[node name="Trunk" type="MeshInstance3D" parent="vegetation/Vegetation/PlumTree1" unique_id=1701607239]
+[node name="Trunk" type="MeshInstance3D" parent="PlumTree1" unique_id=1701607239]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_plum_trunk")
 
 
-[node name="Canopy" type="MeshInstance3D" parent="vegetation/Vegetation/PlumTree1" unique_id=1404579269]
+[node name="Canopy" type="MeshInstance3D" parent="PlumTree1" unique_id=1404579269]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
 material_override = SubResource("mat_plum_blossom")
 mesh = SubResource("mesh_plum_canopy")
 
 
-[node name="PlumTree2" type="Node3D" parent="vegetation/Vegetation" unique_id=81139227]
+[node name="PlumTree2" type="Node3D" parent="." unique_id=81139227]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0, 25)
 
 
-[node name="Trunk" type="MeshInstance3D" parent="vegetation/Vegetation/PlumTree2" unique_id=2046173853]
+[node name="Trunk" type="MeshInstance3D" parent="PlumTree2" unique_id=2046173853]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_plum_trunk")
 
 
-[node name="Canopy" type="MeshInstance3D" parent="vegetation/Vegetation/PlumTree2" unique_id=447999608]
+[node name="Canopy" type="MeshInstance3D" parent="PlumTree2" unique_id=447999608]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
 material_override = SubResource("mat_plum_blossom")
 mesh = SubResource("mesh_plum_canopy")
 
 
-[node name="Willow1" type="Node3D" parent="vegetation/Vegetation" unique_id=1535413106]
+[node name="Willow1" type="Node3D" parent="." unique_id=1535413106]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -5)
 
 
-[node name="Trunk" type="MeshInstance3D" parent="vegetation/Vegetation/Willow1" unique_id=1101086120]
+[node name="Trunk" type="MeshInstance3D" parent="Willow1" unique_id=1101086120]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="Canopy" type="MeshInstance3D" parent="vegetation/Vegetation/Willow1" unique_id=2115317768]
+[node name="Canopy" type="MeshInstance3D" parent="Willow1" unique_id=2115317768]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 material_override = SubResource("mat_willow_leaf")
 mesh = SubResource("mesh_willow_canopy")
 
 
-[node name="Willow2" type="Node3D" parent="vegetation/Vegetation" unique_id=2089037795]
+[node name="Willow2" type="Node3D" parent="." unique_id=2089037795]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -5)
 
 
-[node name="Trunk" type="MeshInstance3D" parent="vegetation/Vegetation/Willow2" unique_id=1575126151]
+[node name="Trunk" type="MeshInstance3D" parent="Willow2" unique_id=1575126151]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="Canopy" type="MeshInstance3D" parent="vegetation/Vegetation/Willow2" unique_id=2145087190]
+[node name="Canopy" type="MeshInstance3D" parent="Willow2" unique_id=2145087190]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 material_override = SubResource("mat_willow_leaf")
 mesh = SubResource("mesh_willow_canopy")
 
 
-[node name="Willow3" type="Node3D" parent="vegetation/Vegetation" unique_id=998733214]
+[node name="Willow3" type="Node3D" parent="." unique_id=998733214]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 5)
 
 
-[node name="Trunk" type="MeshInstance3D" parent="vegetation/Vegetation/Willow3" unique_id=791860350]
+[node name="Trunk" type="MeshInstance3D" parent="Willow3" unique_id=791860350]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="Canopy" type="MeshInstance3D" parent="vegetation/Vegetation/Willow3" unique_id=344449089]
+[node name="Canopy" type="MeshInstance3D" parent="Willow3" unique_id=344449089]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 material_override = SubResource("mat_willow_leaf")
 mesh = SubResource("mesh_willow_canopy")
 
 
-[node name="Willow4" type="Node3D" parent="vegetation/Vegetation" unique_id=718881278]
+[node name="Willow4" type="Node3D" parent="." unique_id=718881278]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 5)
 
 
-[node name="Trunk" type="MeshInstance3D" parent="vegetation/Vegetation/Willow4" unique_id=843147331]
+[node name="Trunk" type="MeshInstance3D" parent="Willow4" unique_id=843147331]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_tree_trunk")
 
 
-[node name="Canopy" type="MeshInstance3D" parent="vegetation/Vegetation/Willow4" unique_id=1093364266]
+[node name="Canopy" type="MeshInstance3D" parent="Willow4" unique_id=1093364266]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 material_override = SubResource("mat_willow_leaf")
 mesh = SubResource("mesh_willow_canopy")
 
 
-[node name="WisteriaTrellis" type="Node3D" parent="vegetation/Vegetation" unique_id=1546541125]
+[node name="WisteriaTrellis" type="Node3D" parent="." unique_id=1546541125]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, 18)
 
 
-[node name="Post1" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1628930682]
+[node name="Post1" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1628930682]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.6, -1)
 material_override = SubResource("mat_pillar_red")
 mesh = SubResource("mesh_wisteria_post")
 
 
-[node name="Post2" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1520351847]
+[node name="Post2" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1520351847]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.6, -1)
 material_override = SubResource("mat_pillar_red")
 mesh = SubResource("mesh_wisteria_post")
 
 
-[node name="Post3" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1158202578]
+[node name="Post3" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1158202578]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.6, 1)
 material_override = SubResource("mat_pillar_red")
 mesh = SubResource("mesh_wisteria_post")
 
 
-[node name="Post4" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1042861565]
+[node name="Post4" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1042861565]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.6, 1)
 material_override = SubResource("mat_pillar_red")
 mesh = SubResource("mesh_wisteria_post")
 
 
-[node name="Beam1" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1844246002]
+[node name="Beam1" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1844246002]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, -1)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_wisteria_beam")
 
 
-[node name="Beam2" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=587999204]
+[node name="Beam2" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=587999204]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 1)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_wisteria_beam")
 
 
-[node name="BeamCross1" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1243957677]
+[node name="BeamCross1" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1243957677]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.5, 3.3, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_wisteria_beam")
 
 
-[node name="BeamCross2" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=210021769]
+[node name="BeamCross2" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=210021769]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 3.3, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_wisteria_beam")
 
 
-[node name="BeamCross3" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=969424194]
+[node name="BeamCross3" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=969424194]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 1.5, 3.3, 0)
 material_override = SubResource("mat_wood")
 mesh = SubResource("mesh_wisteria_beam")
 
 
-[node name="Vine1" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=2913555]
+[node name="Vine1" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=2913555]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2.3, 0)
 material_override = SubResource("mat_wisteria_flower")
 mesh = SubResource("mesh_wisteria_vine")
 
 
-[node name="Vine2" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=2000369580]
+[node name="Vine2" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=2000369580]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, -0.3)
 material_override = SubResource("mat_wisteria_flower")
 mesh = SubResource("mesh_wisteria_vine")
 
 
-[node name="Vine3" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1305443702]
+[node name="Vine3" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1305443702]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2.4, 0.2)
 material_override = SubResource("mat_wisteria_flower")
 mesh = SubResource("mesh_wisteria_vine")
 
 
-[node name="Vine4" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=1868212117]
+[node name="Vine4" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=1868212117]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.1, 0.5)
 material_override = SubResource("mat_wisteria_flower")
 mesh = SubResource("mesh_wisteria_vine")
 
 
-[node name="Vine5" type="MeshInstance3D" parent="vegetation/Vegetation/WisteriaTrellis" unique_id=932847522]
+[node name="Vine5" type="MeshInstance3D" parent="WisteriaTrellis" unique_id=932847522]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.3, -0.4)
 material_override = SubResource("mat_wisteria_flower")
 mesh = SubResource("mesh_wisteria_vine")

@@ -17,15 +17,30 @@ func _ready() -> void:
 	call_deferred("_setup_ui")
 
 func _setup_ui() -> void:
+	_find_dialog_ui()
+
+func _find_dialog_ui() -> void:
 	var tree := get_tree()
 	if tree:
 		var ui = tree.get_first_node_in_group("dialog_ui")
 		if ui:
 			dialog_ui = ui
+			return
+		var current_scene := tree.current_scene
+		if current_scene:
+			ui = current_scene.get_node_or_null("Systems/DialogUI")
+			if ui:
+				dialog_ui = ui
 
 func start_dialog(dialog_id: String) -> void:
 	if not DialogData.dialogs.has(dialog_id):
 		push_warning("Dialog not found: " + dialog_id)
+		return
+
+	_find_dialog_ui()
+	if not dialog_ui:
+		push_warning("Dialog UI not found, skipping dialog: " + dialog_id)
+		GameManager.change_state(GameManager.GameStateType.PLAYING)
 		return
 	
 	current_dialog_id = dialog_id
@@ -36,12 +51,11 @@ func start_dialog(dialog_id: String) -> void:
 	GameManager.change_state(GameManager.GameStateType.DIALOG)
 	
 	# 显示对话UI
-	if dialog_ui:
-		dialog_ui.show_dialog(
-			current_dialog.get("speaker", ""),
-			current_dialog.get("text", ""),
-			current_dialog.get("choices", [])
-		)
+	dialog_ui.show_dialog(
+		current_dialog.get("speaker", ""),
+		current_dialog.get("text", ""),
+		current_dialog.get("choices", [])
+	)
 	
 	# AI 语音配音
 	if TTSSystem:
@@ -105,6 +119,7 @@ func end_dialog() -> void:
 	if TTSSystem:
 		TTSSystem.stop()
 	
+	_find_dialog_ui()
 	if dialog_ui:
 		dialog_ui.hide_dialog()
 	

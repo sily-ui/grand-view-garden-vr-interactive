@@ -10,52 +10,87 @@ class_name NavigationGuide
 var story_stages: Array[Dictionary] = [
 	{
 		"name": "走向荣国府大门",
-		"target": Vector3(0, 1.5, -38),
+		"target": Vector3(0, 1.5, -84),
 		"condition": "",
 		"completion": "intro_done",
-		"hint": "向大门走去"
+		"hint": "前往荣国府门外"
 	},
 	{
 		"name": "穿过大门",
-		"target": Vector3(0, 1.5, -32),
+		"target": Vector3(0, 1.5, -62),
 		"condition": "intro_done",
 		"completion": "",
-		"hint": "进入大门"
+		"hint": "沿中轴路进入大观园门"
 	},
 	{
 		"name": "过石桥",
+		"target": Vector3(-5, 1.5, -34),
+		"condition": "intro_done",
+		"completion": "",
+		"hint": "从中轴路转向荷塘石桥"
+	},
+	{
+		"name": "走上石桥",
 		"target": Vector3(-5, 1.5, -22),
 		"condition": "intro_done",
 		"completion": "",
-		"hint": "走左侧石桥过荷塘"
+		"hint": "沿桥面穿过荷塘"
 	},
 	{
 		"name": "沿游廊前行",
-		"target": Vector3(-5, 1.5, -10),
+		"target": Vector3(-5, 1.5, -8),
 		"condition": "intro_done",
 		"completion": "",
 		"hint": "沿游廊继续前行"
 	},
 	{
 		"name": "去拜见贾母",
-		"target": Vector3(0, 1.5, 15),
+		"target": Vector3(0, 1.5, 29),
 		"condition": "intro_done",
 		"completion": "met_jiamu",
-		"hint": "前往正厅拜见贾母"
+		"hint": "进正厅拜见贾母"
+	},
+	{
+		"name": "找王熙凤问路",
+		"target": Vector3(3.2, 1.5, 27.5),
+		"condition": "met_jiamu",
+		"completion": "met_xifeng",
+		"hint": "找王熙凤问下一站"
+	},
+	{
+		"name": "游潇湘馆",
+		"target": Vector3(-35, 1.5, 15),
+		"condition": "met_xifeng",
+		"completion": "visited_xiaoxiang",
+		"hint": "去潇湘馆见林黛玉"
+	},
+	{
+		"name": "游怡红院",
+		"target": Vector3(35, 1.5, 15),
+		"condition": "visited_xiaoxiang",
+		"completion": "visited_yihong",
+		"hint": "去怡红院见贾宝玉"
+	},
+	{
+		"name": "栊翠庵品茶",
+		"target": Vector3(0, 1.5, 45),
+		"condition": "visited_yihong",
+		"completion": "completed_tea",
+		"hint": "去栊翠庵找妙玉品茶"
 	},
 	{
 		"name": "赴宴",
 		"target": Vector3(0, 1.5, 25),
-		"condition": "met_jiamu",
+		"condition": "completed_tea",
 		"completion": "attended_banquet",
-		"hint": "前往宴席"
+		"hint": "回大观楼赴宴"
 	},
 	{
 		"name": "告别",
-		"target": Vector3(0, 1.5, -42),
+		"target": Vector3(0, 1.5, -84),
 		"condition": "attended_banquet",
 		"completion": "game_completed",
-		"hint": "返回大门处告别"
+		"hint": "回到荣国府门外告别"
 	}
 ]
 
@@ -70,6 +105,7 @@ const ARROW_GLOW  := Color(1.0, 0.9, 0.4, 1.0)
 const FLOAT_HEIGHT := 2.5
 const ARROW_SCALE := Vector3(0.6, 0.6, 0.6)
 const ACTIVATE_DISTANCE := 6.0      # 距触发点多近时隐藏箭头
+const INTERACT_DISTANCE := 2.8      # 距任务目标足够近时显示交互提示
 const SPAWN_DISTANCE := 50.0        # 箭头显示的最大距离
 const ARROW_SPACING := 8.0          # 多个箭头之间的间距
 
@@ -297,6 +333,21 @@ func _create_hud_hint() -> void:
 	hud_hint_label.visible = false
 	hud.add_child(hud_hint_label)
 
+func get_current_hint() -> String:
+	_find_current_stage()
+	if current_stage_index >= story_stages.size():
+		return ""
+	return story_stages[current_stage_index].get("hint", "")
+
+func get_stage_count() -> int:
+	return story_stages.size()
+
+func has_stage_named(stage_name: String) -> bool:
+	for stage in story_stages:
+		if stage.get("name", "") == stage_name:
+			return true
+	return false
+
 func _update_hud_hint() -> void:
 	if not hud_hint_label:
 		return
@@ -309,8 +360,11 @@ func _update_hud_hint() -> void:
 	var player_pos: Vector3 = player.global_position
 	var dist: float = Vector2(player_pos.x - target.x, player_pos.z - target.z).length()
 	
-	if dist < ACTIVATE_DISTANCE:
-		_hide_hud_hint()
+	if dist < INTERACT_DISTANCE:
+		hud_hint_label.text = ">>> 已到达：%s <<<" % stage["hint"]
+		hud_hint_label.visible = true
+		var near_time := Time.get_ticks_msec() / 1000.0
+		hud_hint_label.modulate.a = 0.7 + 0.3 * sin(near_time * 3.5)
 		return
 	
 	# 计算方向描述

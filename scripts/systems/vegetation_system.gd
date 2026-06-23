@@ -86,15 +86,22 @@ func _ready() -> void:
 	print("[VegetationSystem] 开始初始化植被系统")
 	# 1. 清除旧的球形植被
 	_cleanup_old_vegetation()
+	await get_tree().process_frame
 	# 2. 预加载常用模型
 	_preload_models()
 	print("[VegetationSystem] 已缓存 ", _cache.size(), " 个模型")
-	# 3. 部署新植被
+	await get_tree().process_frame
+	# 3. 部署新植被（每个步骤间隔一帧，避免卡死）
 	_place_pond_vegetation()
+	await get_tree().process_frame
 	_place_path_trees()
+	await get_tree().process_frame
 	_place_building_greenery()
+	await get_tree().process_frame
 	_place_rockery_greenery()
+	await get_tree().process_frame
 	_place_lawn_grass()
+	await get_tree().process_frame
 	_place_roadside_plants()
 	print("[VegetationSystem] 植被部署完成")
 

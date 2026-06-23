@@ -1,0 +1,4 @@
+{
+  "api_key": "填入你的 DashScope API Key",
+  "api_base_url": "https://dashscope.aliyuncs.com/api/v1/services/audio/music/generation"
+}

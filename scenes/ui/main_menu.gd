@@ -13,6 +13,8 @@ extends Control
 var settings_panel: PanelContainer = null
 
 func _ready() -> void:
+	get_tree().auto_accept_quit = false
+	print("[MainMenu] ready; auto_accept_quit=false")
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	
 	new_game_btn.pressed.connect(_on_new_game)
@@ -43,7 +45,14 @@ func _on_settings() -> void:
 	_create_settings_panel()
 
 func _on_quit() -> void:
+	print("[MainMenu] quit button pressed")
 	get_tree().quit()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		print("[MainMenu] window close request intercepted")
+	elif what == NOTIFICATION_EXIT_TREE:
+		print("[MainMenu] exiting scene tree")
 
 func _fade_to_scene(scene_path: String) -> void:
 	var tween := create_tween()
@@ -60,11 +69,14 @@ func _create_settings_panel() -> void:
 	
 	settings_panel = PanelContainer.new()
 	settings_panel.name = "SettingsPanel"
-	settings_panel.anchors_preset = Control.PRESET_CENTER
+	settings_panel.set_anchors_preset(Control.PRESET_CENTER)
+	settings_panel.custom_minimum_size = Vector2(440, 360)
 	settings_panel.offset_left = -220
 	settings_panel.offset_right = 220
 	settings_panel.offset_top = -180
 	settings_panel.offset_bottom = 180
+	settings_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	settings_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	
 	var panel_bg := StyleBoxFlat.new()
 	panel_bg.bg_color = Color(0.1, 0.08, 0.05, 0.92)
@@ -125,7 +137,7 @@ func _create_settings_panel() -> void:
 	btn_style.content_margin_right = 16
 	btn_style.content_margin_bottom = 6
 	back_btn.add_theme_stylebox_override("normal", btn_style)
-	var btn_hover := btn_style.duplicate()
+	var btn_hover: StyleBoxFlat = btn_style.duplicate()
 	btn_hover.bg_color = Color(0.2, 0.15, 0.08, 0.85)
 	btn_hover.border_color = Color(0.79, 0.66, 0.3, 0.9)
 	back_btn.add_theme_stylebox_override("hover", btn_hover)
@@ -168,7 +180,7 @@ func _create_volume_slider(label_text: String, bus_name: String, default_val: fl
 func _create_sensitivity_slider() -> VBoxContainer:
 	var container := VBoxContainer.new()
 	
-	var player := get_tree().get_first_node_in_group("player")
+	var player: Node = get_tree().get_first_node_in_group("player")
 	var current_sens := 0.002
 	if player:
 		current_sens = player.mouse_sensitivity
@@ -186,7 +198,7 @@ func _create_sensitivity_slider() -> VBoxContainer:
 	slider.value = current_sens
 	slider.custom_minimum_size = Vector2(300, 20)
 	slider.value_changed.connect(func(val: float) -> void:
-		var p := get_tree().get_first_node_in_group("player")
+		var p: Node = get_tree().get_first_node_in_group("player")
 		if p:
 			p.mouse_sensitivity = val
 		label.text = "鼠标灵敏度: %.0f%%" % [val * 1000.0 / 2.0 * 100.0]
