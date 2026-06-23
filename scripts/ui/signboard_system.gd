@@ -74,7 +74,7 @@ var _signboard_data: Array = [
 		)
 	},
 	{
-		"pos": Vector3(0, 0, 45),
+		"pos": Vector3(0, 0, 57),
 		"name": "妙玉",
 		"title": "槛外人",
 		"avatar": "res://assets/textures/ui/avatar_qingwen.png",

@@ -887,10 +887,10 @@ func _build_east_courtyards() -> void:
 		"缀锦阁", "", Color(0.55, 0.35, 0.15))
 
 	# --- 栊翠庵禅院围合完善 (已存在建筑，补围墙和庭院) ---
-	_build_courtyard_wall(east_root, "LongcuiWall", Vector3(0, 0, 40), 16, 14)
-	# 禅院小径
-	_make_mesh(east_root, "LongcuiPath", Vector3(0, 0.02, 35),
-		Vector3(2, 0.04, 10), mat_stone)
+	_build_courtyard_wall(east_root, "LongcuiWall", Vector3(0, 0, 52), 16, 14)
+	# 禅院小径 (从大观楼南门延伸至栊翠庵)
+	_make_mesh(east_root, "LongcuiPath", Vector3(0, 0.02, 47),
+		Vector3(2, 0.04, 24), mat_stone)
 
 	# 东片区连接游廊 (怡红院花门 → 缀锦阁西月洞门)
 	_build_corridor(east_root, "EastCorridor",
@@ -1425,7 +1425,7 @@ func _build_residential_courtyard_enclosures(parent: Node3D) -> void:
 
 	var courtyard_specs: Array[Dictionary] = [
 		{"name": "DaguanLouEnclosure", "pos": Vector3(0, 0, 25), "w": 30.0, "d": 20.0, "label": "大观楼", "gate": "south"},
-		{"name": "LongcuiAnEnclosure", "pos": Vector3(0, 0, 40), "w": 22.0, "d": 18.0, "label": "栊翠庵", "gate": "south"},
+		{"name": "LongcuiAnEnclosure", "pos": Vector3(0, 0, 52), "w": 22.0, "d": 18.0, "label": "栊翠庵", "gate": "south"},
 		{"name": "ZhuijingeEnclosure", "pos": Vector3(40, 0, 25), "w": 22.0, "d": 18.0, "label": "缀锦阁", "gate": "west"},
 		{"name": "ZilingzhouEnclosure", "pos": Vector3(-25, 0, 20), "w": 20.0, "d": 18.0, "label": "紫菱洲", "gate": "east"},
 	]
@@ -1651,12 +1651,12 @@ func _build_continuous_veranda_system(parent: Node3D) -> void:
 	_build_corridor(veranda, "WestLakeVeranda", Vector3(-24, 0, -2), Vector3(-30, 0, 22), 3.0)
 	_build_corridor(veranda, "NorthLakeVeranda", Vector3(-30, 0, 22), Vector3(-10, 0, 34), 3.0)
 	_build_corridor(veranda, "EastLakeVeranda", Vector3(24, 0, -2), Vector3(31, 0, 18), 3.0)
-	_build_corridor(veranda, "TeaVeranda", Vector3(31, 0, 18), Vector3(12, 0, 40), 3.0)
+	_build_corridor(veranda, "TeaVeranda", Vector3(31, 0, 18), Vector3(12, 0, 52), 3.0)
 	_build_corridor(veranda, "MainHallVeranda", Vector3(-10, 0, 34), Vector3(10, 0, 31), 3.0)
 	# === 连通性修复: 闭合主环路 (TeaVeranda终点→MainHallVeranda终点) ===
-	_build_corridor(veranda, "NorthClosureVeranda", Vector3(10, 0, 31), Vector3(12, 0, 40), 3.0)
+	_build_corridor(veranda, "NorthClosureVeranda", Vector3(10, 0, 31), Vector3(12, 0, 52), 3.0)
 	# === 连通性修复: 连通栊翠庵南月洞门 (解决妙玉NPC不可达) ===
-	_build_corridor(veranda, "LongcuiVeranda", Vector3(12, 0, 40), Vector3(0, 0, 49), 3.0)
+	_build_corridor(veranda, "LongcuiVeranda", Vector3(12, 0, 52), Vector3(0, 0, 61), 3.0)
 
 func _build_moon_gates_and_screen_walls(parent: Node3D) -> void:
 	var gates := Node3D.new()
@@ -1666,7 +1666,7 @@ func _build_moon_gates_and_screen_walls(parent: Node3D) -> void:
 	_build_moon_gate(gates, "SouthMoonGate", Vector3(0, 0, -5), 0.0, "入园")
 	_build_moon_gate(gates, "WestMoonGate", Vector3(-27, 0, 7), deg_to_rad(-18.0), "竹径")
 	_build_moon_gate(gates, "EastMoonGate", Vector3(27, 0, 8), deg_to_rad(18.0), "花径")
-	_build_moon_gate(gates, "NorthMoonGate", Vector3(0, 0, 34), PI, "临水")
+	_build_moon_gate(gates, "NorthMoonGate", Vector3(0, 0, 42), PI, "栊翠")
 
 	_build_screen_wall(gates, "EntranceScreenWall", Vector3(0, 0, -39), Vector3(12, 4.2, 0.55), 0.0)
 	_build_screen_wall(gates, "LakeScreenWallWest", Vector3(-17, 0, 2), Vector3(13, 3.4, 0.45), deg_to_rad(28.0))

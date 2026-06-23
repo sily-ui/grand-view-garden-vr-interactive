@@ -166,11 +166,36 @@ func _refresh_editor_preview() -> void:
 	if old_preview:
 		old_preview.free()
 
+	# 清理旧的编辑器视觉系统
+	for sys_name in ["EditorVegetation", "EditorEnhancements", "EditorAmbience"]:
+		var old_sys := get_node_or_null(sys_name)
+		if old_sys:
+			old_sys.free()
+
 	var builder_script := load(GARDEN_BUILDER_SCRIPT)
 	if builder_script == null:
 		return
 
+	# 1. GardenBuilder（核心场景）
 	var preview := Node3D.new()
 	preview.name = EDITOR_PREVIEW_NODE
 	preview.set_script(builder_script)
 	add_child(preview)
+
+	# 2. 场景增强（光照、灯笼）
+	var enhancements := Node.new()
+	enhancements.name = "EditorEnhancements"
+	enhancements.set_script(load("res://scripts/systems/scene_enhancements.gd"))
+	add_child(enhancements)
+
+	# 3. 植被系统
+	var vegetation := Node.new()
+	vegetation.name = "EditorVegetation"
+	vegetation.set_script(load("res://scripts/systems/vegetation_system.gd"))
+	add_child(vegetation)
+
+	# 4. 场景氛围（蝴蝶、落叶、风粒子）
+	var ambience := Node3D.new()
+	ambience.name = "EditorAmbience"
+	ambience.set_script(load("res://scripts/systems/scene_ambience.gd"))
+	add_child(ambience)

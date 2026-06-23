@@ -1,3 +1,4 @@
+@tool
 extends Node
 ## 场景增强系统：光照、音效、LOD/遮挡剔除
 ## 运行时自动配置，无需手动编辑.tscn
@@ -22,6 +23,10 @@ var _courtyard_bgm: Dictionary = {}
 # ═══════════════════════════════════════════════════════
 func _ready() -> void:
 	_init_data()
+	if Engine.is_editor_hint():
+		_setup_sun_light()
+		_setup_indoor_lanterns()
+		return
 	# 1. 光照系统
 	_setup_sun_light()
 	_setup_indoor_lanterns()

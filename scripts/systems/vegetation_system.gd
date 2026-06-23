@@ -1,3 +1,4 @@
+@tool
 extends Node
 ## 园林植被系统
 ## 基于 Ultimate Nature Pack 替换场景中所有球形简模植被
@@ -78,6 +79,16 @@ func _init_paths() -> void:
 # 生命周期
 # ═══════════════════════════════════════════════════════
 func _ready() -> void:
+	_init_paths()
+	if Engine.is_editor_hint():
+		_preload_models()
+		_place_pond_vegetation()
+		_place_path_trees()
+		_place_building_greenery()
+		_place_rockery_greenery()
+		_place_lawn_grass()
+		_place_roadside_plants()
+		return
 	# 延迟一帧让其他系统先初始化
 	await get_tree().process_frame
 	# 初始化路径数据

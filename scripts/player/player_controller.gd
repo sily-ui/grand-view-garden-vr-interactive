@@ -26,6 +26,8 @@ func _ready() -> void:
 	floor_max_angle = deg_to_rad(50.0)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	interaction_prompt.visible = false
+	location_label.visible = false
+	time_label.visible = false
 	EventBus.building_entered.connect(_on_building_entered)
 	EventBus.building_exited.connect(_on_building_exited)
 	EventBus.time_changed.connect(_on_time_changed)
@@ -99,14 +101,14 @@ func check_interaction() -> void:
 
 func _on_building_entered(building_name: String) -> void:
 	current_location = building_name
-	location_label.text = building_name
+	location_label.text = ""
 	GameState.current_area = building_name
 
 func _on_building_exited(_building_name: String) -> void:
 	current_location = "大观园"
-	location_label.text = "大观园"
+	location_label.text = ""
 	GameState.current_area = ""
 
 func _on_time_changed(hour: int, minute: int) -> void:
 	if time_label:
-		time_label.text = "%02d:%02d" % [hour, minute]
+		time_label.text = ""

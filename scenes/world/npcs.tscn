@@ -167,7 +167,7 @@ mesh = SubResource("mesh_npc_body")
 
 
 [node name="Miaoyu" type="CharacterBody3D" parent="." unique_id=1911914709 groups=["npc"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 45)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 57)
 script = ExtResource("2_npc")
 npc_name = "妙玉"
 npc_title = "槛外人"

@@ -9,9 +9,9 @@
 
 ```
 入场(0,−84) → 照壁(−8.8,−58) → 石路(0,−38) → 石桥(0,−16/−10) → 游廊(0,−2)
-    → 正厅拜贾母(0,29) → 见王熙凤(3.2,27.5)
+    → 正厅拜贾母(0,35) → 见王熙凤(3.2,27.5)
         → 左: 潇湘馆(−35,15) → 右: 怡红院(35,15)
-            → 后: 栊翠庵(0,45) → 回: 赴宴(0,25) → 出: 告别(0,−84)
+            → 后: 栊翠庵(0,57) → 回: 赴宴(0,35) → 出: 告别(0,−84)
 ```
 
 **条件链 (Condition Chain)**：
@@ -141,7 +141,7 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 
 | 项目 | 预期值 |
 |------|--------|
-| **触发位置** | (0, 29)，MeetJiamuTrigger |
+| **触发位置** | (0, 35)，MeetJiamuTrigger |
 | **触发条件** | `intro_done == true`（`required_condition="intro_done"`） |
 | **对话ID** | `meet_jiamu` |
 | **对话链** | `meet_jiamu` → 选项分支 → `meet_jiamu_3` → `meet_jiamu_4` |
@@ -164,7 +164,7 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 **TTS语音**：贾母音色 → 刘姥姥音色 → 贾母音色 → 王熙凤音色
 
 **测试步骤**：
-1. [ ] 走到(0, 29)附近，确认对话自动触发
+1. [ ] 走到(0, 35)附近，确认对话自动触发
 2. [ ] 确认贾母头像显示、打字机效果
 3. [ ] 选择选项A，确认跳转到 `meet_jiamu_2a`
 4. [ ]（新游戏）选择选项B，确认跳转到 `meet_jiamu_2b`
@@ -174,7 +174,7 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 8. [ ] 导航箭头切换到"找王熙凤问路"
 
 **防重复测试**：
-1. [ ] 对话结束后回到(0, 29)，确认不重复触发（`trigger_once=true`）
+1. [ ] 对话结束后回到(0, 35)，确认不重复触发（`trigger_once=true`）
 
 ---
 
@@ -263,7 +263,7 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 
 | 项目 | 预期值 |
 |------|--------|
-| **触发位置** | (0, 45)，NPC交互 |
+| **触发位置** | (0, 57)，NPC交互 |
 | **触发条件** | `visited_yihong == true`（导航条件）；区域 `longcui_an` 已解锁 |
 | **对话ID** | `tea_ceremony` |
 | **对话链** | `tea_ceremony` → `tea_ceremony_2` → `tea_ceremony_3` → `tea_ceremony_4`（4句） |
@@ -279,10 +279,10 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 **可交互物品**：
 | 物品 | 位置 | 效果 |
 |------|------|------|
-| 茶具 | (2, 42) | 可拾取 |
+| 茶具 | (2, 54) | 可拾取 |
 
 **测试步骤**：
-1. [ ] 导航箭头指向(0, 45)
+1. [ ] 导航箭头指向(0, 57)
 2. [ ] 靠近妙玉，确认交互提示
 3. [ ] 按E触发，确认4句对话
 4. [ ] 确认妙玉送茶杯的台词准确
@@ -296,7 +296,7 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 
 | 项目 | 预期值 |
 |------|--------|
-| **触发位置** | (0, 25)，BanquetTrigger |
+| **触发位置** | (0, 35)，BanquetTrigger |
 | **触发条件** | `completed_tea == true`（`required_condition="completed_tea"`） |
 | **对话ID** | `banquet` |
 | **对话链** | `banquet` → `banquet_2` → `banquet_3` → `banquet_4` → `banquet_5`（5句） |
@@ -308,8 +308,8 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 - 如果栊翠庵事件错误设置为 `had_tea`（而非 `completed_tea`），此处**永远无法触发**
 
 **测试步骤**：
-1. [ ] 品茶结束后导航指向(0, 25)
-2. [ ] 走到(0, 25)附近，确认对话自动触发（EventTrigger，非NPC交互）
+1. [ ] 品茶结束后导航指向(0, 35)
+2. [ ] 走到(0, 35)附近，确认对话自动触发（EventTrigger，非NPC交互）
 3. [ ] 确认5句对话顺序正确
 4. [ ] `attended_banquet == true`
 5. [ ] 导航切换到"回到荣国府门外告别"
@@ -505,12 +505,12 @@ intro_done → met_jiamu → met_xifeng → visited_xiaoxiang → visited_yihong
 | 4 | (0,−62) | 触发区 | path_gate | path_gate_seen | path_gate_seen=true |
 | 5 | (0,−10) | 触发区 | path_garden | path_complete | path_done=true |
 | 6 | (0,−2) | 路点 | — | — | — |
-| 7 | (0,29) | 触发区 | meet_jiamu | meet_jiamu_complete + 3个unlock | met_jiamu=true, 解锁3区域 |
+| 7 | (0,35) | 触发区 | meet_jiamu | meet_jiamu_complete + 3个unlock | met_jiamu=true, 解锁3区域 |
 | 8 | (3,20) | NPC交互 | meet_xifeng | meet_xifeng_complete | met_xifeng=true |
 | 9 | (−35,15) | NPC交互 | visit_xiaoxiang | visit_xiaoxiang_complete | visited_xiaoxiang=true |
 | 10 | (35,15) | NPC交互 | visit_yihong | visit_yihong_complete | visited_yihong=true |
-| 11 | (0,45) | NPC交互 | tea_ceremony | tea_ceremony_complete + collect_teacup | completed_tea=true |
-| 12 | (0,25) | 触发区 | banquet | banquet_complete | attended_banquet=true |
+| 11 | (0,57) | NPC交互 | tea_ceremony | tea_ceremony_complete + collect_teacup | completed_tea=true |
+| 12 | (0,35) | 触发区 | banquet | banquet_complete | attended_banquet=true |
 | 13 | (0,−84) | 触发区 | farewell | game_complete | game_completed=true |
 
 ---

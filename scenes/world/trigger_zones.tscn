@@ -26,12 +26,12 @@ shape = SubResource("col_trigger")
 
 
 [node name="MeetJiamuTrigger" type="Area3D" parent="." unique_id=568422811]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 29)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 35)
 script = ExtResource("3_et")
 dialog_id = "meet_jiamu"
 required_condition = "intro_done"
 visible_npc_name = "贾母"
-visible_npc_offset = Vector3(0, -1.5, -1.7)
+visible_npc_offset = Vector3(0, -1.5, -2.4)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeetJiamuTrigger" unique_id=997745255]
@@ -39,12 +39,12 @@ shape = SubResource("col_trigger")
 
 
 [node name="BanquetTrigger" type="Area3D" parent="." unique_id=1557462623]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 35)
 script = ExtResource("3_et")
 dialog_id = "banquet"
 required_condition = "completed_tea"
 visible_npc_name = "王熙凤"
-visible_npc_offset = Vector3(1.8, -1.5, -1.5)
+visible_npc_offset = Vector3(1.8, -1.5, -2.4)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BanquetTrigger" unique_id=919202834]

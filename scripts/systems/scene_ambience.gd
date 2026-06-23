@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 class_name SceneAmbience
 
@@ -34,6 +35,9 @@ func _init_ambience() -> void:
 	bird_timer = randf_range(2.0, 5.0)
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		_update_leaves(delta)
+		return
 	# 鸟鸣
 	bird_timer -= delta
 	if bird_timer <= 0.0:
