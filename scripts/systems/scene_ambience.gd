@@ -24,6 +24,7 @@ var koi_interval: float = 12.0
 var wind_particles: GPUParticles3D = null
 
 func _ready() -> void:
+	add_to_group("scene_ambience")
 	call_deferred("_init_ambience")
 
 func _init_ambience() -> void:
@@ -169,11 +170,10 @@ func _play_bird_chirp() -> void:
 
 func _spawn_koi_splash() -> void:
 	# 在荷塘区域生成一个水花粒子效果
-	var pond_center := Vector3(0.0, 0.1, 0.0)  # 大致荷塘位置
 	var splash_pos := Vector3(
-		randf_range(-8.0, 8.0),
+		randf_range(-3.0, 3.0),
 		0.2,
-		randf_range(-5.0, 5.0)
+		randf_range(-14.0, -6.0)
 	)
 	
 	var splash := GPUParticles3D.new()
@@ -211,6 +211,33 @@ func _spawn_koi_splash() -> void:
 	# 自动销毁
 	await splash.finished
 	splash.queue_free()
+
+func play_koi_jump_sequence() -> void:
+	for i in range(3):
+		_spawn_koi_arc(Vector3(randf_range(-2.5, 2.5), 0.32, randf_range(-13.0, -7.0)), i * 0.22)
+
+func _spawn_koi_arc(start_pos: Vector3, delay: float) -> void:
+	await get_tree().create_timer(delay).timeout
+	var koi := MeshInstance3D.new()
+	koi.name = "KoiJump"
+	var mesh := CapsuleMesh.new()
+	mesh.radius = 0.12
+	mesh.height = 0.42
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.95, 0.34, 0.12)
+	mat.roughness = 0.55
+	mesh.material = mat
+	koi.mesh = mesh
+	koi.position = start_pos
+	koi.rotation.x = PI / 2.0
+	add_child(koi)
+	var tween := create_tween()
+	tween.tween_property(koi, "position", start_pos + Vector3(0.55, 0.75, 0.4), 0.32).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(koi, "position", start_pos + Vector3(1.1, -0.04, 0.8), 0.34).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.finished.connect(func() -> void:
+		_spawn_koi_splash()
+		koi.queue_free()
+	)
 
 # ============================================================
 # 风吹树叶粒子

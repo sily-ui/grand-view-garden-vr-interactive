@@ -16,32 +16,39 @@ var story_stages: Array[Dictionary] = [
 		"hint": "前往荣国府门外"
 	},
 	{
-		"name": "穿过大门",
-		"target": Vector3(0, 1.5, -62),
+		"name": "绕过照壁",
+		"target": Vector3(-8.8, 1.5, -58),
 		"condition": "intro_done",
 		"completion": "",
-		"hint": "沿中轴路进入大观园门"
+		"hint": "从照壁左侧石路绕行"
+	},
+	{
+		"name": "回到入园石路",
+		"target": Vector3(0, 1.5, -38),
+		"condition": "intro_done",
+		"completion": "",
+		"hint": "回到中轴石路"
 	},
 	{
 		"name": "过石桥",
-		"target": Vector3(-5, 1.5, -34),
+		"target": Vector3(0, 1.5, -16),
 		"condition": "intro_done",
 		"completion": "",
-		"hint": "从中轴路转向荷塘石桥"
+		"hint": "沿中轴石路前往沁芳桥"
 	},
 	{
 		"name": "走上石桥",
-		"target": Vector3(-5, 1.5, -22),
+		"target": Vector3(0, 1.5, -10),
 		"condition": "intro_done",
 		"completion": "",
-		"hint": "沿桥面穿过荷塘"
+		"hint": "走上明显的石桥桥面"
 	},
 	{
 		"name": "沿游廊前行",
-		"target": Vector3(-5, 1.5, -8),
+		"target": Vector3(0, 1.5, -2),
 		"condition": "intro_done",
 		"completion": "",
-		"hint": "沿游廊继续前行"
+		"hint": "下桥后沿石路入园"
 	},
 	{
 		"name": "去拜见贾母",
@@ -113,6 +120,29 @@ const ARROW_SPACING := 8.0          # 多个箭头之间的间距
 var hud_hint_label: Label = null
 var player: CharacterBody3D = null
 
+# 国风导航 HUD
+var navigation_hud_layer: CanvasLayer = null
+var navigation_hud_root: Control = null
+var compass_panel: PanelContainer = null
+var compass_heading_label: Label = null
+var compass_needle_label: Label = null
+var compass_marker_labels: Array[Label] = []
+var top_arrow_panel: PanelContainer = null
+var top_arrow_label: Label = null
+var top_target_label: Label = null
+var top_distance_label: Label = null
+var top_turn_label: Label = null
+var navigation_hud_visible: bool = true
+
+var compass_places: Array[Dictionary] = [
+	{"name": "潇湘馆", "pos": Vector3(-35, 0, 15)},
+	{"name": "怡红院", "pos": Vector3(35, 0, 15)},
+	{"name": "秋爽斋", "pos": Vector3(-40, 0, -5)},
+	{"name": "蘅芜苑", "pos": Vector3(25, 0, -15)},
+	{"name": "稻香村", "pos": Vector3(-25, 0, -15)},
+	{"name": "栊翠庵", "pos": Vector3(0, 0, 45)},
+]
+
 func _ready() -> void:
 	arrow_container = Node3D.new()
 	arrow_container.name = "GuideArrows"
@@ -127,6 +157,7 @@ func _init_guide() -> void:
 	
 	# 创建HUD提示标签
 	_create_hud_hint()
+	_create_navigation_hud()
 	
 	# 监听事件
 	EventBus.dialog_ended.connect(_on_dialog_ended)
@@ -139,6 +170,7 @@ func _process(delta: float) -> void:
 		return
 	if not GameManager.is_playing():
 		_set_arrows_visible(false)
+		_update_navigation_hud()
 		return
 	
 	# 找到当前应激活的阶段
@@ -149,6 +181,15 @@ func _process(delta: float) -> void:
 	
 	# 更新HUD提示
 	_update_hud_hint()
+	_update_navigation_hud()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.pressed and not key_event.echo and key_event.physical_keycode == KEY_M:
+			navigation_hud_visible = not navigation_hud_visible
+			if navigation_hud_layer:
+				navigation_hud_layer.visible = navigation_hud_visible
 
 func _find_current_stage() -> void:
 	var prev_stage: int = current_stage_index
@@ -382,6 +423,240 @@ func _update_hud_hint() -> void:
 func _hide_hud_hint() -> void:
 	if hud_hint_label:
 		hud_hint_label.visible = false
+
+func _create_navigation_hud() -> void:
+	if navigation_hud_layer:
+		return
+
+	navigation_hud_layer = CanvasLayer.new()
+	navigation_hud_layer.name = "QingNavigationHUD"
+	navigation_hud_layer.layer = 7
+	navigation_hud_layer.visible = navigation_hud_visible
+	add_child(navigation_hud_layer)
+
+	navigation_hud_root = Control.new()
+	navigation_hud_root.name = "NavigationHUDRoot"
+	navigation_hud_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	navigation_hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	navigation_hud_layer.add_child(navigation_hud_root)
+
+	_create_top_arrow_hud()
+	_create_compass_hud()
+
+func _create_top_arrow_hud() -> void:
+	top_arrow_panel = PanelContainer.new()
+	top_arrow_panel.name = "TopTargetArrow"
+	top_arrow_panel.anchor_left = 0.5
+	top_arrow_panel.anchor_right = 0.5
+	top_arrow_panel.anchor_top = 0.0
+	top_arrow_panel.anchor_bottom = 0.0
+	top_arrow_panel.offset_left = -180
+	top_arrow_panel.offset_right = 180
+	top_arrow_panel.offset_top = 14
+	top_arrow_panel.offset_bottom = 100
+	top_arrow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_arrow_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.33, 0.17, 0.07, 0.72), Color(0.88, 0.68, 0.22, 0.92), 2, 6))
+	navigation_hud_root.add_child(top_arrow_panel)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 12)
+	top_arrow_panel.add_child(hbox)
+
+	top_arrow_label = Label.new()
+	top_arrow_label.name = "ArrowGlyph"
+	top_arrow_label.text = "▲"
+	top_arrow_label.custom_minimum_size = Vector2(48, 48)
+	top_arrow_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	top_arrow_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	top_arrow_label.pivot_offset = Vector2(24, 24)
+	top_arrow_label.add_theme_font_size_override("font_size", 40)
+	top_arrow_label.add_theme_color_override("font_color", Color(0.96, 0.78, 0.28, 1.0))
+	hbox.add_child(top_arrow_label)
+
+	var text_box := VBoxContainer.new()
+	text_box.add_theme_constant_override("separation", 0)
+	hbox.add_child(text_box)
+
+	top_target_label = Label.new()
+	top_target_label.name = "TargetLabel"
+	top_target_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	top_target_label.add_theme_font_size_override("font_size", 20)
+	top_target_label.add_theme_color_override("font_color", Color(0.96, 0.86, 0.58, 1.0))
+	text_box.add_child(top_target_label)
+
+	top_distance_label = Label.new()
+	top_distance_label.name = "DistanceLabel"
+	top_distance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	top_distance_label.add_theme_font_size_override("font_size", 14)
+	top_distance_label.add_theme_color_override("font_color", Color(0.91, 0.74, 0.35, 0.96))
+	text_box.add_child(top_distance_label)
+
+	top_turn_label = Label.new()
+	top_turn_label.name = "TurnLabel"
+	top_turn_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	top_turn_label.add_theme_font_size_override("font_size", 16)
+	top_turn_label.add_theme_color_override("font_color", Color(1.0, 0.62, 0.26, 1.0))
+	text_box.add_child(top_turn_label)
+
+func _create_compass_hud() -> void:
+	compass_panel = PanelContainer.new()
+	compass_panel.name = "FengshuiCompass"
+	compass_panel.anchor_left = 1.0
+	compass_panel.anchor_right = 1.0
+	compass_panel.anchor_top = 0.0
+	compass_panel.anchor_bottom = 0.0
+	compass_panel.offset_left = -236
+	compass_panel.offset_right = -18
+	compass_panel.offset_top = 18
+	compass_panel.offset_bottom = 236
+	compass_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	compass_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.58, 0.45, 0.23, 0.68), Color(0.9, 0.72, 0.27, 0.95), 2, 108))
+	navigation_hud_root.add_child(compass_panel)
+
+	var compass := Control.new()
+	compass.name = "CompassFace"
+	compass.custom_minimum_size = Vector2(208, 208)
+	compass.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	compass_panel.add_child(compass)
+
+	var north := _make_compass_label("北", 22, Color(0.98, 0.82, 0.28, 1.0))
+	north.position = Vector2(92, 8)
+	compass.add_child(north)
+	var south := _make_compass_label("南", 18, Color(0.96, 0.84, 0.54, 1.0))
+	south.position = Vector2(94, 174)
+	compass.add_child(south)
+	var east := _make_compass_label("东", 18, Color(0.96, 0.84, 0.54, 1.0))
+	east.position = Vector2(172, 91)
+	compass.add_child(east)
+	var west := _make_compass_label("西", 18, Color(0.96, 0.84, 0.54, 1.0))
+	west.position = Vector2(12, 91)
+	compass.add_child(west)
+
+	compass_needle_label = _make_compass_label("◆", 34, Color(0.98, 0.72, 0.22, 1.0))
+	compass_needle_label.position = Vector2(83, 80)
+	compass_needle_label.pivot_offset = Vector2(20, 20)
+	compass.add_child(compass_needle_label)
+
+	compass_heading_label = _make_compass_label("朝向 北", 15, Color(0.98, 0.88, 0.58, 1.0))
+	compass_heading_label.position = Vector2(62, 116)
+	compass.add_child(compass_heading_label)
+
+	for place in compass_places:
+		var label := _make_compass_label(String(place["name"]), 11, Color(0.98, 0.82, 0.36, 0.95))
+		label.custom_minimum_size = Vector2(52, 18)
+		compass.add_child(label)
+		compass_marker_labels.append(label)
+
+func _make_panel_style(bg_color: Color, border_color: Color, border_width: int, corner_radius: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg_color
+	style.border_color = border_color
+	style.set_border_width_all(border_width)
+	style.set_corner_radius_all(corner_radius)
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	return style
+
+func _make_compass_label(text_value: String, font_size: int, font_color: Color) -> Label:
+	var label := Label.new()
+	label.text = text_value
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.custom_minimum_size = Vector2(40, 24)
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", font_color)
+	label.add_theme_color_override("font_shadow_color", Color(0.08, 0.04, 0.01, 0.85))
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 1)
+	return label
+
+func _update_navigation_hud() -> void:
+	if not navigation_hud_layer or not player:
+		return
+	navigation_hud_layer.visible = navigation_hud_visible
+	if current_stage_index >= story_stages.size():
+		top_target_label.text = "主线完成"
+		top_distance_label.text = "已游毕大观园"
+		top_turn_label.text = ""
+		return
+
+	var stage: Dictionary = story_stages[current_stage_index]
+	var target: Vector3 = stage["target"]
+	var player_pos: Vector3 = player.global_position
+	var target_dir := Vector2(target.x - player_pos.x, target.z - player_pos.z)
+	var distance := target_dir.length()
+	var relative_angle := 0.0
+	if distance > 0.01:
+		relative_angle = _get_relative_angle_to(target)
+
+	top_arrow_label.rotation = relative_angle
+	top_target_label.text = stage.get("hint", "前往目标")
+	if distance <= INTERACT_DISTANCE:
+		top_distance_label.text = "已到达，触发剧情后切换下一站"
+	else:
+		top_distance_label.text = "距目标约 %d 米" % int(distance)
+	top_turn_label.text = "回头" if abs(relative_angle) > deg_to_rad(120.0) else _get_turn_hint(relative_angle)
+
+	_update_compass(target)
+
+func _update_compass(target: Vector3) -> void:
+	var forward := _get_player_forward_2d()
+	var heading_angle := atan2(forward.x, forward.y)
+	compass_needle_label.rotation = heading_angle
+	compass_heading_label.text = "朝向 %s" % _get_world_heading_name(heading_angle)
+
+	var center := Vector2(104, 104)
+	var radius := 76.0
+	for i in range(compass_marker_labels.size()):
+		var place: Dictionary = compass_places[i]
+		var pos: Vector3 = place["pos"]
+		var angle := _get_relative_angle_to(pos)
+		var marker_pos := center + Vector2(sin(angle), -cos(angle)) * radius
+		compass_marker_labels[i].position = marker_pos - Vector2(26, 9)
+
+func _get_player_forward_2d() -> Vector2:
+	var forward_3d := -player.global_transform.basis.z
+	var forward := Vector2(forward_3d.x, forward_3d.z)
+	if forward.length() < 0.01:
+		return Vector2(0, -1)
+	return forward.normalized()
+
+func _get_relative_angle_to(world_pos: Vector3) -> float:
+	var player_pos := player.global_position
+	var forward := _get_player_forward_2d()
+	var to_target := Vector2(world_pos.x - player_pos.x, world_pos.z - player_pos.z)
+	if to_target.length() < 0.01:
+		return 0.0
+	return forward.angle_to(to_target.normalized())
+
+func _get_turn_hint(relative_angle: float) -> String:
+	var deg := rad_to_deg(relative_angle)
+	if abs(deg) < 18.0:
+		return "正前方"
+	if deg > 0.0:
+		return "向右 %.0f°" % abs(deg)
+	return "向左 %.0f°" % abs(deg)
+
+func _get_world_heading_name(angle: float) -> String:
+	var normalized := fposmod(angle + TAU, TAU)
+	if normalized < PI / 8.0 or normalized >= 15.0 * PI / 8.0:
+		return "北"
+	if normalized < 3.0 * PI / 8.0:
+		return "东北"
+	if normalized < 5.0 * PI / 8.0:
+		return "东"
+	if normalized < 7.0 * PI / 8.0:
+		return "东南"
+	if normalized < 9.0 * PI / 8.0:
+		return "南"
+	if normalized < 11.0 * PI / 8.0:
+		return "西南"
+	if normalized < 13.0 * PI / 8.0:
+		return "西"
+	return "西北"
 
 func _get_direction_text(dir: Vector2) -> String:
 	var angle := atan2(dir.x, dir.y)

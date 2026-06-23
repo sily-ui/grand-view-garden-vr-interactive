@@ -1,5 +1,7 @@
-class_name DialogData
-# 对话数据定义 - 刘姥姥进大观园剧情对话
+class_name DialogDataLegacy
+# 对话数据定义 - 刘姥姥进大观园剧情对话（旧版备份，不参与运行）
+# 主版本位于 scripts/dialog/dialog_data.gd
+# 本文件因 class_name 冲突已重命名，保留供参考
 
 static var dialogs: Dictionary = {
 	"intro_arrival": {

@@ -16,6 +16,9 @@ debug_*.log
 __pycache__/
 *.pyc
 
+# Downloaded tools
+tools/ffmpeg/
+
 # System files
 Thumbs.db
 Desktop.ini

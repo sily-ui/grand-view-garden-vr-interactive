@@ -8,17 +8,17 @@ var water_player: AudioStreamPlayer
 
 var current_bgm_path: String = ""
 var _bgm_change_id: int = 0
-var bgm_enabled: bool = false
+var bgm_enabled: bool = true
 
-const GLOBAL_BGM_PATH := "res://assets/audio/bgm/daguan_global_loop.ogg"
-const COURTYARD_AMBIENT_PATH := "res://assets/audio/ambient/courtyard_garden_loop.ogg"
-const WATER_AMBIENT_PATH := "res://assets/audio/ambient/water_garden_loop.ogg"
-const GATE_OPEN_SFX_PATH := "res://assets/audio/sfx/gate_wood_open.ogg"
+const GLOBAL_BGM_PATH := "res://assets/audio/bgm/bgm_outdoor_main.ogg"
+const COURTYARD_BGM_PATH := "res://assets/audio/bgm/bgm_courtyard_quiet.ogg"
+const DIALOG_BGM_PATH := "res://assets/audio/bgm/bgm_dialog_narrative.ogg"
+const COURTYARD_AMBIENT_PATH := "res://assets/audio/ambient/wind_leaves_loop.ogg"
+const WATER_AMBIENT_PATH := "res://assets/audio/ambient/water_stream_loop.ogg"
 
 var sfx_aliases: Dictionary = {
-	"door_open": GATE_OPEN_SFX_PATH,
-	"gate_open": GATE_OPEN_SFX_PATH,
-	"bird_chirp": COURTYARD_AMBIENT_PATH,
+	"door_open": "res://assets/audio/sfx/gate_wood_open.ogg",
+	"gate_open": "res://assets/audio/sfx/gate_wood_open.ogg",
 }
 
 # 中文建筑名 → 场景key映射
@@ -28,28 +28,30 @@ var _building_name_map: Dictionary = {
 	"怡红院": "yihong_yuan",
 	"栊翠庵": "longcui_an",
 	"大观楼": "banquet", "宴席": "banquet",
-	"稻香村": "daoxiang_cun", "蘅芜苑": "entrance",
+	"稻香村": "daoxiang_cun", "蘅芜苑": "hengwu_yuan",
 }
 
 var scene_audio: Dictionary = {
-	"entrance": {"bgm": GLOBAL_BGM_PATH, "ambient": "courtyard"},
-	"xiaoxiang_guan": {"bgm": "", "ambient": "bamboo"},
-	"yihong_yuan": {"bgm": GLOBAL_BGM_PATH, "ambient": "courtyard"},
-	"longcui_an": {"bgm": GLOBAL_BGM_PATH, "ambient": "courtyard"},
-	"banquet": {"bgm": GLOBAL_BGM_PATH, "ambient": "courtyard"},
-	"daoxiang_cun": {"bgm": "res://assets/audio/bgm/daoxiang_ambience.ogg", "ambient": "courtyard"}
+	"entrance": {"bgm": GLOBAL_BGM_PATH, "volume": -14.0},
+	"xiaoxiang_guan": {"bgm": COURTYARD_BGM_PATH, "volume": -17.0},
+	"yihong_yuan": {"bgm": COURTYARD_BGM_PATH, "volume": -17.0},
+	"longcui_an": {"bgm": COURTYARD_BGM_PATH, "volume": -17.0},
+	"banquet": {"bgm": COURTYARD_BGM_PATH, "volume": -17.0},
+	"daoxiang_cun": {"bgm": COURTYARD_BGM_PATH, "volume": -17.0},
+	"hengwu_yuan": {"bgm": COURTYARD_BGM_PATH, "volume": -17.0},
 }
 
 func _ready() -> void:
 	add_to_group("audio_system")
 	_init_players()
-	scene_audio["xiaoxiang_guan"]["bgm"] = "res://assets/audio/bgm/xiaoxiang_ambience.ogg"
 	EventBus.building_entered.connect(_on_building_entered)
 	EventBus.building_exited.connect(_on_building_exited)
+	EventBus.dialog_started.connect(_on_dialog_started)
+	EventBus.dialog_ended.connect(_on_dialog_ended)
 	if bgm_enabled:
-		play_bgm(GLOBAL_BGM_PATH, 2.0, -13.0)
-	_play_looping_layer(ambient_player, COURTYARD_AMBIENT_PATH, -25.0)
-	_play_looping_layer(water_player, WATER_AMBIENT_PATH, -31.0)
+		play_bgm(GLOBAL_BGM_PATH, 2.0, -14.0)
+	_play_looping_layer(ambient_player, COURTYARD_AMBIENT_PATH, -26.0)
+	_play_looping_layer(water_player, WATER_AMBIENT_PATH, -24.0)
 
 func _init_players() -> void:
 	bgm_player = get_node_or_null("BGMPlayer") as AudioStreamPlayer
@@ -157,7 +159,6 @@ func _set_stream_loop(audio_stream: AudioStream) -> void:
 func _on_building_entered(building_name: String) -> void:
 	if not bgm_enabled:
 		return
-	# 先尝试中文名映射，再尝试英文key直接匹配
 	var key: String = ""
 	if _building_name_map.has(building_name):
 		key = _building_name_map[building_name]
@@ -167,9 +168,18 @@ func _on_building_entered(building_name: String) -> void:
 	if scene_audio.has(key):
 		var config: Dictionary = scene_audio[key]
 		var bgm_path: String = config.get("bgm", "")
+		var vol: float = config.get("volume", -17.0)
 		if not bgm_path.is_empty():
-			play_bgm(bgm_path, 1.8, -12.0)
+			play_bgm(bgm_path, 1.8, vol)
 
 func _on_building_exited(_building_name: String) -> void:
 	if bgm_enabled:
-		play_bgm(GLOBAL_BGM_PATH, 1.8, -13.0)
+		play_bgm(GLOBAL_BGM_PATH, 1.8, -14.0)
+
+func _on_dialog_started(_dialog_id: String) -> void:
+	if bgm_enabled:
+		play_bgm(DIALOG_BGM_PATH, 1.0, -20.0)
+
+func _on_dialog_ended(_dialog_id: String) -> void:
+	if bgm_enabled:
+		play_bgm(GLOBAL_BGM_PATH, 1.5, -14.0)

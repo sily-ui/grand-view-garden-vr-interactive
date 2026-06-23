@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=24 format=3 uid="uid://c83srubuatq1i"]
+﻿[gd_scene load_steps=25 format=3 uid="uid://c83srubuatq1i"]
 
 [ext_resource type="Script" uid="uid://clcdphpoq1wn8" path="res://scripts/player/player_controller.gd" id="1_pc"]
 [ext_resource type="Script" uid="uid://cw412ryqrs8ii" path="res://scripts/systems/time_system.gd" id="4_ts"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://c5jcqbmc2gvtn" path="res://scripts/ui/dialog_ui.gd" id="7_dui"]
 [ext_resource type="Script" uid="uid://h884a68fmk50" path="res://scripts/ui/pause_menu.gd" id="10_pm"]
 [ext_resource type="Script" path="res://main.gd" id="11_mg"]
+[ext_resource type="Script" path="res://scripts/systems/garden_builder.gd" id="12_gb"]
 [ext_resource type="Theme" path="res://assets/fonts/wenkai_theme.tres" id="theme_wenkai"]
 [ext_resource type="PackedScene" path="res://scenes/world/terrain.tscn" id="ext_terrain"]
 [ext_resource type="PackedScene" path="res://scenes/world/buildings.tscn" id="ext_buildings"]
@@ -118,6 +119,9 @@ environment = SubResource("env_main")
 transform = Transform3D(0.707, -0.5, 0.5, 0, 0.707, 0.707, -0.707, -0.5, 0.5, 0, 20, 0)
 light_color = Color(1, 0.95, 0.85, 1)
 shadow_enabled = true
+
+[node name="EditorGardenPreview" type="Node3D" parent="."]
+script = ExtResource("12_gb")
 
 [node name="Terrain" parent="." instance=ExtResource("ext_terrain")]
 

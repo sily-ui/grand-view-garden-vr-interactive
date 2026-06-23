@@ -14,13 +14,23 @@ class_name NPCBase
 
 var current_patrol_index: int = 0
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var has_talked: bool = false
 
 enum NPCState { IDLE, PATROL, TALKING }
 var current_state: NPCState = NPCState.IDLE
 
 func _ready() -> void:
+	NPCVisualBuilder.apply_to_npc(self, npc_name)
 	if name_label:
 		name_label.text = npc_name
+		name_label.position = Vector3(0, 2.55, 0)
+		name_label.font_size = 28
+		name_label.pixel_size = 0.01
+		name_label.modulate = Color(0.9, 0.76, 0.28, 1)
+		name_label.outline_size = 6
+		name_label.outline_modulate = Color(0.06, 0.04, 0.01, 1)
+		name_label.double_sided = true
+		name_label.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if patrol_points.size() > 0:
 		current_state = NPCState.PATROL
 
@@ -59,9 +69,12 @@ func _do_patrol() -> void:
 		look_at(look_target, Vector3.UP)
 
 func interact(_player: Node) -> void:
+	if has_talked:
+		return
 	current_state = NPCState.TALKING
 	look_at_player(_player)
 	if dialog_id != "":
+		has_talked = true
 		DialogManager.start_dialog(dialog_id)
 		DialogManager.dialog_ended.connect(_on_dialog_ended, CONNECT_ONE_SHOT)
 

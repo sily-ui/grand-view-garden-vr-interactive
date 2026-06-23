@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 # 刘姥姥进大观园 - 主场景脚本
 
@@ -11,8 +12,18 @@ const SPLIT_SCENE_NODES := [
 	"TriggerZones",
 	"Items"
 ]
+const EDITOR_PREVIEW_NODE := "EditorGardenPreview"
+const GARDEN_BUILDER_SCRIPT := "res://scripts/systems/garden_builder.gd"
+
+func _enter_tree() -> void:
+	if Engine.is_editor_hint():
+		call_deferred("_refresh_editor_preview")
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		_refresh_editor_preview()
+		return
+
 	_reset_load_log()
 	_log_load("Main scene _ready started")
 	_start_scene_fade_in()
@@ -147,5 +158,19 @@ func _init_scene_ambience() -> void:
 func _init_garden_builder() -> void:
 	var builder := Node3D.new()
 	builder.name = "GardenBuilder"
-	builder.set_script(load("res://scripts/systems/garden_builder.gd"))
+	builder.set_script(load(GARDEN_BUILDER_SCRIPT))
 	add_child(builder)
+
+func _refresh_editor_preview() -> void:
+	var old_preview := get_node_or_null(EDITOR_PREVIEW_NODE)
+	if old_preview:
+		old_preview.free()
+
+	var builder_script := load(GARDEN_BUILDER_SCRIPT)
+	if builder_script == null:
+		return
+
+	var preview := Node3D.new()
+	preview.name = EDITOR_PREVIEW_NODE
+	preview.set_script(builder_script)
+	add_child(preview)

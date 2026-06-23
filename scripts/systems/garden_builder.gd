@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 class_name GardenBuilder
 
@@ -20,10 +21,21 @@ var mat_creek_bank: StandardMaterial3D   # 溪岸
 var mat_farmland: StandardMaterial3D     # 农田
 var mat_white_wall: StandardMaterial3D   # 白墙
 var mat_gold: StandardMaterial3D         # 金字
+var mat_shop_wall: StandardMaterial3D    # 街巷铺面墙
+var mat_cloth: StandardMaterial3D        # 幌子/布棚
+var mat_road_dust: StandardMaterial3D    # 街道路面
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		_build_all_immediate()
+		return
+	if name == "EditorGardenPreview":
+		queue_free()
+		return
+
 	# 延迟一帧，让其他系统先初始化
 	await get_tree().process_frame
+	_clear_generated_children()
 	_init_materials()
 	_build_rongfu_forecourt()
 	await get_tree().process_frame
@@ -48,6 +60,29 @@ func _ready() -> void:
 	_build_outer_buildings()
 	# 稻香村菜畦在 _build_west_courtyards 中已构建
 	_print_build_summary()
+
+func _build_all_immediate() -> void:
+	_clear_generated_children()
+	_init_materials()
+	_build_rongfu_forecourt()
+	_build_perimeter_wall()
+	_build_main_gate()
+	_build_entrance_rockery()
+	_build_qinfang_creek()
+	_build_qinfang_bridge()
+	_build_boat_dock()
+	_build_mountain_terrain()
+	_build_west_courtyards()
+	_build_east_courtyards()
+	_build_core_courtyard_optimization()
+	_build_outer_buildings()
+
+func _clear_generated_children() -> void:
+	for child in get_children():
+		if Engine.is_editor_hint():
+			child.free()
+		else:
+			child.queue_free()
 
 # ============================================================
 # 材质初始化
@@ -106,6 +141,18 @@ func _init_materials() -> void:
 	mat_gold.emission_enabled = true
 	mat_gold.emission = Color(0.45, 0.32, 0.08)
 	mat_gold.emission_energy_multiplier = 0.25
+	# 宁荣街铺面墙：比园墙更暗，降低“突然冒出一座园子”的割裂感
+	mat_shop_wall = StandardMaterial3D.new()
+	mat_shop_wall.albedo_color = Color(0.58, 0.50, 0.40)
+	mat_shop_wall.roughness = 0.9
+	# 幌子、布棚、行李担子
+	mat_cloth = StandardMaterial3D.new()
+	mat_cloth.albedo_color = Color(0.62, 0.20, 0.12)
+	mat_cloth.roughness = 0.8
+	# 园外土石街面
+	mat_road_dust = StandardMaterial3D.new()
+	mat_road_dust.albedo_color = Color(0.46, 0.40, 0.31)
+	mat_road_dust.roughness = 0.96
 
 # ============================================================
 # 辅助：创建带碰撞的静态 Box 节点
@@ -169,6 +216,23 @@ func _make_cylinder(parent: Node3D, name_s: String, pos: Vector3,
 		parent.add_child(sb)
 	parent.add_child(mi)
 	return mi
+
+func _make_label(parent: Node3D, name_s: String, text: String, pos: Vector3,
+		font_size: int = 28, pixel_size: float = 0.012, rot_y: float = 0.0) -> Label3D:
+	var label := Label3D.new()
+	label.name = name_s
+	label.text = text
+	label.position = pos
+	label.rotation.y = rot_y
+	label.font_size = font_size
+	label.pixel_size = pixel_size
+	label.modulate = Color(0.88, 0.72, 0.24, 1)
+	label.outline_size = 7
+	label.outline_modulate = Color(0.05, 0.03, 0.01, 1)
+	label.double_sided = true
+	label.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(label)
+	return label
 
 func _make_wall_segment(parent: Node3D, name_s: String, from_pos: Vector3, to_pos: Vector3,
 		height: float, thickness: float, material: StandardMaterial3D) -> StaticBody3D:
@@ -298,7 +362,7 @@ func _build_wall_corner_towers(parent: Node3D, x_min: float, x_max: float, z_min
 		_make_mesh(tower, "TowerTileCap", Vector3(0, 6.05, 0), Vector3(5.8, 0.35, 5.8), mat_wall_top)
 		_make_gable_roof(tower, "TowerRoof", Vector3(0, 6.25, 0), 6.5, 6.5, 1.0, mat_roof)
 
-func _build_inner_boundary_reinforcement(parent: Node3D, x_min: float, x_max: float, z_min: float, z_max: float) -> void:
+func _build_inner_boundary_reinforcement(parent: Node3D, x_min: float, x_max: float, _z_min: float, z_max: float) -> void:
 	var low_h := 1.2
 	var low_t := 0.55
 	_make_box(parent, "EastPlayableBoundary", Vector3(x_max - 4.2, low_h / 2.0, 6),
@@ -448,6 +512,10 @@ func _build_gate_screen_wall(gate_root: Node3D) -> void:
 	_make_gable_roof(screen, "ScreenRoof", Vector3(0, 4.9, 0), 12.4, 1.8, 0.55, mat_roof)
 	_make_box(gate_root, "ScreenLeftBypass", Vector3(-8.8, 0.035, 7.0), Vector3(4.2, 0.07, 5.5), mat_brick, true)
 	_make_box(gate_root, "ScreenRightBypass", Vector3(8.8, 0.035, 7.0), Vector3(4.2, 0.07, 5.5), mat_brick, true)
+	_make_label(screen, "ScreenWallTitle", "照 壁", Vector3(0, 3.85, -0.72), 34, 0.011, PI)
+	_make_label(screen, "ScreenWallGuide", "请从左右石路绕行入园", Vector3(0, 1.35, -0.76), 22, 0.01, PI)
+	_make_label(gate_root, "LeftBypassGuide", "左绕入园", Vector3(-8.8, 0.55, 3.8), 22, 0.011, PI)
+	_make_label(gate_root, "RightBypassGuide", "右绕入园", Vector3(8.8, 0.55, 3.8), 22, 0.011, PI)
 
 func _build_gate_ceremonial_objects(gate_root: Node3D) -> void:
 	for side in [-1, 1]:
@@ -510,7 +578,7 @@ func _build_gate_bamboo_cluster(parent: Node3D, pos: Vector3) -> void:
 	parent.add_child(bamboo)
 	for i in range(7):
 		var x_pos: float = -0.9 + float(i % 3) * 0.85
-		var z_pos: float = -0.6 + float(i / 3) * 0.65
+		var z_pos: float = -0.6 + float(i / 3.0) * 0.65
 		_make_cylinder(bamboo, "BambooStem_%d" % i, Vector3(x_pos, 1.85, z_pos), 0.045, 3.7, mat_wood_red, false)
 		_make_box(bamboo, "BambooLeaf_%d" % i, Vector3(x_pos + 0.22, 3.55, z_pos), Vector3(0.65, 0.32, 0.42), mat_farmland, false)
 
@@ -595,13 +663,13 @@ func _build_entrance_rockery() -> void:
 		rock_root.add_child(r_mi)
 
 	# 石刻路标
-	var sign := Label3D.new()
-	sign.name = "PathSign"
-	sign.text = "曲径通幽"
-	sign.position = Vector3(0, 5.5, 2)
-	sign.font_size = 36
-	sign.modulate = Color(0.75, 0.65, 0.35)
-	rock_root.add_child(sign)
+	var path_label := Label3D.new()
+	path_label.name = "PathSign"
+	path_label.text = "曲径通幽"
+	path_label.position = Vector3(0, 5.5, 2)
+	path_label.font_size = 36
+	path_label.modulate = Color(0.75, 0.65, 0.35)
+	rock_root.add_child(path_label)
 
 # ============================================================
 # 5. 沁芳溪 — 贯穿全园南北的水系
@@ -615,12 +683,12 @@ func _build_qinfang_creek() -> void:
 	var creek_y := 0.05
 	# 溪流主干 — 南北贯穿，略带弯曲 (分段)
 	var seg_positions: Array[Vector3] = [
-		Vector3(0, creek_y, -50), Vector3(1, creek_y, -30),
+		Vector3(0, creek_y, -42), Vector3(1, creek_y, -25),
 		Vector3(-1, creek_y, -10), Vector3(0, creek_y, 10),
 		Vector3(1, creek_y, 30), Vector3(0, creek_y, 48),
 	]
 	var seg_sizes: Array[Vector3] = [
-		Vector3(creek_w, 0.1, 20), Vector3(creek_w, 0.1, 20),
+		Vector3(creek_w, 0.1, 12), Vector3(creek_w, 0.1, 18),
 		Vector3(creek_w, 0.1, 20), Vector3(creek_w, 0.1, 20),
 		Vector3(creek_w, 0.1, 20), Vector3(creek_w + 6, 0.1, 16),
 	]
@@ -636,6 +704,9 @@ func _build_qinfang_creek() -> void:
 		_make_mesh(creek_root, "Bank_R_%d" % i, Vector3(s_pos.x + s_size.x / 2.0 + 1.0, 0.02, s_pos.z),
 			Vector3(2, 0.04, s_size.z), mat_creek_bank)
 
+	_make_label(creek_root, "CreekNameLabel", "沁芳溪", Vector3(-5.2, 1.15, -38.0), 24, 0.011, PI + deg_to_rad(10.0))
+	_make_label(creek_root, "CreekHintLabel", "水道从园中穿行，请沿中轴石桥过溪", Vector3(5.2, 1.0, -34.0), 18, 0.01, PI + deg_to_rad(-12.0))
+
 # ============================================================
 # 6. 沁芳亭石桥 — 横跨沁芳溪
 # ============================================================
@@ -644,13 +715,19 @@ func _build_qinfang_bridge() -> void:
 	bridge.name = "QinfangBridge"
 	bridge.position = Vector3(0, 0, -10)
 	add_child(bridge)
+	# 堤道宽度与桥面一致，避免视觉断口
+	_make_box(bridge, "SouthStoneCauseway", Vector3(0, 0.07, -16.5), Vector3(8.0, 0.14, 12.0), mat_stone, true)
+	_make_box(bridge, "NorthStoneCauseway", Vector3(0, 0.07, 12.0), Vector3(8.0, 0.14, 14.0), mat_stone, true)
 
-	# 桥面
-	_make_box(bridge, "Deck", Vector3(0, 0.8, 0), Vector3(8, 0.3, 4), mat_stone)
-	_make_box(bridge, "SouthApproachRamp", Vector3(0, 0.38, -3.4), Vector3(8.4, 0.18, 3.0), mat_stone, true)
-	_make_box(bridge, "NorthApproachRamp", Vector3(0, 0.38, 3.4), Vector3(8.4, 0.18, 3.0), mat_stone, true)
-	_make_box(bridge, "SouthLanding", Vector3(0, 0.08, -5.1), Vector3(8.6, 0.12, 1.5), mat_stone, true)
-	_make_box(bridge, "NorthLanding", Vector3(0, 0.08, 5.1), Vector3(8.6, 0.12, 1.5), mat_stone, true)
+	# 桥面 — 厚实连续，避免断桥感
+	_make_box(bridge, "Deck", Vector3(0, 0.8, 0), Vector3(8.0, 0.5, 5.2), mat_stone, true)
+	_make_box(bridge, "SouthApproachRamp", Vector3(0, 0.5, -3.4), Vector3(8.0, 0.42, 3.0), mat_stone, true)
+	_make_box(bridge, "NorthApproachRamp", Vector3(0, 0.5, 3.4), Vector3(8.0, 0.42, 3.0), mat_stone, true)
+	_make_box(bridge, "SouthLanding", Vector3(0, 0.12, -5.4), Vector3(8.0, 0.24, 2.0), mat_stone, true)
+	_make_box(bridge, "NorthLanding", Vector3(0, 0.12, 5.4), Vector3(8.0, 0.24, 2.0), mat_stone, true)
+	# 额外填充：确保堤道与桥面之间无缝衔接
+	_make_box(bridge, "SouthBridgeFill", Vector3(0, 0.15, -8.0), Vector3(8.0, 0.3, 5.0), mat_stone, true)
+	_make_box(bridge, "NorthBridgeFill", Vector3(0, 0.15, 8.0), Vector3(8.0, 0.3, 5.0), mat_stone, true)
 	# 桥栏杆
 	for side in [-1, 1]:
 		for i in range(4):
@@ -676,9 +753,11 @@ func _build_qinfang_bridge() -> void:
 	label.name = "BridgeLabel"
 	label.text = "沁芳亭"
 	label.position = Vector3(-7, 5.5, 0)
+	label.rotation.y = PI
 	label.font_size = 30
 	label.modulate = Color(0.8, 0.65, 0.25)
 	bridge.add_child(label)
+	_make_label(bridge, "BridgeWayfindingLabel", "从此石桥入园", Vector3(0, 1.55, -7.2), 22, 0.01, PI)
 
 # ============================================================
 # 7. 游船码头
@@ -786,10 +865,14 @@ func _build_west_courtyards() -> void:
 	_build_courtyard_wall(west_root, "HengwuWall", Vector3(25, 0, -15), 18, 16)
 
 	# 西片区连接游廊 (潇湘馆 → 秋爽斋 → 紫菱洲)
+	# === 连通性修复: WestCorridor起点延伸至西侧主干道(WestBluestone Z=10) ===
 	_build_corridor(west_root, "WestCorridor",
-		Vector3(-37, 0, 3), Vector3(-32, 0, -5), 3.0)
+		Vector3(-37, 0, 10), Vector3(-32, 0, -5), 3.0)
 	_build_corridor(west_root, "WestCorridor2",
 		Vector3(-32, 0, -5), Vector3(-27, 0, 20), 3.0)
+	# === 连通性修复: 潇湘馆南花门入户石板小径 ===
+	_make_mesh(west_root, "XiaoxiangApproachPath",
+		Vector3(-35, 0.14, 16), Vector3(3.0, 0.06, 12), mat_stone)
 
 # ============================================================
 # 10. 东片区院落群 (怡红院已存在, 新增: 缀锦阁, 完善栊翠庵)
@@ -809,9 +892,12 @@ func _build_east_courtyards() -> void:
 	_make_mesh(east_root, "LongcuiPath", Vector3(0, 0.02, 35),
 		Vector3(2, 0.04, 10), mat_stone)
 
-	# 东片区连接游廊 (怡红院 → 缀锦阁)
+	# 东片区连接游廊 (怡红院花门 → 缀锦阁西月洞门)
 	_build_corridor(east_root, "EastCorridor",
-		Vector3(37, 0, 15), Vector3(42, 0, 25), 3.0)
+		Vector3(35, 0, 21), Vector3(29, 0, 25), 3.0)
+	# === 连通性修复: 打通东片区断路 (EastLakeVeranda终点→EastCorridor起点) ===
+	_build_corridor(east_root, "EastLinkVeranda",
+		Vector3(31, 0, 18), Vector3(35, 0, 21), 3.0)
 
 # ============================================================
 # 11. 外围建筑
@@ -820,6 +906,8 @@ func _build_outer_buildings() -> void:
 	var outer := Node3D.new()
 	outer.name = "OuterBuildings"
 	add_child(outer)
+
+	_build_outer_street_market(outer)
 
 	# --- 南侧贾府民居 (围墙外) ---
 	for i in range(5):
@@ -844,6 +932,109 @@ func _build_outer_buildings() -> void:
 		var x := -40 + i * 16
 		_make_mesh(outer, "NorthFarm_%d" % i, Vector3(x, 0.02, 65),
 			Vector3(14, 0.04, 10), farm_mat)
+
+func _build_outer_street_market(parent: Node3D) -> void:
+	var street := Node3D.new()
+	street.name = "NingrongStreetMarket"
+	parent.add_child(street)
+
+	_make_box(street, "NingrongMainStreet", Vector3(0, 0.018, -107.0), Vector3(94.0, 0.04, 12.0), mat_road_dust, true)
+	_make_box(street, "GardenApproachCauseway", Vector3(0, 0.02, -95.0), Vector3(11.0, 0.04, 26.0), mat_stone, true)
+	_make_box(street, "StreetDustWest", Vector3(-55.0, 0.012, -101.5), Vector3(20.0, 0.025, 22.0), mat_road_dust, true)
+	_make_box(street, "StreetDustEast", Vector3(55.0, 0.012, -101.5), Vector3(20.0, 0.025, 22.0), mat_road_dust, true)
+
+	var shop_specs: Array[Dictionary] = [
+		{"name": "TeaShop", "label": "茶肆", "pos": Vector3(-42, 0, -113), "w": 10.0, "d": 6.0, "rot": 0.0},
+		{"name": "SilkShop", "label": "绸缎", "pos": Vector3(-27, 0, -113), "w": 11.0, "d": 6.5, "rot": 0.0},
+		{"name": "BookShop", "label": "书坊", "pos": Vector3(-12, 0, -113), "w": 9.0, "d": 5.8, "rot": 0.0},
+		{"name": "WineShop", "label": "酒旗", "pos": Vector3(14, 0, -113), "w": 9.5, "d": 6.0, "rot": 0.0},
+		{"name": "PorcelainShop", "label": "瓷器", "pos": Vector3(29, 0, -113), "w": 10.5, "d": 6.2, "rot": 0.0},
+		{"name": "GrainShop", "label": "米铺", "pos": Vector3(44, 0, -113), "w": 10.0, "d": 6.0, "rot": 0.0},
+		{"name": "WestVendorRow", "label": "杂货", "pos": Vector3(-55, 0, -100), "w": 8.0, "d": 5.0, "rot": PI / 2.0},
+		{"name": "EastVendorRow", "label": "果品", "pos": Vector3(55, 0, -100), "w": 8.0, "d": 5.0, "rot": -PI / 2.0},
+	]
+	for spec: Dictionary in shop_specs:
+		_build_market_shop(street, String(spec["name"]), String(spec["label"]), spec["pos"], spec["w"], spec["d"], spec["rot"])
+
+	for i in range(7):
+		var x_pos := -36.0 + float(i) * 12.0
+		_build_market_stall(street, "StreetStall_%d" % i, Vector3(x_pos, 0, -101.0 + float(i % 2) * 2.0))
+
+	_build_carriage(street, "StreetCarriageWestbound", Vector3(-22.0, 0.0, -105.0), deg_to_rad(4.0))
+	_build_carriage(street, "StreetCarriageEastbound", Vector3(32.0, 0.0, -108.0), deg_to_rad(184.0))
+	_build_horse(street, "StreetHorseWest", Vector3(-17.0, 0.0, -105.0), deg_to_rad(88.0))
+	_build_horse(street, "StreetHorseEast", Vector3(27.0, 0.0, -108.0), deg_to_rad(-92.0))
+	for i in range(10):
+		var px := -45.0 + float(i) * 10.0
+		var pz := -103.0 + float(i % 3) * 2.2
+		_build_street_figure(street, "StreetFigure_%d" % i, Vector3(px, 0, pz), deg_to_rad(80.0 + float(i % 2) * 180.0))
+	_build_porter_pair(street, Vector3(-6.0, 0.0, -104.0))
+	_build_porter_pair(street, Vector3(48.0, 0.0, -105.5))
+	_build_street_banner(street, "NingrongStreetSign", "宁 荣 街", Vector3(0, 3.2, -101.0), 0.0)
+
+func _build_market_shop(parent: Node3D, name_s: String, label_text: String, pos: Vector3,
+		w: float, d: float, rot_y: float) -> void:
+	var shop := Node3D.new()
+	shop.name = name_s
+	shop.position = pos
+	shop.rotation.y = rot_y
+	parent.add_child(shop)
+
+	_make_box(shop, "Wall", Vector3(0, 2.05, 0), Vector3(w, 4.1, d), mat_shop_wall, true)
+	_make_gable_roof(shop, "Roof", Vector3(0, 4.25, 0), w + 1.5, d + 1.2, 0.85, mat_roof)
+	_make_box(shop, "ShopFront", Vector3(0, 1.75, d / 2.0 + 0.06), Vector3(w - 1.2, 2.1, 0.16), mat_wood_red, false)
+	_make_box(shop, "Counter", Vector3(0, 0.85, d / 2.0 + 0.45), Vector3(w - 2.0, 0.7, 0.85), mat_wood_red, false)
+	_make_box(shop, "Awning", Vector3(0, 3.15, d / 2.0 + 0.65), Vector3(w + 0.7, 0.14, 1.45), mat_cloth, false)
+	for side in [-1.0, 1.0]:
+		var side_name := "L" if side < 0.0 else "R"
+		_make_cylinder(shop, "AwningPole_%s" % side_name, Vector3(side * (w / 2.0 - 0.55), 1.6, d / 2.0 + 1.0), 0.06, 3.0, mat_wood_red, false)
+	_make_label(shop, "ShopSign", label_text, Vector3(0, 3.55, d / 2.0 + 0.22), 24, 0.01, PI)
+	_build_street_banner(shop, "ShopBanner", label_text, Vector3(w / 2.0 - 0.75, 2.35, d / 2.0 + 0.95), PI)
+
+func _build_market_stall(parent: Node3D, name_s: String, pos: Vector3) -> void:
+	var stall := Node3D.new()
+	stall.name = name_s
+	stall.position = pos
+	parent.add_child(stall)
+	_make_box(stall, "Table", Vector3(0, 0.65, 0), Vector3(3.2, 0.35, 1.4), mat_wood_red, false)
+	_make_box(stall, "Canopy", Vector3(0, 2.15, 0), Vector3(3.8, 0.16, 2.0), mat_cloth, false)
+	for x_pos in [-1.55, 1.55]:
+		for z_pos in [-0.65, 0.65]:
+			_make_cylinder(stall, "Pole_%s_%s" % [str(x_pos), str(z_pos)], Vector3(x_pos, 1.15, z_pos), 0.045, 2.2, mat_wood_red, false)
+	for i in range(4):
+		_make_box(stall, "Goods_%d" % i, Vector3(-1.15 + float(i) * 0.75, 1.0, -0.15 + float(i % 2) * 0.35), Vector3(0.48, 0.32, 0.36), mat_farmland if i % 2 == 0 else mat_gold, false)
+
+func _build_street_figure(parent: Node3D, name_s: String, pos: Vector3, rot_y: float) -> void:
+	var figure := Node3D.new()
+	figure.name = name_s
+	figure.position = pos
+	figure.rotation.y = rot_y
+	parent.add_child(figure)
+	_make_cylinder(figure, "Body", Vector3(0, 0.95, 0), 0.22, 1.25, mat_cloth, false)
+	_make_cylinder(figure, "Head", Vector3(0, 1.72, 0), 0.18, 0.25, mat_stone, false)
+	_make_box(figure, "Sleeve_L", Vector3(-0.28, 1.12, 0), Vector3(0.16, 0.6, 0.16), mat_cloth, false)
+	_make_box(figure, "Sleeve_R", Vector3(0.28, 1.12, 0), Vector3(0.16, 0.6, 0.16), mat_cloth, false)
+
+func _build_porter_pair(parent: Node3D, pos: Vector3) -> void:
+	var porter := Node3D.new()
+	porter.name = "PorterPair"
+	porter.position = pos
+	parent.add_child(porter)
+	_build_street_figure(porter, "PorterFront", Vector3(-0.7, 0, 0), PI / 2.0)
+	_build_street_figure(porter, "PorterBack", Vector3(0.7, 0, 0), PI / 2.0)
+	_make_box(porter, "ShoulderPole", Vector3(0, 1.55, 0), Vector3(2.3, 0.08, 0.08), mat_wood_red, false)
+	_make_box(porter, "Basket_L", Vector3(-1.35, 0.95, 0), Vector3(0.55, 0.55, 0.55), mat_dirt, false)
+	_make_box(porter, "Basket_R", Vector3(1.35, 0.95, 0), Vector3(0.55, 0.55, 0.55), mat_dirt, false)
+
+func _build_street_banner(parent: Node3D, name_s: String, text: String, pos: Vector3, rot_y: float) -> void:
+	var banner := Node3D.new()
+	banner.name = name_s
+	banner.position = pos
+	banner.rotation.y = rot_y
+	parent.add_child(banner)
+	_make_cylinder(banner, "Pole", Vector3(0, -1.0, 0), 0.045, 2.5, mat_wood_red, false)
+	_make_box(banner, "Cloth", Vector3(0.35, 0.15, 0), Vector3(0.7, 1.2, 0.06), mat_cloth, false)
+	_make_label(banner, "Text", text, Vector3(0.36, 0.15, -0.045), 18, 0.008, 0.0)
 
 func _build_rongfu_forecourt() -> void:
 	var forecourt := Node3D.new()
@@ -988,7 +1179,7 @@ func _build_simple_house(parent: Node3D, name_s: String, pos: Vector3,
 # 辅助：院落围合墙
 # ============================================================
 func _build_courtyard(parent: Node3D, name_s: String, pos: Vector3,
-		display_name: String, character: String, roof_color: Color) -> void:
+		display_name: String, _character: String, roof_color: Color) -> void:
 	var cy := Node3D.new()
 	cy.name = name_s
 	cy.position = pos
@@ -1046,13 +1237,7 @@ func _build_courtyard(parent: Node3D, name_s: String, pos: Vector3,
 
 	# 匾额
 	if display_name != "":
-		var label := Label3D.new()
-		label.name = "NameLabel"
-		label.text = display_name
-		label.position = Vector3(0, bldg_h + 1.5, bldg_d / 2.0)
-		label.font_size = 28
-		label.modulate = Color(0.8, 0.65, 0.25)
-		cy.add_child(label)
+		_make_label(cy, "NameLabel", display_name, Vector3(0, bldg_h + 1.5, bldg_d / 2.0), 30, 0.011)
 
 # ============================================================
 # 辅助：院落纯围墙 (补充已有建筑)
@@ -1080,8 +1265,11 @@ func _build_courtyard_wall(parent: Node3D, name_s: String, pos: Vector3,
 
 # ============================================================
 # 辅助：游廊
+# gap_center: 在游廊局部坐标 z 方向留出通道口的中心位置（默认0=中间）
+# gap_width: 通道口宽度（0=不留口）
 # ============================================================
-func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3, width: float) -> void:
+func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3, width: float,
+		gap_center: float = 0.0, gap_width: float = 0.0) -> void:
 	var cr := Node3D.new()
 	cr.name = name_s
 	cr.position = (from + to) / 2.0
@@ -1099,16 +1287,42 @@ func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3,
 	var post_count: int = int(length / 3.5) + 2
 
 	# 接地铺砖，略高于地面但低于玩家可跨台阶高度
-	_make_box(cr, "CorridorFloor", Vector3(0, 0.04, 0),
-		Vector3(floor_width, 0.08, length), mat_brick, true)
-	_make_mesh(cr, "CenterStonePath", Vector3(0, 0.105, 0),
-		Vector3(floor_width - 0.45, 0.03, length - 0.35), mat_stone)
+	var gap_half: float = gap_width / 2.0
+	if gap_width > 0.0:
+		# 通道口左侧地板
+		var left_len: float = (length / 2.0 + gap_center) - gap_half
+		if left_len > 0.5:
+			var left_center: float = -length / 2.0 + left_len / 2.0
+			_make_box(cr, "CorridorFloor_L", Vector3(0, 0.04, left_center),
+				Vector3(floor_width, 0.08, left_len), mat_brick, true)
+			_make_mesh(cr, "CenterStonePath_L", Vector3(0, 0.105, left_center),
+				Vector3(floor_width - 0.45, 0.03, left_len - 0.35), mat_stone)
+		# 通道口右侧地板
+		var right_len: float = (length / 2.0 - gap_center) - gap_half
+		if right_len > 0.5:
+			var right_center: float = length / 2.0 - right_len / 2.0
+			_make_box(cr, "CorridorFloor_R", Vector3(0, 0.04, right_center),
+				Vector3(floor_width, 0.08, right_len), mat_brick, true)
+			_make_mesh(cr, "CenterStonePath_R", Vector3(0, 0.105, right_center),
+				Vector3(floor_width - 0.45, 0.03, right_len - 0.35), mat_stone)
+		# 通道口两端的收边柱
+		for gap_side in [-1, 1]:
+			var gap_edge_z: float = gap_center + float(gap_side) * gap_half
+			for side_val in [-1.0, 1.0]:
+				_make_cylinder(cr, "GapEdgePillar_%d_%d" % [gap_side, side_val],
+					Vector3(side_val * post_offset, 1.55, gap_edge_z), 0.12, 3.1, mat_wood_red, false)
+	else:
+		_make_box(cr, "CorridorFloor", Vector3(0, 0.04, 0),
+			Vector3(floor_width, 0.08, length), mat_brick, true)
+		_make_mesh(cr, "CenterStonePath", Vector3(0, 0.105, 0),
+			Vector3(floor_width - 0.45, 0.03, length - 0.35), mat_stone)
 
 	# 两端过渡踏步，避免从地面走上廊道时被碰撞边缘卡住
 	for end_side in [-1, 1]:
 		_make_box(cr, "Step_%d" % end_side,
 			Vector3(0, 0.025, end_side * (length / 2.0 + 0.45)),
 			Vector3(floor_width + 0.2, 0.05, 0.9), mat_brick, true)
+	_decorate_corridor_exits(cr, length, floor_width)
 
 	# 廊顶：坡屋面 + 薄檐 + 中脊，减少大块盒子压迫感
 	_make_box(cr, "CorridorEave", Vector3(0, 3.05, 0),
@@ -1118,10 +1332,13 @@ func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3,
 	_make_box(cr, "RoofRidge", Vector3(0, 3.78, 0),
 		Vector3(0.22, 0.16, length + 0.9), mat_wall_top, false)
 
-	# 廊柱与低栏，沿局部 Z 方向均匀排布
+	# 廊柱与低栏，沿局部 Z 方向均匀排布（跳过通道口区域）
 	for i in range(post_count):
 		var t: float = float(i) / max(post_count - 1, 1)
-		var z := -length / 2.0 + t * length
+		var z: float = -length / 2.0 + t * length
+		# 跳过通道口区域的柱子
+		if gap_width > 0.0 and abs(z - gap_center) < gap_half + 0.3:
+			continue
 		for side_value in [-1.0, 1.0]:
 			var side: float = side_value
 			var x: float = side * post_offset
@@ -1133,12 +1350,47 @@ func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3,
 	for side_value in [-1.0, 1.0]:
 		var side: float = side_value
 		var x: float = side * post_offset
-		_make_box(cr, "LowRail_%d" % side, Vector3(x, 0.9, 0),
-			Vector3(0.12, 0.12, length - 1.0), mat_wood_red, false)
-		_make_box(cr, "TopRail_%d" % side, Vector3(x, 1.55, 0),
-			Vector3(0.1, 0.1, length - 1.0), mat_wood_red, false)
-		_make_box(cr, "BenchRail_%d" % side, Vector3(x - side * 0.25, 0.45, 0),
-			Vector3(0.12, 0.12, length - 1.2), mat_wood_red, false)
+		# 栏杆也需要留出通道口
+		if gap_width > 0.0:
+			var rail_left_len: float = (length / 2.0 + gap_center) - gap_half - 0.5
+			if rail_left_len > 0.5:
+				var rail_left_z: float = -length / 2.0 + rail_left_len / 2.0
+				_make_box(cr, "LowRail_L_%d" % side, Vector3(x, 0.9, rail_left_z),
+					Vector3(0.12, 0.12, rail_left_len), mat_wood_red, false)
+				_make_box(cr, "TopRail_L_%d" % side, Vector3(x, 1.55, rail_left_z),
+					Vector3(0.1, 0.1, rail_left_len), mat_wood_red, false)
+			var rail_right_len: float = (length / 2.0 - gap_center) - gap_half - 0.5
+			if rail_right_len > 0.5:
+				var rail_right_z: float = length / 2.0 - rail_right_len / 2.0
+				_make_box(cr, "LowRail_R_%d" % side, Vector3(x, 0.9, rail_right_z),
+					Vector3(0.12, 0.12, rail_right_len), mat_wood_red, false)
+				_make_box(cr, "TopRail_R_%d" % side, Vector3(x, 1.55, rail_right_z),
+					Vector3(0.1, 0.1, rail_right_len), mat_wood_red, false)
+		else:
+			_make_box(cr, "LowRail_%d" % side, Vector3(x, 0.9, 0),
+				Vector3(0.12, 0.12, length - 1.0), mat_wood_red, false)
+			_make_box(cr, "TopRail_%d" % side, Vector3(x, 1.55, 0),
+				Vector3(0.1, 0.1, length - 1.0), mat_wood_red, false)
+			_make_box(cr, "BenchRail_%d" % side, Vector3(x - side * 0.25, 0.45, 0),
+				Vector3(0.12, 0.12, length - 1.2), mat_wood_red, false)
+
+func _decorate_corridor_exits(corridor: Node3D, length: float, floor_width: float) -> void:
+	for end_side in [-1, 1]:
+		var end_z: float = float(end_side) * (length / 2.0 + 1.1)
+		_make_box(corridor, "ExitLanding_%d" % end_side,
+			Vector3(0, 0.055, end_z), Vector3(floor_width + 1.2, 0.08, 1.9), mat_stone, true)
+		_make_box(corridor, "ExitGoldLine_%d" % end_side,
+			Vector3(0, 0.125, end_z), Vector3(0.34, 0.035, 1.45), mat_gold, false)
+		_make_label(corridor, "ExitLabel_%d" % end_side, "出口",
+			Vector3(0, 1.85, float(end_side) * (length / 2.0 + 0.2)), 22, 0.011,
+			PI if end_side < 0 else 0.0)
+		for side_value in [-1.0, 1.0]:
+			_make_cylinder(corridor, "ExitLanternPost_%d_%d" % [end_side, side_value],
+				Vector3(side_value * (floor_width / 2.0 + 0.45), 1.35, float(end_side) * (length / 2.0 + 0.6)),
+				0.08, 2.7, mat_wood_red, false)
+			_make_cylinder(corridor, "ExitLantern_%d_%d" % [end_side, side_value],
+				Vector3(side_value * (floor_width / 2.0 + 0.45), 2.55, float(end_side) * (length / 2.0 + 0.6)),
+				0.18, 0.32, mat_gold, false)
 
 # ============================================================
 # 五处核心院落专项优化
@@ -1216,24 +1468,24 @@ func _build_partitioned_courtyard(parent: Node3D, spec: Dictionary) -> void:
 	_build_moon_gate(frame, "PartitionMoonGate", gate_pos, gate_rot, String(spec["label"]))
 
 func _build_partition_wall_pair(parent: Node3D, name_s: String, center: Vector3, length: float,
-		wall_h: float, wall_t: float, gate_gap: float, has_gate: bool, rotate: bool) -> void:
+		wall_h: float, wall_t: float, gate_gap: float, has_gate: bool, rotated: bool) -> void:
 	if has_gate:
 		var segment_length := (length - gate_gap) / 2.0
 		var offset := (gate_gap + segment_length) / 2.0
-		_build_partition_wall_segment(parent, name_s + "_A", center, segment_length, wall_h, wall_t, -offset, rotate)
-		_build_partition_wall_segment(parent, name_s + "_B", center, segment_length, wall_h, wall_t, offset, rotate)
+		_build_partition_wall_segment(parent, name_s + "_A", center, segment_length, wall_h, wall_t, -offset, rotated)
+		_build_partition_wall_segment(parent, name_s + "_B", center, segment_length, wall_h, wall_t, offset, rotated)
 	else:
-		_build_partition_wall_segment(parent, name_s, center, length, wall_h, wall_t, 0.0, rotate)
+		_build_partition_wall_segment(parent, name_s, center, length, wall_h, wall_t, 0.0, rotated)
 
 func _build_partition_wall_segment(parent: Node3D, name_s: String, center: Vector3, length: float,
-		wall_h: float, wall_t: float, offset: float, rotate: bool) -> void:
+		wall_h: float, wall_t: float, offset: float, rotated: bool) -> void:
 	var pos := center
-	if rotate:
+	if rotated:
 		pos.z += offset
 	else:
 		pos.x += offset
 	var size := Vector3(length, wall_h, wall_t)
-	if rotate:
+	if rotated:
 		size = Vector3(wall_t, wall_h, length)
 	_make_box(parent, name_s, pos, size, mat_white_wall, true)
 	_make_mesh(parent, name_s + "_Cap", Vector3(pos.x, wall_h + 0.13, pos.z),
@@ -1295,11 +1547,13 @@ func _build_bluestone_route(parent: Node3D) -> void:
 	var route := Node3D.new()
 	route.name = "BluestoneRouteOverlay"
 	parent.add_child(route)
-	_make_mesh(route, "MainBluestone", Vector3(0, 0.065, -5), Vector3(4.2, 0.035, 82), mat_stone)
-	_make_mesh(route, "WestBluestone", Vector3(-19, 0.066, 10), Vector3(32, 0.035, 3.2), mat_stone)
-	_make_mesh(route, "EastBluestone", Vector3(19, 0.066, 10), Vector3(32, 0.035, 3.2), mat_stone)
-	_make_mesh(route, "SouthCourtyardBluestone", Vector3(0, 0.067, -15), Vector3(50, 0.035, 3.0), mat_stone)
-	_make_mesh(route, "NorthCourtyardBluestone", Vector3(0, 0.067, 25), Vector3(56, 0.035, 3.0), mat_stone)
+	# 石板路高于水面（水面top≈0.085），加厚确保不穿水不落水
+	_make_box(route, "MainBluestone", Vector3(0, 0.18, -5), Vector3(4.2, 0.12, 82), mat_stone, true)
+	_make_box(route, "EntranceToBridgeBluestone", Vector3(0, 0.19, -32), Vector3(5.4, 0.14, 32), mat_stone, true)
+	_make_box(route, "WestBluestone", Vector3(-19, 0.18, 10), Vector3(32, 0.12, 3.2), mat_stone, true)
+	_make_box(route, "EastBluestone", Vector3(19, 0.18, 10), Vector3(32, 0.12, 3.2), mat_stone, true)
+	_make_box(route, "SouthCourtyardBluestone", Vector3(0, 0.19, -15), Vector3(50, 0.12, 3.0), mat_stone, true)
+	_make_box(route, "NorthCourtyardBluestone", Vector3(0, 0.18, 25), Vector3(56, 0.12, 3.0), mat_stone, true)
 
 func _build_pond_revetment(parent: Node3D) -> void:
 	var pond := Node3D.new()
@@ -1314,22 +1568,22 @@ func _build_pond_revetment(parent: Node3D) -> void:
 		if x < -8 or x > -2:
 			_make_cylinder(pond, "RailPostN_%d" % x, Vector3(x, 0.85, -13.7), 0.06, 1.3, mat_stone, false)
 			_make_cylinder(pond, "RailPostS_%d" % x, Vector3(x, 0.85, -30.3), 0.06, 1.3, mat_stone, false)
-	_make_box(pond, "RailNorth_L", Vector3(-13.0, 1.35, -13.7), Vector3(10.0, 0.09, 0.09), mat_stone, false)
-	_make_box(pond, "RailNorth_R", Vector3(3.0, 1.35, -13.7), Vector3(10.0, 0.09, 0.09), mat_stone, false)
+	_make_box(pond, "RailNorth_L", Vector3(-13.5, 1.35, -13.7), Vector3(9.0, 0.09, 0.09), mat_stone, false)
+	_make_box(pond, "RailNorth_R", Vector3(4.5, 1.35, -13.7), Vector3(7.0, 0.09, 0.09), mat_stone, false)
 	_make_box(pond, "RailSouth_L", Vector3(-13.0, 1.35, -30.3), Vector3(10.0, 0.09, 0.09), mat_stone, false)
-	_make_box(pond, "RailSouth_R", Vector3(3.0, 1.35, -30.3), Vector3(10.0, 0.09, 0.09), mat_stone, false)
+	_make_box(pond, "RailSouth_R", Vector3(4.5, 1.35, -30.3), Vector3(7.0, 0.09, 0.09), mat_stone, false)
 
 func _build_lotus_pond_crossing(parent: Node3D) -> void:
 	var bridge := Node3D.new()
 	bridge.name = "WalkablePondBridge"
-	bridge.position = Vector3(-5, 0, -22)
+	bridge.position = Vector3(0, 0, -22)
 	parent.add_child(bridge)
 
-	_make_box(bridge, "Deck", Vector3(0, 0.03, 0), Vector3(5.0, 0.06, 22.0), mat_stone, true)
-	_make_box(bridge, "SouthRamp", Vector3(0, 0.02, -12.6), Vector3(5.2, 0.04, 3.4), mat_stone, true)
-	_make_box(bridge, "NorthRamp", Vector3(0, 0.02, 12.6), Vector3(5.2, 0.04, 3.4), mat_stone, true)
-	_make_box(bridge, "SouthBridgeLanding", Vector3(0, 0.015, -15.4), Vector3(5.6, 0.03, 3.0), mat_stone, true)
-	_make_box(bridge, "NorthBridgeLanding", Vector3(0, 0.015, 15.4), Vector3(5.6, 0.03, 3.0), mat_stone, true)
+	_make_box(bridge, "Deck", Vector3(0, 0.03, 0), Vector3(6.8, 0.06, 22.0), mat_stone, true)
+	_make_box(bridge, "SouthRamp", Vector3(0, 0.02, -12.6), Vector3(7.2, 0.04, 3.4), mat_stone, true)
+	_make_box(bridge, "NorthRamp", Vector3(0, 0.02, 12.6), Vector3(7.2, 0.04, 3.4), mat_stone, true)
+	_make_box(bridge, "SouthBridgeLanding", Vector3(0, 0.015, -15.4), Vector3(7.6, 0.03, 3.0), mat_stone, true)
+	_make_box(bridge, "NorthBridgeLanding", Vector3(0, 0.015, 15.4), Vector3(7.6, 0.03, 3.0), mat_stone, true)
 	for side_value in [-1.0, 1.0]:
 		var side: float = side_value
 		for z in [-9.0, -4.5, 0.0, 4.5, 9.0]:
@@ -1356,9 +1610,9 @@ func _build_expanded_water_system(parent: Node3D) -> void:
 	_make_mesh(water, "GrandLakeCenter", Vector3(0, 0.045, 18), Vector3(32, 0.08, 28), mat_water)
 	_make_mesh(water, "GrandLakeWestBay", Vector3(-18, 0.046, 15), Vector3(18, 0.08, 20), mat_water)
 	_make_mesh(water, "GrandLakeEastBay", Vector3(18, 0.046, 20), Vector3(18, 0.08, 18), mat_water)
-	_make_mesh(water, "SouthCreekBend", Vector3(-8, 0.047, -2), Vector3(7, 0.08, 22), mat_water)
-	_make_mesh(water, "EastCreekBend", Vector3(12, 0.047, 2), Vector3(22, 0.08, 6), mat_water)
-	_make_mesh(water, "NorthCreekBend", Vector3(5, 0.047, 34), Vector3(10, 0.08, 20), mat_water)
+	_make_mesh(water, "SouthCreekBend", Vector3(-10, 0.047, -2), Vector3(6, 0.08, 18), mat_water)
+	_make_mesh(water, "EastCreekBend", Vector3(14, 0.047, 2), Vector3(16, 0.08, 6), mat_water)
+	_make_mesh(water, "NorthCreekBend", Vector3(5, 0.047, 34), Vector3(8, 0.08, 16), mat_water)
 
 	var bank_points: Array[Vector3] = [
 		Vector3(-19, 0.12, 18), Vector3(19, 0.12, 18), Vector3(0, 0.12, 4), Vector3(0, 0.12, 32),
@@ -1371,9 +1625,18 @@ func _build_expanded_water_system(parent: Node3D) -> void:
 	for i in range(bank_points.size()):
 		_make_mesh(water, "IrregularBank_%d" % i, bank_points[i], bank_sizes[i], mat_creek_bank)
 
+	# 溪流上的踏脚石，确保主路径附近可通行
+	var stepping_stones: Array[Vector3] = [
+		Vector3(-4, 0.12, 5), Vector3(-4, 0.12, -5),
+		Vector3(4, 0.12, 5), Vector3(4, 0.12, -5),
+		Vector3(0, 0.12, 15), Vector3(0, 0.12, 25),
+	]
+	for i in range(stepping_stones.size()):
+		_make_cylinder(water, "SteppingStone_%d" % i, stepping_stones[i], 0.8, 0.15, mat_stone, true)
+
 	for i in range(18):
 		var x := -13.0 + float(i % 6) * 5.0
-		var z := 10.0 + float(i / 6) * 7.0
+		var z := 10.0 + float(i / 6.0) * 7.0
 		_make_mesh(water, "LotusLeaf_%d" % i, Vector3(x, 0.13, z), Vector3(1.4, 0.025, 1.0), mat_farmland)
 		if i % 4 == 0:
 			_make_cylinder(water, "LotusBud_%d" % i, Vector3(x + 0.35, 0.45, z - 0.2), 0.16, 0.35, mat_gold, false)
@@ -1383,12 +1646,17 @@ func _build_continuous_veranda_system(parent: Node3D) -> void:
 	veranda.name = "ContinuousVerandaSystem"
 	parent.add_child(veranda)
 
-	_build_corridor(veranda, "SouthVeranda", Vector3(-24, 0, -2), Vector3(24, 0, -2), 3.2)
+	_build_corridor(veranda, "SouthVeranda", Vector3(-24, 0, -2), Vector3(24, 0, -2), 3.2,
+		0.0, 7.0)
 	_build_corridor(veranda, "WestLakeVeranda", Vector3(-24, 0, -2), Vector3(-30, 0, 22), 3.0)
 	_build_corridor(veranda, "NorthLakeVeranda", Vector3(-30, 0, 22), Vector3(-10, 0, 34), 3.0)
 	_build_corridor(veranda, "EastLakeVeranda", Vector3(24, 0, -2), Vector3(31, 0, 18), 3.0)
 	_build_corridor(veranda, "TeaVeranda", Vector3(31, 0, 18), Vector3(12, 0, 40), 3.0)
 	_build_corridor(veranda, "MainHallVeranda", Vector3(-10, 0, 34), Vector3(10, 0, 31), 3.0)
+	# === 连通性修复: 闭合主环路 (TeaVeranda终点→MainHallVeranda终点) ===
+	_build_corridor(veranda, "NorthClosureVeranda", Vector3(10, 0, 31), Vector3(12, 0, 40), 3.0)
+	# === 连通性修复: 连通栊翠庵南月洞门 (解决妙玉NPC不可达) ===
+	_build_corridor(veranda, "LongcuiVeranda", Vector3(12, 0, 40), Vector3(0, 0, 49), 3.0)
 
 func _build_moon_gates_and_screen_walls(parent: Node3D) -> void:
 	var gates := Node3D.new()
@@ -1550,7 +1818,7 @@ func _build_flower_bed(parent: Node3D, pos: Vector3, size: Vector3) -> void:
 	_make_mesh(bed, "Soil", Vector3(0, 0.04, 0), size, mat_dirt)
 	for i in range(10):
 		var x := -size.x / 2.0 + 0.5 + float(i % 5) * (size.x - 1.0) / 4.0
-		var z := -size.z / 2.0 + 0.35 + float(i / 5) * (size.z - 0.7)
+		var z := -size.z / 2.0 + 0.35 + float(i / 5.0) * (size.z - 0.7)
 		_make_cylinder(bed, "FlowerStem_%d" % i, Vector3(x, 0.35, z), 0.035, 0.7, mat_farmland, false)
 		_make_box(bed, "FlowerHead_%d" % i, Vector3(x, 0.78, z), Vector3(0.35, 0.22, 0.35), mat_gold, false)
 
@@ -1561,7 +1829,7 @@ func _build_shrub_group(parent: Node3D, pos: Vector3) -> void:
 	parent.add_child(shrubs)
 	for i in range(5):
 		var x := -1.8 + float(i % 3) * 1.6
-		var z := -0.9 + float(i / 3) * 1.4
+		var z := -0.9 + float(i / 3.0) * 1.4
 		_make_box(shrubs, "Shrub_%d" % i, Vector3(x, 0.65, z), Vector3(1.4, 1.1, 1.2), mat_farmland, false)
 
 func _build_visual_occlusion_layers(parent: Node3D) -> void:
@@ -1588,7 +1856,7 @@ func _build_visual_occlusion_layers(parent: Node3D) -> void:
 
 	for i in range(30):
 		var x := -43.0 + float(i % 10) * 2.1
-		var z := 24.0 + float(i / 10) * 3.1
+		var z := 24.0 + float(i / 10.0) * 3.1
 		_make_cylinder(root, "WestBamboo_%d" % i, Vector3(x, 2.1, z), 0.055, 4.2, mat_wood_red, false)
 		_make_box(root, "WestBambooLeaf_%d" % i, Vector3(x + 0.25, 4.1, z), Vector3(0.7, 0.45, 0.55), mat_farmland, false)
 
@@ -1609,7 +1877,7 @@ func _build_xiaoxiang_details(parent: Node3D) -> void:
 	_make_mesh(root, "WaterSidePath", Vector3(5.5, 0.075, 4), Vector3(2.4, 0.04, 12), mat_stone)
 	for i in range(18):
 		var x := -10 + (i % 6) * 2.0
-		var z := -8 + int(i / 6) * 4.0
+		var z := -8 + floori(float(i) / 6.0) * 4.0
 		_make_cylinder(root, "BambooCluster_%d" % i, Vector3(x, 2.0, z), 0.055, 4.0, mat_wood_red, false)
 
 func _build_yihong_details(parent: Node3D) -> void:

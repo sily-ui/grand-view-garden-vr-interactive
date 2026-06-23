@@ -14,6 +14,14 @@ class_name BuildingBase
 func _ready() -> void:
 	if name_plate:
 		name_plate.text = building_name
+		name_plate.position = Vector3(0, 5.4, 2.1)
+		name_plate.font_size = 34
+		name_plate.pixel_size = 0.011
+		name_plate.modulate = Color(0.88, 0.72, 0.24, 1)
+		name_plate.outline_size = 7
+		name_plate.outline_modulate = Color(0.05, 0.03, 0.01, 1)
+		name_plate.double_sided = true
+		name_plate.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if entrance_area:
 		entrance_area.body_entered.connect(_on_body_entered)
 		entrance_area.body_exited.connect(_on_body_exited)

@@ -134,6 +134,8 @@ func _execute_event(event_id: String) -> void:
 		"intro_complete":
 			GameState.set_condition("intro_done", true)
 		# === 路径氛围 ===
+		"path_gate_seen":
+			GameState.set_condition("path_gate_seen", true)
 		"path_complete":
 			GameState.set_condition("path_done", true)
 		# === 拜见贾母 ===
@@ -165,31 +167,3 @@ func _execute_event(event_id: String) -> void:
 			GameState.set_condition("game_completed", true)
 		_:
 			push_warning("DialogManager: 未知事件 '%s'" % event_id)
-	match event_id:
-		"intro_complete":
-			GameState.set_condition("intro_done", true)
-		"path_complete":
-			GameState.set_condition("path_done", true)
-		"meet_jiamu_complete":
-			GameState.set_condition("met_jiamu", true)
-		"unlock_xiaoxiang":
-			GameState.unlock_area("xiaoxiang_guan")
-		"unlock_yihong":
-			GameState.unlock_area("yihong_yuan")
-		"unlock_longcui":
-			GameState.unlock_area("longcui_an")
-		"visit_xiaoxiang_complete":
-			GameState.set_condition("visited_xiaoxiang", true)
-		"visit_yihong_complete":
-			GameState.set_condition("visited_yihong", true)
-		"tea_ceremony_complete":
-			GameState.set_condition("had_tea", true)
-		"collect_teacup":
-			GameState.collect_item("teacup")
-		"banquet_complete":
-			GameState.set_condition("attended_banquet", true)
-			GameState.unlock_area("farewell")
-		"game_complete":
-			GameState.set_condition("game_completed", true)
-	
-	EventBus.trigger_event(event_id)

@@ -26,7 +26,7 @@ static var dialogs: Dictionary = {
 	"path_gate_2": {
 		"speaker": "刘姥姥",
 		"text": "哎呦，这门口的石狮子可真威武！比我们村土地庙的还大好几倍！",
-		"next": "path_garden"
+		"events": ["path_gate_seen"]
 	},
 	"path_garden": {
 		"speaker": "旁白",

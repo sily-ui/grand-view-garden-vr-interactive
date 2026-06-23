@@ -1,6 +1,6 @@
 extends Node
 ## 中式木质解说立牌系统
-## 替换原NPC节点，在原位放置木质立牌+触发区域+VR适配剧情面板
+## 在 NPC 旁放置木质立牌+触发区域+VR适配剧情面板
 
 # ═══════════════════════════════════════════════════════
 # 立牌数据
@@ -162,7 +162,6 @@ var _hint_label: Label
 # ═══════════════════════════════════════════════════════
 func _ready() -> void:
 	_init_materials()
-	_clear_old_npcs()
 	_create_all_signboards()
 	_create_hint_ui()
 	_create_ui_panel()
@@ -200,15 +199,10 @@ func _init_materials() -> void:
 	_mat_name_gold.emission_energy_multiplier = 0.4
 
 # ═══════════════════════════════════════════════════════
-# 清除旧NPC节点
+# 兼容旧版本：现在保留 NPC，立牌只作为说明补充
 # ═══════════════════════════════════════════════════════
 func _clear_old_npcs() -> void:
-	var npc_container := get_node_or_null("../NPCs")
-	if not npc_container:
-		push_warning("SignboardSystem: 找不到 NPCs 容器节点")
-		return
-	for child in npc_container.get_children():
-		child.queue_free()
+	pass
 
 # ═══════════════════════════════════════════════════════
 # 创建全部立牌
@@ -218,7 +212,18 @@ func _create_all_signboards() -> void:
 	if not npc_container:
 		return
 	for data in _signboard_data:
+		data["pos"] = _offset_signboard_position(data["pos"])
 		_create_one_signboard(npc_container, data)
+
+func _offset_signboard_position(pos: Vector3) -> Vector3:
+	var offset := Vector3(1.25, 0, 1.0)
+	if pos.x > 20:
+		offset.x = -1.4
+	elif pos.x < -20:
+		offset.x = 1.4
+	if pos.z > 20:
+		offset.z = -1.0
+	return pos + offset
 
 # ═══════════════════════════════════════════════════════
 # 创建单个立牌

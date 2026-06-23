@@ -17,6 +17,8 @@ size = Vector3(6, 3, 6)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -84)
 script = ExtResource("3_et")
 dialog_id = "intro_arrival"
+visible_npc_name = "周瑞家"
+visible_npc_offset = Vector3(-1.8, -1.5, 1.2)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="IntroTrigger" unique_id=224453527]
@@ -28,6 +30,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 29)
 script = ExtResource("3_et")
 dialog_id = "meet_jiamu"
 required_condition = "intro_done"
+visible_npc_name = "贾母"
+visible_npc_offset = Vector3(0, -1.5, -1.7)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeetJiamuTrigger" unique_id=997745255]
@@ -39,6 +43,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 25)
 script = ExtResource("3_et")
 dialog_id = "banquet"
 required_condition = "completed_tea"
+visible_npc_name = "王熙凤"
+visible_npc_offset = Vector3(1.8, -1.5, -1.5)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BanquetTrigger" unique_id=919202834]
@@ -50,6 +56,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -84)
 script = ExtResource("3_et")
 dialog_id = "farewell"
 required_condition = "attended_banquet"
+visible_npc_name = "刘姥姥"
+visible_npc_offset = Vector3(1.8, -1.5, 1.2)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="FarewellTrigger" unique_id=1627396403]
@@ -61,6 +69,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -62)
 script = ExtResource("3_et")
 dialog_id = "path_gate"
 trigger_once = true
+hide_visible_npc_after_trigger = true
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PathGateTrigger"]
@@ -68,10 +77,12 @@ shape = SubResource("col_trigger")
 
 
 [node name="PathGardenTrigger" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.5, -22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -10)
 script = ExtResource("3_et")
 dialog_id = "path_garden"
 trigger_once = true
+required_condition = "path_gate_seen"
+hide_visible_npc_after_trigger = true
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PathGardenTrigger"]
