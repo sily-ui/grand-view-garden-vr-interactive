@@ -5,6 +5,7 @@
   <img src="assets/textures/ui/avatar_liulaolao.png" width="100" alt="刘姥姥">
   <img src="assets/textures/ui/avatar_jiabaoyu.png" width="100" alt="贾宝玉">
   <img src="assets/textures/ui/avatar_lindaiyu.png" width="100" alt="林黛玉">
+  <img src="assets/textures/ui/avatar_wangxifeng.png" width="100" alt="王熙凤">
 </p>
 
 > 基于《红楼梦》经典桥段「刘姥姥进大观园」的沉浸式 3D/VR 互动叙事体验。
@@ -24,6 +25,7 @@ This project is an immersive 3D/VR interactive narrative experience based on the
 | 功能 | Feature | 说明 |
 |------|---------|------|
 | 🎭 剧情对话系统 | Dialog System | 卷轴展开动画、打字机效果、角色头像、选择分支 |
+| 🔊 AI 语音配音 | TTS Voice | 8 位角色台词语音（MiMo TTS），本地预生成播放，对话时 BGM 自动闪避 |
 | 🧭 导航引导系统 | Navigation Guide | 金色闪烁箭头 + HUD 方向提示，引导玩家完成剧情 |
 | 🌿 场景氛围系统 | Scene Ambience | 蝴蝶飞舞、落叶飘零、风粒子、鸟鸣、锦鲤跃水 |
 | 📜 解说立牌系统 | Signboard System | 古风立牌 + 角色百科弹窗，宣纸红木风格 |
@@ -63,6 +65,8 @@ This project is an immersive 3D/VR interactive narrative experience based on the
 | 贾宝玉 | Jia Baoyu | 怡红公子 | 怡红院 |
 | 林黛玉 | Lin Daiyu | 潇湘妃子 | 潇湘馆 |
 | 王熙凤 | Wang Xifeng | 琏二奶奶 | — |
+| 妙玉 | Miaoyu | 栊翠庵修行人 | 栊翠庵 |
+| 周瑞家 | Zhou Rui's Wife | 荣国府仆妇 | — |
 | 薛宝钗 | Xue Baochai | 蘅芜君 | 蘅芜苑 |
 | 袭人 | Xiren | 宝玉贴身丫鬟 | 怡红院 |
 | 晴雯 | Qingwen | 宝玉丫鬟 | 怡红院 |
@@ -74,6 +78,7 @@ This project is an immersive 3D/VR interactive narrative experience based on the
 - **引擎**: [Godot 4](https://godotengine.org/)
 - **脚本语言**: GDScript
 - **字体**: [霞鹜文楷 LXGW WenKai](https://github.com/lxgw/LxgwWenKai) (SIL OFL 1.1)
+- **语音**: [MiMo TTS](https://github.com/XiaoMi/MiMo) (mimo-v2.5-tts / voicedesign)
 - **物理引擎**: Jolt Physics
 - **渲染**: Vulkan (DirectX 12)
 
@@ -118,13 +123,19 @@ project_godot/
 ├── assets/
 │   ├── fonts/             # 霞鹜文楷字体
 │   ├── textures/ui/       # 角色头像
-│   ├── audio/             # 音效
-│   └── models/            # 3D 模型
+│   ├── audio/
+│   │   ├── voice/         # TTS 预生成语音（8 角色 × 多条台词）
+│   │   ├── bgm/           # 背景音乐
+│   │   ├── ambient/       # 环境音效
+│   │   └── sfx/           # 交互音效
+│   └── config/            # TTS 配置（tts_config.json，已 gitignore）
 ├── scripts/
 │   ├── autoload/          # 全局单例（GameManager, GameState, EventBus）
 │   ├── dialog/            # 对话系统（DialogData, DialogManager）
 │   ├── systems/           # 核心系统
 │   │   ├── navigation_guide.gd    # 导航箭头引导
+│   │   ├── tts_system.gd          # TTS 语音配音（本地 WAV 加载）
+│   │   ├── audio_system.gd        # 音频管理（BGM/SFX/Voice 总线）
 │   │   ├── scene_ambience.gd      # 场景氛围（蝴蝶、落叶、锦鲤）
 │   │   ├── event_trigger.gd       # 事件触发器
 │   │   └── scene_enhancements.gd  # 场景增强
@@ -139,7 +150,10 @@ project_godot/
 │   └── buildings/         # 建筑系统
 └── scenes/
     ├── player/            # 玩家场景
+    ├── world/             # 世界场景（建筑、地形、NPC、植被）
     └── ui/                # 主菜单场景
+└── tools/
+    └── generate_voice.py  # TTS 语音批量生成脚本
 ```
 
 ---
@@ -153,6 +167,7 @@ project_godot/
 | 资源 | Asset | 协议 License |
 |------|-------|-------------|
 | 霞鹜文楷 | LXGW WenKai Font | [SIL OFL 1.1](https://openfontlicense.org/) |
+| MiMo TTS | 小米语音合成 | MiMo License |
 | Asset Placer | Godot 插件 | MIT License |
 | Godot AI MCP | 编辑器工具 | MIT License |
 
