@@ -21,14 +21,14 @@ var story_stages: Array[Dictionary] = [
 		"condition": "intro_done",
 		"completion": "",
 		"hint": "从照壁左侧石路绕行",
-		"pass_radius": 10.0
+		"pass_radius": 20.0
 	},
 	{
 		"name": "回到入园石路",
 		"target": Vector3(0, 1.5, -38),
 		"condition": "intro_done",
 		"completion": "",
-		"hint": "回到中轴石路",
+		"hint": "穿过入园门洞回到中轴石路",
 		"pass_radius": 8.0
 	},
 	{
@@ -60,42 +60,65 @@ var story_stages: Array[Dictionary] = [
 		"target": Vector3(0, 1.5, 35),
 		"condition": "intro_done",
 		"completion": "met_jiamu",
-		"hint": "到正厅门前拜见贾母"
+		"hint": "从南门进入大观楼拜见贾母",
+		"route": [
+			{"pos": Vector3(0, 1.5, -2), "hint": "从游廊中央入园", "pass_radius": 10.0},
+			{"pos": Vector3(0, 1.5, 15), "hint": "沿中路向北前往大观楼", "pass_radius": 10.0},
+			{"pos": Vector3(0, 1.5, 35), "hint": "从南门进入大观楼", "pass_radius": 8.0}
+		]
 	},
 	{
 		"name": "找王熙凤问路",
-		"target": Vector3(3.2, 1.5, 27.5),
+		"target": Vector3(2.2, 1.5, 32.5),
 		"condition": "met_jiamu",
 		"completion": "met_xifeng",
-		"hint": "找王熙凤问下一站"
+		"hint": "到大观楼南门前找王熙凤问路"
 	},
 	{
 		"name": "游潇湘馆",
 		"target": Vector3(-35, 1.5, 15),
 		"condition": "met_xifeng",
 		"completion": "visited_xiaoxiang",
-		"hint": "去潇湘馆见林黛玉"
+		"hint": "去潇湘馆见林黛玉",
+		"route": [
+			{"pos": Vector3(-19, 1.5, 10), "hint": "先向左回到西侧石路"},
+			{"pos": Vector3(-35, 1.5, 16), "hint": "沿竹径进入潇湘馆"}
+		]
 	},
 	{
 		"name": "游怡红院",
 		"target": Vector3(35, 1.5, 15),
 		"condition": "visited_xiaoxiang",
 		"completion": "visited_yihong",
-		"hint": "去怡红院见贾宝玉"
+		"hint": "去怡红院见贾宝玉",
+		"route": [
+			{"pos": Vector3(0, 1.5, 25), "hint": "先回到北侧主路"},
+			{"pos": Vector3(19, 1.5, 10), "hint": "向右走东侧石路"},
+			{"pos": Vector3(35, 1.5, 18), "hint": "从花门进入怡红院", "pass_radius": 7.0}
+		]
 	},
 	{
 		"name": "栊翠庵品茶",
 		"target": Vector3(0, 1.5, 57),
 		"condition": "visited_yihong",
 		"completion": "completed_tea",
-		"hint": "去栊翠庵找妙玉品茶"
+		"hint": "去栊翠庵找妙玉品茶",
+		"route": [
+			{"pos": Vector3(31, 1.5, 18), "hint": "先沿右侧游廊北上"},
+			{"pos": Vector3(12, 1.5, 52), "hint": "沿茶廊向左绕行"},
+			{"pos": Vector3(0, 1.5, 60), "hint": "从南门进入栊翠庵", "pass_radius": 7.0}
+		]
 	},
 	{
 		"name": "赴宴",
 		"target": Vector3(0, 1.5, 35),
 		"condition": "completed_tea",
 		"completion": "attended_banquet",
-		"hint": "回大观楼门前赴宴"
+		"hint": "回大观楼赴宴",
+		"route": [
+			{"pos": Vector3(12, 1.5, 52), "hint": "先出庵门向右回廊"},
+			{"pos": Vector3(0, 1.5, 35), "hint": "沿回廊南下到大观楼南门"}
+		]
 	},
 	{
 		"name": "告别",
@@ -110,6 +133,7 @@ var story_stages: Array[Dictionary] = [
 var arrow_nodes: Array[Node3D] = []
 var current_stage_index: int = 0
 var passed_waypoint_indices: Dictionary = {}
+var passed_route_counts: Dictionary = {}
 var arrow_container: Node3D
 
 # 箭头外观参数
@@ -120,6 +144,7 @@ const ARROW_SCALE := Vector3(0.6, 0.6, 0.6)
 const ACTIVATE_DISTANCE := 6.0      # 距触发点多近时隐藏箭头
 const INTERACT_DISTANCE := 2.8      # 距任务目标足够近时显示交互提示
 const WAYPOINT_PASS_DISTANCE := 8.0 # 中间路点的默认通过半径
+const ROUTE_POINT_PASS_DISTANCE := 5.0
 const SPAWN_DISTANCE := 50.0        # 箭头显示的最大距离
 const ARROW_SPACING := 8.0          # 多个箭头之间的间距
 
@@ -244,12 +269,12 @@ func _update_arrows() -> void:
 		return
 	
 	var stage: Dictionary = story_stages[current_stage_index]
-	var target: Vector3 = stage["target"]
+	var target: Vector3 = _get_stage_guide_target(stage, current_stage_index)["pos"]
 	var player_pos: Vector3 = player.global_position
 	var dist_to_target: float = Vector2(player_pos.x - target.x, player_pos.z - target.z).length()
 	
 	# 距离触发点太近，隐藏箭头
-	if dist_to_target < ACTIVATE_DISTANCE:
+	if dist_to_target < ACTIVATE_DISTANCE and _is_final_stage_target(stage, target):
 		_clear_arrows()
 		return
 	
@@ -380,7 +405,8 @@ func get_current_hint() -> String:
 	_find_current_stage()
 	if current_stage_index >= story_stages.size():
 		return ""
-	return story_stages[current_stage_index].get("hint", "")
+	var stage: Dictionary = story_stages[current_stage_index]
+	return _get_stage_guide_target(stage, current_stage_index).get("hint", stage.get("hint", ""))
 
 func get_stage_count() -> int:
 	return story_stages.size()
@@ -390,6 +416,12 @@ func has_stage_named(stage_name: String) -> bool:
 		if stage.get("name", "") == stage_name:
 			return true
 	return false
+
+func get_stage_route_count(stage_name: String) -> int:
+	for stage in story_stages:
+		if stage.get("name", "") == stage_name:
+			return Array(stage.get("route", [])).size()
+	return 0
 
 func _update_hud_hint() -> void:
 	return
@@ -412,6 +444,9 @@ func _create_navigation_hud() -> void:
 	navigation_hud_root.name = "NavigationHUDRoot"
 	navigation_hud_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	navigation_hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var wenkai_theme: Theme = load("res://assets/fonts/wenkai_theme.tres")
+	if wenkai_theme:
+		navigation_hud_root.theme = wenkai_theme
 	navigation_hud_layer.add_child(navigation_hud_root)
 
 	_create_top_arrow_hud()
@@ -554,11 +589,11 @@ func _update_navigation_hud() -> void:
 	if not navigation_hud_layer or not player:
 		return
 	navigation_hud_layer.visible = navigation_hud_visible
-	var dialog_active := DialogManager.is_active
+	var dialog_active := GameManager.is_dialog_active()
 	if top_arrow_panel:
-		top_arrow_panel.modulate.a = 0.36 if dialog_active else 1.0
+		top_arrow_panel.modulate.a = 0.85 if dialog_active else 1.0
 	if compass_panel:
-		compass_panel.modulate.a = 0.24 if dialog_active else 0.82
+		compass_panel.modulate.a = 0.7 if dialog_active else 0.82
 	if current_stage_index >= story_stages.size():
 		top_target_label.text = "主线完成"
 		top_distance_label.text = "已游毕大观园"
@@ -566,7 +601,8 @@ func _update_navigation_hud() -> void:
 		return
 
 	var stage: Dictionary = story_stages[current_stage_index]
-	var target: Vector3 = stage["target"]
+	var guide_target := _get_stage_guide_target(stage, current_stage_index)
+	var target: Vector3 = guide_target["pos"]
 	var player_pos: Vector3 = player.global_position
 	var target_dir := Vector2(target.x - player_pos.x, target.z - player_pos.z)
 	var distance := target_dir.length()
@@ -575,14 +611,65 @@ func _update_navigation_hud() -> void:
 		relative_angle = _get_relative_angle_to(target)
 
 	top_arrow_label.rotation = relative_angle
-	top_target_label.text = stage.get("hint", "前往目标")
-	if distance <= INTERACT_DISTANCE:
+	top_target_label.text = guide_target.get("hint", stage.get("hint", "前往目标"))
+	if distance <= INTERACT_DISTANCE and _is_final_stage_target(stage, target):
 		top_distance_label.text = "已到达"
 	else:
 		top_distance_label.text = "约 %d 米" % int(distance)
-	top_turn_label.text = "回头" if abs(relative_angle) > deg_to_rad(120.0) else _get_turn_hint(relative_angle)
+	top_turn_label.text = _get_contextual_turn_hint(relative_angle, guide_target, stage)
 
 	_update_compass(target)
+
+func _get_stage_guide_target(stage: Dictionary, stage_index: int = -1) -> Dictionary:
+	var route: Array = stage.get("route", [])
+	if stage_index >= 0:
+		_mark_stage_route_points_if_reached(stage, stage_index)
+	var start_index: int = int(passed_route_counts.get(stage_index, 0)) if stage_index >= 0 else 0
+	for route_index in range(start_index, route.size()):
+		var point = route[route_index]
+		if not point is Dictionary or not point.has("pos"):
+			continue
+		var route_pos: Vector3 = point["pos"]
+		return {
+			"pos": route_pos,
+			"hint": point.get("hint", stage.get("hint", "前往目标")),
+			"is_route_point": true
+		}
+	return {
+		"pos": stage["target"],
+		"hint": stage.get("hint", "前往目标"),
+		"is_route_point": false
+	}
+
+func _mark_stage_route_points_if_reached(stage: Dictionary, stage_index: int) -> void:
+	if not player:
+		return
+	var route: Array = stage.get("route", [])
+	var start_index: int = int(passed_route_counts.get(stage_index, 0))
+	for route_index in range(start_index, route.size()):
+		var point = route[route_index]
+		if not point is Dictionary or not point.has("pos"):
+			passed_route_counts[stage_index] = route_index + 1
+			continue
+		var route_pos: Vector3 = point["pos"]
+		var dist := Vector2(player.global_position.x - route_pos.x, player.global_position.z - route_pos.z).length()
+		var pass_radius: float = float(point.get("pass_radius", ROUTE_POINT_PASS_DISTANCE))
+		if dist <= pass_radius:
+			passed_route_counts[stage_index] = route_index + 1
+			continue
+		break
+
+func _is_final_stage_target(stage: Dictionary, guide_pos: Vector3) -> bool:
+	var final_pos: Vector3 = stage["target"]
+	return Vector2(guide_pos.x - final_pos.x, guide_pos.z - final_pos.z).length() < 0.1
+
+func _get_contextual_turn_hint(relative_angle: float, guide_target: Dictionary, stage: Dictionary) -> String:
+	if bool(guide_target.get("is_route_point", false)):
+		return guide_target.get("hint", stage.get("hint", "沿路线前进"))
+	if abs(relative_angle) > deg_to_rad(120.0):
+		return "回头"
+	var base_hint := _get_turn_hint(relative_angle)
+	return base_hint
 
 func _update_compass(target: Vector3) -> void:
 	var forward := _get_player_forward_2d()

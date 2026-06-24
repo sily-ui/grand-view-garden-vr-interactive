@@ -57,12 +57,9 @@ func start_dialog(dialog_id: String) -> void:
 		current_dialog.get("choices", [])
 	)
 	
-	# AI 语音配音
+	# AI 语音配音（本地预生成）
 	if TTSSystem:
-		TTSSystem.speak(
-			current_dialog.get("speaker", ""),
-			current_dialog.get("text", "")
-		)
+		TTSSystem.speak_dialog(dialog_id)
 	
 	dialog_started.emit(dialog_id)
 	

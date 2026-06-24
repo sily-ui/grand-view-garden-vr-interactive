@@ -26,6 +26,8 @@ const COLOR_WOOD_LIGHT := Color(0.45, 0.3, 0.15, 0.95)
 const COLOR_GOLD_TEXT := Color(0.82, 0.7, 0.35, 1)
 const COLOR_GOLD_BRIGHT := Color(1.0, 0.9, 0.5, 1)
 const TYPEWRITER_SECONDS_PER_CHAR := 0.035
+const COMPACT_DIALOG_WIDTH := 0.72
+const COMPACT_DIALOG_HEIGHT := 0.44
 
 # 角色头像映射
 var avatar_map: Dictionary = {
@@ -44,6 +46,7 @@ func _ready() -> void:
 	visible = false
 	add_to_group("dialog_ui")
 	DialogManager.dialog_started.connect(_on_dialog_started)
+	_configure_layout()
 	# 确保鼠标事件能穿透到选项按钮
 	panel.mouse_filter = Control.MOUSE_FILTER_PASS
 	avatar_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -67,25 +70,36 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not is_showing:
 		return
-	
-	# 鼠标：让按钮自己处理
-	if event is InputEventMouseButton or event is InputEventMouseMotion:
+
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if choices_container.get_child_count() == 0:
+				_advance_or_show_full_text()
+			# 有选项时不要吞掉鼠标事件，交给 Button 自己处理点击。
+			else:
+				return
+			get_viewport().set_input_as_handled()
 		return
-	
+	if event is InputEventMouseMotion:
+		return
+
 	if event.is_action_pressed("interact") or event.is_action_pressed("dialog_next"):
-		if not text_fully_visible:
-			# 打字机还没结束 → 跳过，直接显示全文
-			_show_full_text()
-			return
-		# 全文已显示
-		if choices_container.get_child_count() > 0:
-			# 有选项时，E/空格自动选择第一个选项
-			var first_btn: Button = choices_container.get_child(0)
-			if first_btn:
-				first_btn.pressed.emit()
-			return
-		# 无选项，推进对话
-		DialogManager.advance_dialog()
+		_advance_or_show_full_text()
+
+func _advance_or_show_full_text() -> void:
+	if not text_fully_visible:
+		# 打字机还没结束 → 跳过，直接显示全文
+		_show_full_text()
+		return
+	# 全文已显示
+	if choices_container.get_child_count() > 0:
+		# 有选项时，E/空格自动选择第一个选项
+		var first_btn: Button = choices_container.get_child(0)
+		if first_btn:
+			first_btn.pressed.emit()
+		return
+	# 无选项，推进对话
+	DialogManager.advance_dialog()
 
 func show_dialog(speaker: String, text: String, choices: Array = []) -> void:
 	is_showing = true
@@ -100,8 +114,13 @@ func show_dialog(speaker: String, text: String, choices: Array = []) -> void:
 	if speaker == "旁白" or speaker == "周瑞家":
 		avatar_panel.visible = false
 	elif avatar_map.has(speaker):
-		avatar_rect.texture = load(avatar_map[speaker])
-		avatar_panel.visible = true
+		var avatar_path: String = avatar_map[speaker]
+		if ResourceLoader.exists(avatar_path):
+			avatar_rect.texture = load(avatar_path)
+			avatar_panel.visible = true
+		else:
+			avatar_rect.texture = null
+			avatar_panel.visible = false
 	else:
 		avatar_rect.texture = null
 		avatar_panel.visible = false
@@ -128,7 +147,7 @@ func show_dialog(speaker: String, text: String, choices: Array = []) -> void:
 	if choices.size() > 0:
 		continue_hint.text = "请选择："
 	else:
-		continue_hint.text = "按 [E] 或 空格 继续..."
+		continue_hint.text = "按 [E] / 空格 / 鼠标左键继续..."
 
 func _play_scroll_open_animation() -> void:
 	if scroll_tween:
@@ -172,15 +191,17 @@ func _on_typewriter_finished() -> void:
 func _show_choices() -> void:
 	if not DialogManager.current_dialog.has("choices"):
 		return
-	
+
 	var choices: Array = DialogManager.current_dialog.choices
 	continue_hint.visible = false
-	
+	choices_container.add_theme_constant_override("separation", 8)
+
 	for i in range(choices.size()):
 		var btn := Button.new()
 		btn.text = choices[i].text
-		btn.add_theme_font_size_override("font_size", 24)
-		btn.custom_minimum_size.y = 52
+		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		btn.add_theme_font_size_override("font_size", 22)
+		btn.custom_minimum_size.y = 46
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.mouse_filter = Control.MOUSE_FILTER_STOP
 		
@@ -247,6 +268,25 @@ func hide_dialog() -> void:
 
 func _on_dialog_started(_id: String) -> void:
 	pass
+
+func _configure_layout() -> void:
+	panel.set_anchors_preset(Control.PRESET_CENTER, false)
+	panel.anchor_left = 0.5 - COMPACT_DIALOG_WIDTH * 0.5
+	panel.anchor_right = 0.5 + COMPACT_DIALOG_WIDTH * 0.5
+	panel.anchor_top = 1.0 - COMPACT_DIALOG_HEIGHT - 0.02
+	panel.anchor_bottom = 0.98
+	panel.offset_left = 0
+	panel.offset_top = 0
+	panel.offset_right = 0
+	panel.offset_bottom = 0
+	panel.custom_minimum_size = Vector2(820, 300)
+
+	avatar_panel.custom_minimum_size = Vector2(132, 132)
+	avatar_rect.custom_minimum_size = Vector2(124, 124)
+	text_label.custom_minimum_size = Vector2(0, 70)
+	text_label.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	choices_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	continue_hint.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
 func _get_all_children(node: Node) -> Array[Node]:
 	var result: Array[Node] = []

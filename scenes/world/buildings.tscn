@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3]
+[gd_scene load_steps=34 format=3]
 
 [ext_resource type="Script" uid="uid://co21we3mtv61l" path="res://scripts/buildings/building_base.gd" id="8_bb"]
 [ext_resource type="Script" path="res://scripts/buildings/auto_gate.gd" id="9_gate"]
@@ -96,7 +96,19 @@ size = Vector3(0.08, 1.5, 1)
 
 
 [sub_resource type="BoxShape3D" id="col_building"]
-size = Vector3(12, 4, 10)
+size = Vector3(12, 4, 7)
+
+
+[sub_resource type="BoxShape3D" id="col_daguan_left_wing"]
+size = Vector3(3, 4, 10)
+
+
+[sub_resource type="BoxShape3D" id="col_daguan_right_wing"]
+size = Vector3(3, 4, 10)
+
+
+[sub_resource type="BoxShape3D" id="col_daguan_back_wall"]
+size = Vector3(12, 4, 2)
 
 
 [sub_resource type="StandardMaterial3D" id="mat_bamboo"]
@@ -540,7 +552,7 @@ mesh = SubResource("mesh_wall_cap")
 
 
 [node name="LongcuiAn" type="StaticBody3D" parent="." unique_id=328833067 groups=["building"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 40)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 52)
 script = ExtResource("8_bb")
 building_name = "栊翠庵"
 building_description = "妙玉修行处，檀香袅袅，清静之地"
@@ -655,7 +667,7 @@ mesh = SubResource("mesh_window_frame")
 
 
 [node name="Collision" type="CollisionShape3D" parent="LongcuiAn" unique_id=404929619]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -1.5)
 shape = SubResource("col_building")
 
 
@@ -735,13 +747,13 @@ mesh = SubResource("mesh_foundation")
 
 
 [node name="ColumnFL" type="MeshInstance3D" parent="DaguanLou" unique_id=1483706916]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.65, 4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 3.65, -3.5)
 material_override = SubResource("mat_pillar_red")
 mesh = SubResource("mesh_column_round")
 
 
 [node name="ColumnFR" type="MeshInstance3D" parent="DaguanLou" unique_id=1784360376]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.65, 4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.65, -3.5)
 material_override = SubResource("mat_pillar_red")
 mesh = SubResource("mesh_column_round")
 
@@ -759,7 +771,7 @@ mesh = SubResource("mesh_column_round")
 
 
 [node name="BeamFront" type="MeshInstance3D" parent="DaguanLou" unique_id=1940052303]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.7, 4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.7, -3.5)
 material_override = SubResource("mat_beam_dark")
 mesh = SubResource("mesh_beam_h")
 
@@ -818,41 +830,50 @@ material_override = SubResource("mat_window_wood")
 mesh = SubResource("mesh_window_frame")
 
 
-[node name="Collision" type="CollisionShape3D" parent="DaguanLou" unique_id=1632999639]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
-shape = SubResource("col_building")
+[node name="CollisionLeftWing" type="CollisionShape3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 3, 0)
+shape = SubResource("col_daguan_left_wing")
+
+
+[node name="CollisionRightWing" type="CollisionShape3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 3, 0)
+shape = SubResource("col_daguan_right_wing")
 
 
 [node name="EntranceArea" type="Area3D" parent="DaguanLou" unique_id=854454113]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -6)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DaguanLou/EntranceArea" unique_id=1511834422]
 shape = SubResource("col_entrance")
 
+[node name="DoorFrameL" type="MeshInstance3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 2.5, -5.05)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pillar")
 
-[node name="WallSouthL" type="MeshInstance3D" parent="DaguanLou" unique_id=1609503769]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 1.6, -5)
-material_override = SubResource("mat_courtyard_wall")
-mesh = SubResource("mesh_courtyard_wall")
+[node name="DoorFrameR" type="MeshInstance3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 2.5, -5.05)
+material_override = SubResource("mat_pillar_red")
+mesh = SubResource("mesh_pillar")
 
+[node name="DoorLintel" type="MeshInstance3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.0, -5.05)
+material_override = SubResource("mat_beam_dark")
+mesh = SubResource("mesh_beam_h")
 
-[node name="WallSouthLCap" type="MeshInstance3D" parent="DaguanLou" unique_id=718379220]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8, 3.3, -5)
-material_override = SubResource("mat_wall_cap")
-mesh = SubResource("mesh_wall_cap")
+[node name="DoorOverhang" type="MeshInstance3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.4, -5.8)
+material_override = SubResource("mat_roof")
+mesh = SubResource("mesh_ground_slab")
 
+[node name="CollisionFrontWallL" type="CollisionShape3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.0, 3, -5)
+shape = SubResource("col_daguan_left_wing")
 
-[node name="WallSouthR" type="MeshInstance3D" parent="DaguanLou" unique_id=1539345406]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 1.6, -5)
-material_override = SubResource("mat_courtyard_wall")
-mesh = SubResource("mesh_courtyard_wall")
-
-
-[node name="WallSouthRCap" type="MeshInstance3D" parent="DaguanLou" unique_id=2040094406]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 3.3, -5)
-material_override = SubResource("mat_wall_cap")
-mesh = SubResource("mesh_wall_cap")
+[node name="CollisionFrontWallR" type="CollisionShape3D" parent="DaguanLou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.0, 3, -5)
+shape = SubResource("col_daguan_right_wing")
 
 
 [node name="WallNorth" type="MeshInstance3D" parent="DaguanLou" unique_id=1352413620]

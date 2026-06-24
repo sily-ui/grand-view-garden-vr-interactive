@@ -1,7 +1,7 @@
 [gd_resource type="Theme" load_steps=2 format=3]
 
-[ext_resource type="FontFile" path="res://assets/fonts/LxgwWenKai-main/fonts/TTF/LXGWWenKai-Regular.ttf" id="font_wenkai"]
+[ext_resource type="FontFile" path="res://assets/fonts/LxgwWenKai-main/LXGWWenKai-Regular.ttf" id="1_wenkai"]
 
 [resource]
-default_font = ExtResource("font_wenkai")
-default_font_size = 22
+default_font = ExtResource("1_wenkai")
+default_font_size = 18

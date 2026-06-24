@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=25 format=3 uid="uid://c83srubuatq1i"]
+[gd_scene format=3 uid="uid://cq7eytbfam5y0"]
 
 [ext_resource type="Script" uid="uid://clcdphpoq1wn8" path="res://scripts/player/player_controller.gd" id="1_pc"]
 [ext_resource type="Script" uid="uid://cw412ryqrs8ii" path="res://scripts/systems/time_system.gd" id="4_ts"]
@@ -6,16 +6,15 @@
 [ext_resource type="Script" uid="uid://cymtytpu3d3gh" path="res://scripts/systems/save_system.gd" id="6_ss"]
 [ext_resource type="Script" uid="uid://c5jcqbmc2gvtn" path="res://scripts/ui/dialog_ui.gd" id="7_dui"]
 [ext_resource type="Script" uid="uid://h884a68fmk50" path="res://scripts/ui/pause_menu.gd" id="10_pm"]
-[ext_resource type="Script" path="res://main.gd" id="11_mg"]
-[ext_resource type="Script" path="res://scripts/systems/garden_builder.gd" id="12_gb"]
-[ext_resource type="Theme" path="res://assets/fonts/wenkai_theme.tres" id="theme_wenkai"]
-[ext_resource type="PackedScene" path="res://scenes/world/terrain.tscn" id="ext_terrain"]
+[ext_resource type="Script" uid="uid://ccs2rgicibfqr" path="res://main.gd" id="11_mg"]
 [ext_resource type="PackedScene" path="res://scenes/world/buildings.tscn" id="ext_buildings"]
-[ext_resource type="PackedScene" path="res://scenes/world/vegetation.tscn" id="ext_vegetation"]
 [ext_resource type="PackedScene" path="res://scenes/world/garden_features.tscn" id="ext_garden_features"]
-[ext_resource type="PackedScene" path="res://scenes/world/npcs.tscn" id="ext_npcs"]
-[ext_resource type="PackedScene" path="res://scenes/world/trigger_zones.tscn" id="ext_trigger_zones"]
 [ext_resource type="PackedScene" path="res://scenes/world/items.tscn" id="ext_items"]
+[ext_resource type="PackedScene" path="res://scenes/world/npcs.tscn" id="ext_npcs"]
+[ext_resource type="PackedScene" path="res://scenes/world/terrain.tscn" id="ext_terrain"]
+[ext_resource type="PackedScene" path="res://scenes/world/trigger_zones.tscn" id="ext_trigger_zones"]
+[ext_resource type="PackedScene" path="res://scenes/world/vegetation.tscn" id="ext_vegetation"]
+[ext_resource type="Theme" path="res://assets/fonts/wenkai_theme.tres" id="ext_wenkai_theme"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.45, 0.55, 0.7, 1)
@@ -30,12 +29,12 @@ sky_material = SubResource("sky_mat")
 background_mode = 2
 sky = SubResource("sky_main")
 ambient_light_source = 2
-ambient_light_color = Color(0.55, 0.52, 0.48, 1)
-ambient_light_energy = 0.6
+ambient_light_color = Color(0.6, 0.56, 0.5, 1)
+ambient_light_energy = 0.55
 tonemap_mode = 2
 fog_enabled = true
-fog_light_color = Color(0.75, 0.78, 0.82, 1)
-fog_density = 0.004
+fog_light_color = Color(0.82, 0.78, 0.72, 1)
+fog_density = 0.003
 
 [sub_resource type="CapsuleShape3D" id="col_capsule"]
 radius = 0.4
@@ -52,11 +51,7 @@ border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
 border_color = Color(0.35, 0.2, 0.1, 0.95)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-shadow_color = Color(0.0, 0.0, 0.0, 0.35)
+shadow_color = Color(0, 0, 0, 0.35)
 shadow_size = 6
 
 [sub_resource type="StyleBoxFlat" id="style_pause_panel"]
@@ -74,7 +69,7 @@ corner_radius_top_left = 2
 corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
-shadow_color = Color(0.0, 0.0, 0.0, 0.5)
+shadow_color = Color(0, 0, 0, 0.5)
 shadow_size = 6
 
 [sub_resource type="StyleBoxFlat" id="style_pause_btn_normal"]
@@ -117,25 +112,28 @@ environment = SubResource("env_main")
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=295875309 groups=["sun"]]
 transform = Transform3D(0.707, -0.5, 0.5, 0, 0.707, 0.707, -0.707, -0.5, 0.5, 0, 20, 0)
-light_color = Color(1, 0.95, 0.85, 1)
+light_color = Color(1, 0.92, 0.78, 1)
+light_energy = 0.95
 shadow_enabled = true
+shadow_bias = 0.05
+shadow_normal_bias = 3.0
+shadow_blur = 1.5
+directional_shadow_pancake_size = 5.0
 
-[node name="EditorGardenPreview" type="Node3D" parent="."]
-script = ExtResource("12_gb")
+[node name="Terrain" parent="." unique_id=2143877611 instance=ExtResource("ext_terrain")]
 
-[node name="Terrain" parent="." instance=ExtResource("ext_terrain")]
+[node name="Buildings" parent="." unique_id=1689555869 instance=ExtResource("ext_buildings")]
 
-[node name="Buildings" parent="." instance=ExtResource("ext_buildings")]
+[node name="Vegetation" parent="." unique_id=464479676 instance=ExtResource("ext_vegetation")]
 
-[node name="Vegetation" parent="." instance=ExtResource("ext_vegetation")]
+[node name="GardenFeatures" parent="." unique_id=519569831 instance=ExtResource("ext_garden_features")]
 
-[node name="GardenFeatures" parent="." instance=ExtResource("ext_garden_features")]
+[node name="NPCs" parent="." unique_id=819728978 instance=ExtResource("ext_npcs")]
+visible = false
 
-[node name="NPCs" parent="." instance=ExtResource("ext_npcs")]
+[node name="TriggerZones" parent="." unique_id=619617505 instance=ExtResource("ext_trigger_zones")]
 
-[node name="TriggerZones" parent="." instance=ExtResource("ext_trigger_zones")]
-
-[node name="Items" parent="." instance=ExtResource("ext_items")]
+[node name="Items" parent="." unique_id=1735666618 instance=ExtResource("ext_items")]
 
 [node name="Player" type="CharacterBody3D" parent="." unique_id=1465693051 groups=["player"]]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -88)
@@ -147,6 +145,7 @@ shape = SubResource("col_capsule")
 
 [node name="Camera3D" type="Camera3D" parent="Player" unique_id=1468144477]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+current = true
 
 [node name="InteractionRaycast" type="RayCast3D" parent="Player/Camera3D" unique_id=1017247898]
 target_position = Vector3(0, 0, -3)
@@ -161,7 +160,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("theme_wenkai")
 
 [node name="Crosshair" type="CenterContainer" parent="Player/UILayer/HUD" unique_id=1742181745]
 layout_mode = 1
@@ -230,7 +228,6 @@ theme_override_font_sizes/font_size = 18
 text = "08:00"
 horizontal_alignment = 1
 
-
 [node name="Systems" type="Node3D" parent="." unique_id=1849319123]
 
 [node name="TimeSystem" type="Node" parent="Systems" unique_id=1618784686 groups=["time_system"]]
@@ -254,7 +251,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme = ExtResource("theme_wenkai")
+theme = ExtResource("ext_wenkai_theme")
 script = ExtResource("7_dui")
 
 [node name="Panel" type="PanelContainer" parent="Systems/DialogUI" unique_id=34706246]
@@ -278,21 +275,21 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 28
 theme_override_constants/margin_bottom = 20
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Systems/DialogUI/Panel/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Systems/DialogUI/Panel/MarginContainer" unique_id=1726100467]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="AvatarPanel" type="PanelContainer" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer"]
+[node name="AvatarPanel" type="PanelContainer" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer" unique_id=1705310685]
 custom_minimum_size = Vector2(168, 168)
 layout_mode = 2
 size_flags_vertical = 4
 
-[node name="AvatarRect" type="TextureRect" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer/AvatarPanel"]
+[node name="AvatarRect" type="TextureRect" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer/AvatarPanel" unique_id=612141847]
 custom_minimum_size = Vector2(160, 160)
 layout_mode = 2
-stretch_mode = 5
-expand_mode = 3
 size_flags_vertical = 4
+expand_mode = 3
+stretch_mode = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Systems/DialogUI/Panel/MarginContainer/HBoxContainer" unique_id=1666115164]
 layout_mode = 2
@@ -323,10 +320,8 @@ theme_override_font_sizes/font_size = 20
 text = "按 [E] 或 空格 继续..."
 horizontal_alignment = 2
 
-
 [node name="PauseMenu" type="CanvasLayer" parent="." unique_id=462916634]
 layer = 10
-theme = ExtResource("theme_wenkai")
 script = ExtResource("10_pm")
 
 [node name="Panel" type="PanelContainer" parent="PauseMenu" unique_id=820836499]
@@ -360,56 +355,56 @@ layout_mode = 2
 [node name="ResumeButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=1594985245]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
-theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_colors/font_hover_color = Color(1, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("style_pause_btn_normal")
-theme_override_styles/hover = SubResource("style_pause_btn_hover")
 theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
 text = "继续游戏"
 
 [node name="SaveButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=629317765]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
-theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_colors/font_hover_color = Color(1, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("style_pause_btn_normal")
-theme_override_styles/hover = SubResource("style_pause_btn_hover")
 theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
 text = "保存游戏"
 
 [node name="LoadButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=1041161174]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
-theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_colors/font_hover_color = Color(1, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("style_pause_btn_normal")
-theme_override_styles/hover = SubResource("style_pause_btn_hover")
 theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
 text = "读取存档"
 
 [node name="MenuButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=179019434]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
-theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_colors/font_hover_color = Color(1, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("style_pause_btn_normal")
-theme_override_styles/hover = SubResource("style_pause_btn_hover")
 theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
 text = "返回主菜单"
 
 [node name="QuitButton" type="Button" parent="PauseMenu/Panel/VBoxContainer" unique_id=2099141992]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
-theme_override_colors/font_hover_color = Color(1.0, 0.95, 0.75, 1)
+theme_override_colors/font_hover_color = Color(1, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("style_pause_btn_normal")
-theme_override_styles/hover = SubResource("style_pause_btn_hover")
 theme_override_styles/pressed = SubResource("style_pause_btn_hover")
+theme_override_styles/hover = SubResource("style_pause_btn_hover")
 text = "退出游戏"
 
 [node name="SaveHint" type="Label" parent="PauseMenu" unique_id=125364803]

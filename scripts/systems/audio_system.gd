@@ -48,6 +48,10 @@ func _ready() -> void:
 	EventBus.building_exited.connect(_on_building_exited)
 	EventBus.dialog_started.connect(_on_dialog_started)
 	EventBus.dialog_ended.connect(_on_dialog_ended)
+	# TTS 说话时压低 BGM，说完恢复
+	if TTSSystem:
+		TTSSystem.speech_started.connect(_on_tts_started)
+		TTSSystem.speech_finished.connect(_on_tts_finished)
 	if bgm_enabled:
 		play_bgm(GLOBAL_BGM_PATH, 2.0, -14.0)
 	_play_looping_layer(ambient_player, COURTYARD_AMBIENT_PATH, -26.0)
@@ -183,3 +187,17 @@ func _on_dialog_started(_dialog_id: String) -> void:
 func _on_dialog_ended(_dialog_id: String) -> void:
 	if bgm_enabled:
 		play_bgm(GLOBAL_BGM_PATH, 1.5, -14.0)
+
+# TTS 语音播放时进一步压低 BGM
+var _bgm_volume_before_tts: float = -20.0
+
+func _on_tts_started(_speaker: String, _text: String) -> void:
+	if bgm_player and bgm_player.playing:
+		_bgm_volume_before_tts = bgm_player.volume_db
+		var tween := create_tween()
+		tween.tween_property(bgm_player, "volume_db", -35.0, 0.3)
+
+func _on_tts_finished(_speaker: String) -> void:
+	if bgm_player and bgm_player.playing:
+		var tween := create_tween()
+		tween.tween_property(bgm_player, "volume_db", _bgm_volume_before_tts, 0.5)
