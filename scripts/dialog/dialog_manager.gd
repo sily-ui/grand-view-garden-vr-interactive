@@ -152,6 +152,10 @@ func _execute_event(event_id: String) -> void:
 			GameState.set_condition("visited_xiaoxiang", true)
 		"visit_yihong_complete":
 			GameState.set_condition("visited_yihong", true)
+		"visit_daoxiang_complete":
+			GameState.set_condition("visited_daoxiang", true)
+		"visit_qiushuang_complete":
+			GameState.set_condition("visited_qiushuang", true)
 		"tea_ceremony_complete":
 			GameState.set_condition("completed_tea", true)
 		"collect_teacup":

@@ -1,3 +1,4 @@
+@tool
 extends Node
 ## 中式木质解说立牌系统
 ## 在 NPC 旁放置木质立牌+触发区域+VR适配剧情面板
@@ -5,9 +6,9 @@ extends Node
 # ═══════════════════════════════════════════════════════
 # 立牌数据
 # ═══════════════════════════════════════════════════════
-var _signboard_data: Array = [
+var _signboard_data: Array[Dictionary] = [
 	{
-		"pos": Vector3(0, 0, 29),
+		"pos": Vector3(0.0, 0, 32),
 		"name": "贾母",
 		"title": "荣国府史太君",
 		"avatar": "res://assets/textures/ui/avatar_jiamu.png",
@@ -23,7 +24,7 @@ var _signboard_data: Array = [
 		)
 	},
 	{
-		"pos": Vector3(3.2, 0, 27.5),
+		"pos": Vector3(0.0, 0, 37),
 		"name": "王熙凤",
 		"title": "琏二奶奶",
 		"avatar": "res://assets/textures/ui/avatar_wangxifeng.png",
@@ -40,7 +41,7 @@ var _signboard_data: Array = [
 		)
 	},
 	{
-		"pos": Vector3(-35, 0, 15),
+		"pos": Vector3(-34, 0, 17.5),
 		"name": "林黛玉",
 		"title": "潇湘妃子",
 		"avatar": "res://assets/textures/ui/avatar_lindaiyu.png",
@@ -91,11 +92,14 @@ var _signboard_data: Array = [
 		)
 	},
 	{
-		"pos": Vector3(-25, 0, -10),
+		"pos": Vector3(-26.4, 0, -1.8),
 		"name": "李纨",
 		"title": "稻香老农",
 		"avatar": "res://assets/textures/ui/avatar_liulaolao.png",
 		"trigger_radius": 2.5,
+		"dialog_id": "visit_daoxiang",
+		"dialog_condition": "",
+		"dialog_completion": "visited_daoxiang",
 		"story_title": "稻香村 —— 稻花香里说丰年",
 		"story_body": (
 			"稻香村是李纨的居所，仿田园风光，茅檐土壁、槿篱竹牖，一派农家气象。" +
@@ -163,6 +167,8 @@ var _hint_label: Label
 func _ready() -> void:
 	_init_materials()
 	_create_all_signboards()
+	if Engine.is_editor_hint():
+		return
 	_create_hint_ui()
 	_create_ui_panel()
 	set_process(true)
@@ -211,9 +217,15 @@ func _create_all_signboards() -> void:
 	var npc_container := get_node_or_null("../NPCs")
 	if not npc_container:
 		return
+	_clear_existing_signboards(npc_container)
 	for data in _signboard_data:
 		data["pos"] = _offset_signboard_position(data["pos"])
 		_create_one_signboard(npc_container, data)
+
+func _clear_existing_signboards(npc_container: Node) -> void:
+	for child in npc_container.get_children():
+		if child.name.begins_with("Sign_"):
+			child.free()
 
 func _offset_signboard_position(pos: Vector3) -> Vector3:
 	var offset := Vector3(1.25, 0, 1.0)
@@ -336,6 +348,10 @@ func _create_one_signboard(parent: Node3D, data: Dictionary) -> void:
 	hint_lbl.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	root.add_child(hint_lbl)
 
+	if Engine.is_editor_hint():
+		parent.add_child(root)
+		return
+
 	# ── Area3D 触发区域（限主路径内，不超出院墙） ──
 	var trigger := Area3D.new()
 	trigger.name = "TriggerZone"
@@ -366,21 +382,35 @@ func _on_trigger_entered(body: Node3D, trigger: Area3D) -> void:
 	_current_signboard_name = data.get("name", "")
 	_active_trigger = trigger
 	_active_data = data
-	_try_start_story_dialog(data)
 	_show_hint(data)
 
 func _on_trigger_exited(body: Node3D, trigger: Area3D) -> void:
 	if not body.is_in_group("player"):
 		return
 	if trigger == _active_trigger:
+		# 面板打开时不因离开触发区而关闭，避免玩家微移导致面板消失
+		if _ui_layer and _ui_layer.visible:
+			return
 		_hide_panel(false)
 		_hide_hint()
 		_current_signboard_name = ""
 		_active_trigger = null
 		_active_data.clear()
 
+func _is_dialog_active() -> bool:
+	if Engine.is_editor_hint():
+		return false
+	if not is_instance_valid(GameManager) or not GameManager.has_method("is_dialog_active"):
+		return false
+	return GameManager.is_dialog_active()
+
 func _process(_delta: float) -> void:
-	if _active_trigger and _hint_label and _hint_label.visible and not _ui_layer.visible:
+	if Engine.is_editor_hint():
+		return
+	if _is_dialog_active():
+		_hide_hint()
+		return
+	if _active_trigger and _hint_label and _hint_label.visible and _ui_layer and not _ui_layer.visible:
 		_hint_label.modulate.a = 0.55 + 0.45 * abs(sin(Time.get_ticks_msec() * 0.006))
 
 func _create_hint_ui() -> void:
@@ -404,26 +434,36 @@ func _create_hint_ui() -> void:
 	add_child(_hint_layer)
 
 func _show_hint(data: Dictionary) -> void:
+	if _is_dialog_active():
+		_hide_hint()
+		return
 	if not _hint_layer or not _hint_label:
 		return
+	var character_name: String = data.get("name", "人物")
 	var completion: String = data.get("dialog_completion", "")
-	if completion != "" and not GameState.get_condition(completion, false):
-		_hint_label.text = "靠近触发%s剧情，按 [E] / 鼠标左键 查看小传" % data.get("name", "人物")
+	var condition: String = data.get("dialog_condition", "")
+	var can_talk: bool = completion != "" and not GameState.get_condition(completion, false)
+	if condition != "" and not GameState.get_condition(condition, false):
+		_hint_label.text = "先完成上一段剧情；按 [E] / 鼠标左键查看%s小传" % character_name
+	elif can_talk:
+		_hint_label.text = "按 [E] 与%s对话，鼠标左键查看小传" % character_name
 	else:
-		_hint_label.text = "按 [E] / 鼠标左键 查看%s小传" % data.get("name", "人物")
+		_hint_label.text = "按 [E] / 鼠标左键查看%s小传" % character_name
 	_hint_layer.visible = true
 
-func _try_start_story_dialog(data: Dictionary) -> void:
+func _try_start_story_dialog(data: Dictionary) -> bool:
 	var dialog_id: String = data.get("dialog_id", "")
-	if dialog_id == "" or DialogManager.is_active:
-		return
+	if dialog_id == "" or _is_dialog_active():
+		return false
 	var completion: String = data.get("dialog_completion", "")
 	if completion != "" and GameState.get_condition(completion, false):
-		return
+		return false
 	var condition: String = data.get("dialog_condition", "")
 	if condition != "" and not GameState.get_condition(condition, false):
-		return
+		return false
+	_hide_hint()
 	DialogManager.start_dialog(dialog_id)
+	return true
 
 func _hide_hint() -> void:
 	if _hint_layer:
@@ -438,6 +478,7 @@ func _create_ui_panel() -> void:
 	_ui_layer.name = "SignboardUILayer"
 	_ui_layer.layer = 10
 	_ui_layer.visible = false
+	_ui_layer.add_to_group("blocking_mouse_ui")
 
 	# ── 全屏半透明背景 ──
 	var bg := ColorRect.new()
@@ -457,7 +498,7 @@ func _create_ui_panel() -> void:
 	_ui_panel.offset_top = -310
 	_ui_panel.offset_right = 460
 	_ui_panel.offset_bottom = 310
-	# 宣纸+红木面板样式（与对话框一致）
+	# 与对话框一致的宣纸+红木面板样式
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.95, 0.91, 0.8, 0.97)
 	style.border_width_left = 4
@@ -471,12 +512,13 @@ func _create_ui_panel() -> void:
 	style.corner_radius_bottom_left = 0
 	style.shadow_color = Color(0, 0, 0, 0.35)
 	style.shadow_size = 6
-	style.content_margin_left = 32
-	style.content_margin_top = 24
-	style.content_margin_right = 32
-	style.content_margin_bottom = 24
+	style.content_margin_left = 40
+	style.content_margin_top = 28
+	style.content_margin_right = 40
+	style.content_margin_bottom = 28
 	_ui_panel.add_theme_stylebox_override("panel", style)
 	_ui_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_ui_panel.theme = load("res://assets/fonts/wenkai_theme.tres")
 	bg.add_child(_ui_panel)
 
 	# ── 内容容器 ──
@@ -487,7 +529,8 @@ func _create_ui_panel() -> void:
 
 	_ui_avatar_panel = PanelContainer.new()
 	_ui_avatar_panel.name = "AvatarPanel"
-	_ui_avatar_panel.custom_minimum_size = Vector2(104, 136)
+	_ui_avatar_panel.custom_minimum_size = Vector2.ZERO
+	_ui_avatar_panel.visible = false
 	var avatar_style := StyleBoxFlat.new()
 	avatar_style.bg_color = Color(0.36, 0.2, 0.1, 0.28)
 	avatar_style.border_width_left = 3
@@ -518,7 +561,7 @@ func _create_ui_panel() -> void:
 	_ui_title.fit_content = true
 	_ui_title.scroll_active = false
 	_ui_title.custom_minimum_size = Vector2(0, 50)
-	_ui_title.add_theme_font_size_override("normal_font_size", 28)
+	_ui_title.add_theme_font_size_override("normal_font_size", 32)
 	_ui_title.add_theme_color_override("default_color", Color(0.55, 0.3, 0.08, 1))
 	vbox.add_child(_ui_title)
 
@@ -537,9 +580,9 @@ func _create_ui_panel() -> void:
 	_ui_body.bbcode_enabled = true
 	_ui_body.scroll_active = true
 	_ui_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_ui_body.add_theme_font_size_override("normal_font_size", 22)
+	_ui_body.add_theme_font_size_override("normal_font_size", 24)
 	_ui_body.add_theme_color_override("default_color", Color(0.2, 0.15, 0.08, 1))
-	_ui_body.add_theme_constant_override("line_separation", 8)
+	_ui_body.add_theme_constant_override("line_separation", 10)
 	vbox.add_child(_ui_body)
 
 	# ── 底部按钮行 ──
@@ -552,7 +595,7 @@ func _create_ui_panel() -> void:
 	_ui_close_btn.text = "  关  闭  "
 	_ui_close_btn.custom_minimum_size = Vector2(200, 52)
 	_ui_close_btn.add_theme_font_size_override("font_size", 26)
-	# 木质牌匾按钮样式
+	# 与对话选项按钮一致的木质牌匾样式
 	var btn_normal := StyleBoxFlat.new()
 	btn_normal.bg_color = Color(0.35, 0.22, 0.1, 0.95)
 	btn_normal.border_width_left = 3
@@ -564,16 +607,16 @@ func _create_ui_panel() -> void:
 	btn_normal.corner_radius_top_right = 0
 	btn_normal.corner_radius_bottom_right = 0
 	btn_normal.corner_radius_bottom_left = 0
-	btn_normal.content_margin_left = 20
-	btn_normal.content_margin_right = 20
+	btn_normal.content_margin_left = 24
+	btn_normal.content_margin_right = 24
+	btn_normal.content_margin_top = 8
+	btn_normal.content_margin_bottom = 8
 	_ui_close_btn.add_theme_stylebox_override("normal", btn_normal)
 	var btn_hover := btn_normal.duplicate()
 	btn_hover.bg_color = Color(0.45, 0.3, 0.15, 0.95)
 	btn_hover.border_color = Color(0.55, 0.35, 0.1, 0.95)
 	_ui_close_btn.add_theme_stylebox_override("hover", btn_hover)
-	var btn_pressed := btn_normal.duplicate()
-	btn_pressed.bg_color = Color(0.28, 0.18, 0.08, 0.95)
-	_ui_close_btn.add_theme_stylebox_override("pressed", btn_pressed)
+	_ui_close_btn.add_theme_stylebox_override("pressed", btn_hover)
 	_ui_close_btn.add_theme_color_override("font_color", Color(0.82, 0.7, 0.35, 1))
 	_ui_close_btn.add_theme_color_override("font_hover_color", Color(1, 0.9, 0.5, 1))
 	_ui_close_btn.pressed.connect(_on_close_pressed)
@@ -590,13 +633,8 @@ func _show_panel(data: Dictionary) -> void:
 		return
 	var title_text: String = data.get("story_title", "")
 	var body_text: String = data.get("story_body", "")
-	var avatar_path: String = data.get("avatar", "")
-	if avatar_path != "" and ResourceLoader.exists(avatar_path):
-		_ui_avatar_rect.texture = load(avatar_path)
-		_ui_avatar_panel.visible = true
-	else:
-		_ui_avatar_rect.texture = null
-		_ui_avatar_panel.visible = false
+	_ui_avatar_rect.texture = null
+	_ui_avatar_panel.visible = false
 	_ui_title.text = "[center][b]" + title_text + "[/b][/center]"
 	_ui_body.text = "\n" + body_text
 	_ui_body.scroll_to_line(0)
@@ -607,7 +645,9 @@ func _show_panel(data: Dictionary) -> void:
 func _hide_panel(show_hint_again: bool = true) -> void:
 	if _ui_layer:
 		_ui_layer.visible = false
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if _ui_close_btn:
+		_ui_close_btn.release_focus()
+	get_viewport().gui_release_focus()
 	if show_hint_again and _active_trigger and not _active_data.is_empty():
 		_show_hint(_active_data)
 
@@ -620,20 +660,26 @@ func _on_close_pressed() -> void:
 func _input(event: InputEvent) -> void:
 	if not _ui_layer:
 		return
-	# ESC键 / 手柄B键关闭
-	if _ui_layer.visible and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		_hide_panel()
-		get_viewport().set_input_as_handled()
-	if not _ui_layer.visible and event.is_action_pressed("interact") and not _active_data.is_empty():
-		_show_panel(_active_data)
-		get_viewport().set_input_as_handled()
-	# 鼠标左键点击面板外区域关闭（VR手柄映射为鼠标左键时同样生效）
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if _ui_layer.visible:
+	if _ui_layer.visible:
+		if event.is_action_pressed("interact") or (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE):
+			_hide_panel()
+			get_viewport().set_input_as_handled()
+			return
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			var panel_rect: Rect2 = _ui_panel.get_global_rect()
 			if not panel_rect.has_point(event.position):
 				_hide_panel()
-			get_viewport().set_input_as_handled()
-		elif not _active_data.is_empty():
+				get_viewport().set_input_as_handled()
+			return
+		return
+
+	if _is_dialog_active() or _active_data.is_empty():
+		return
+	if event.is_action_pressed("interact"):
+		if not _try_start_story_dialog(_active_data):
 			_show_panel(_active_data)
-			get_viewport().set_input_as_handled()
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_show_panel(_active_data)
+		get_viewport().set_input_as_handled()

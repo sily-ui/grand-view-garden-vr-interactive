@@ -55,69 +55,77 @@ var story_stages: Array[Dictionary] = [
 		"hint": "下桥后沿石路入园",
 		"pass_radius": 7.0
 	},
-	{
+		{
 		"name": "去拜见贾母",
-		"target": Vector3(0, 1.5, 35),
+		"target": Vector3(0, 1.5, 30),
 		"condition": "intro_done",
 		"completion": "met_jiamu",
-		"hint": "从南门进入大观楼拜见贾母",
+		"hint": "去见贾母",
 		"route": [
 			{"pos": Vector3(0, 1.5, -2), "hint": "从游廊中央入园", "pass_radius": 10.0},
-			{"pos": Vector3(0, 1.5, 15), "hint": "沿中路向北前往大观楼", "pass_radius": 10.0},
-			{"pos": Vector3(0, 1.5, 35), "hint": "从南门进入大观楼", "pass_radius": 8.0}
+			{"pos": Vector3(0, 1.5, 13), "hint": "前往大观楼", "pass_radius": 5.0},
+			{"pos": Vector3(0, 1.5, 30), "hint": "去见贾母", "pass_radius": 5.0}
 		]
 	},
 	{
 		"name": "找王熙凤问路",
-		"target": Vector3(2.2, 1.5, 32.5),
+		"target": Vector3(0.0, 1.5, 37.0),
 		"condition": "met_jiamu",
 		"completion": "met_xifeng",
-		"hint": "到大观楼南门前找王熙凤问路"
+		"hint": "去见王熙凤",
+		"route": [
+			{"pos": Vector3(0, 1.5, 35), "hint": "向南穿过南门", "pass_radius": 6.0},
+			{"pos": Vector3(0, 1.5, 37.0), "hint": "去见王熙凤", "pass_radius": 6.0}
+		]
 	},
-	{
+		{
 		"name": "游潇湘馆",
 		"target": Vector3(-35, 1.5, 15),
 		"condition": "met_xifeng",
 		"completion": "visited_xiaoxiang",
 		"hint": "去潇湘馆见林黛玉",
 		"route": [
-			{"pos": Vector3(-19, 1.5, 10), "hint": "先向左回到西侧石路"},
-			{"pos": Vector3(-35, 1.5, 16), "hint": "沿竹径进入潇湘馆"}
+			{"pos": Vector3(0, 1.5, 13), "hint": "向北绕过大观楼西墙"},
+			{"pos": Vector3(-19, 1.5, 10), "hint": "沿西侧石路前行"},
+			{"pos": Vector3(-35, 1.5, 16), "hint": "去潇湘馆见林黛玉"}
 		]
 	},
-	{
+		{
 		"name": "游怡红院",
 		"target": Vector3(35, 1.5, 15),
 		"condition": "visited_xiaoxiang",
 		"completion": "visited_yihong",
 		"hint": "去怡红院见贾宝玉",
 		"route": [
-			{"pos": Vector3(0, 1.5, 25), "hint": "先回到北侧主路"},
-			{"pos": Vector3(19, 1.5, 10), "hint": "向右走东侧石路"},
-			{"pos": Vector3(35, 1.5, 18), "hint": "从花门进入怡红院", "pass_radius": 7.0}
+			{"pos": Vector3(-23, 1.5, 10), "hint": "从潇湘馆侧门出院"},
+			{"pos": Vector3(0, 1.5, 13), "hint": "向北绕过大观楼"},
+			{"pos": Vector3(19, 1.5, 10), "hint": "沿东侧石路前行"},
+			{"pos": Vector3(35, 1.5, 15), "hint": "去怡红院见贾宝玉", "pass_radius": 5.0}
 		]
 	},
-	{
+		{
 		"name": "栊翠庵品茶",
 		"target": Vector3(0, 1.5, 57),
 		"condition": "visited_yihong",
 		"completion": "completed_tea",
-		"hint": "去栊翠庵找妙玉品茶",
+		"hint": "去栊翠庵见妙玉",
 		"route": [
-			{"pos": Vector3(31, 1.5, 18), "hint": "先沿右侧游廊北上"},
-			{"pos": Vector3(12, 1.5, 52), "hint": "沿茶廊向左绕行"},
-			{"pos": Vector3(0, 1.5, 60), "hint": "从南门进入栊翠庵", "pass_radius": 7.0}
+			{"pos": Vector3(35, 1.5, 27), "hint": "出怡红院南门"},
+			{"pos": Vector3(12, 1.5, 63), "hint": "沿东侧绕行至栊翠庵南门外"},
+			{"pos": Vector3(0, 1.5, 63), "hint": "至南门外"},
+			{"pos": Vector3(0, 1.5, 57), "hint": "穿过南门去见妙玉", "pass_radius": 6.0}
 		]
 	},
-	{
+		{
 		"name": "赴宴",
-		"target": Vector3(0, 1.5, 35),
+		"target": Vector3(0, 1.5, 17),
 		"condition": "completed_tea",
 		"completion": "attended_banquet",
 		"hint": "回大观楼赴宴",
 		"route": [
-			{"pos": Vector3(12, 1.5, 52), "hint": "先出庵门向右回廊"},
-			{"pos": Vector3(0, 1.5, 35), "hint": "沿回廊南下到大观楼南门"}
+			{"pos": Vector3(0, 1.5, 63), "hint": "出栊翠庵南门"},
+			{"pos": Vector3(0, 1.5, 36), "hint": "沿中路南行"},
+			{"pos": Vector3(0, 1.5, 17), "hint": "回大观楼赴宴", "pass_radius": 5.0}
 		]
 	},
 	{

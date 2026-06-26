@@ -136,7 +136,7 @@ visible = false
 [node name="Items" parent="." unique_id=1735666618 instance=ExtResource("ext_items")]
 
 [node name="Player" type="CharacterBody3D" parent="." unique_id=1465693051 groups=["player"]]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -88)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -90)
 script = ExtResource("1_pc")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=534133969]

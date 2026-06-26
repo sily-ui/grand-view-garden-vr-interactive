@@ -3,10 +3,10 @@ class_name NPCVisualBuilder
 
 static func apply_to_npc(root: Node3D, character_name: String, palette: Dictionary = {}) -> Node3D:
 	_clear_existing_visual(root)
-	_hide_placeholder_mesh(root)
 
 	var visual := Node3D.new()
 	visual.name = "ProceduralCharacterVisual"
+	visual.visible = true
 	root.add_child(visual)
 
 	var robe_color: Color = palette.get("robe", _robe_color_for_name(character_name))
@@ -34,6 +34,9 @@ static func apply_to_npc(root: Node3D, character_name: String, palette: Dictiona
 	_add_box(visual, "LeftEye", Vector3(-0.09, 1.75, -0.29), Vector3(0.045, 0.028, 0.018), hair_material)
 	_add_box(visual, "RightEye", Vector3(0.09, 1.75, -0.29), Vector3(0.045, 0.028, 0.018), hair_material)
 	_add_box(visual, "Mouth", Vector3(0, 1.63, -0.3), Vector3(0.11, 0.022, 0.018), _make_material(Color(0.42, 0.16, 0.14), 0.88))
+
+	# 视觉创建成功后再隐藏占位体
+	_hide_placeholder_mesh(root)
 
 	return visual
 
@@ -82,12 +85,15 @@ static func _make_material(color: Color, roughness: float) -> StandardMaterial3D
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
 	material.roughness = roughness
+	material.vertex_color_use_as_albedo = false
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	return material
 
 static func _add_box(parent: Node3D, node_name: String, position: Vector3, size: Vector3, material: Material) -> MeshInstance3D:
 	var mesh_instance := MeshInstance3D.new()
 	mesh_instance.name = node_name
 	mesh_instance.position = position
+	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	var mesh := BoxMesh.new()
 	mesh.size = size
 	mesh_instance.mesh = mesh
@@ -99,6 +105,7 @@ static func _add_cylinder(parent: Node3D, node_name: String, position: Vector3, 
 	var mesh_instance := MeshInstance3D.new()
 	mesh_instance.name = node_name
 	mesh_instance.position = position
+	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	var mesh := CylinderMesh.new()
 	mesh.top_radius = radius * 0.82
 	mesh.bottom_radius = radius
@@ -114,6 +121,7 @@ static func _add_sphere(parent: Node3D, node_name: String, position: Vector3, sc
 	mesh_instance.name = node_name
 	mesh_instance.position = position
 	mesh_instance.scale = scale
+	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	var mesh := SphereMesh.new()
 	mesh.radius = 1.0
 	mesh.height = 2.0

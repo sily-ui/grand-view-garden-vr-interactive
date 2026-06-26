@@ -794,30 +794,6 @@ material_override = SubResource("mat_beam_dark")
 mesh = SubResource("mesh_beam_cross")
 
 
-[node name="EaveTipFL" type="MeshInstance3D" parent="DaguanLou" unique_id=1551862609]
-transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, 0.05, -0.1, -0.05, 0.98, -7, 6.8, 6.5)
-material_override = SubResource("mat_roof")
-mesh = SubResource("mesh_eave_tip")
-
-
-[node name="EaveTipFR" type="MeshInstance3D" parent="DaguanLou" unique_id=1984644043]
-transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, -0.05, 0.1, 0.05, 0.98, 7, 6.8, 6.5)
-material_override = SubResource("mat_roof")
-mesh = SubResource("mesh_eave_tip")
-
-
-[node name="EaveTipBL" type="MeshInstance3D" parent="DaguanLou" unique_id=451138190]
-transform = Transform3D(0.98, 0.15, -0.1, -0.15, 0.97, 0.05, 0.1, -0.05, 0.98, -7, 6.8, -6.5)
-material_override = SubResource("mat_roof")
-mesh = SubResource("mesh_eave_tip")
-
-
-[node name="EaveTipBR" type="MeshInstance3D" parent="DaguanLou" unique_id=1121344192]
-transform = Transform3D(0.98, 0.15, 0.1, -0.15, 0.97, -0.05, -0.1, 0.05, 0.98, 7, 6.8, -6.5)
-material_override = SubResource("mat_roof")
-mesh = SubResource("mesh_eave_tip")
-
-
 [node name="WindowL" type="MeshInstance3D" parent="DaguanLou" unique_id=29902335]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.05, 4, 0)
 material_override = SubResource("mat_window_wood")

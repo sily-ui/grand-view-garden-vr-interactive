@@ -30,7 +30,7 @@ static var dialogs: Dictionary = {
 	},
 	"path_garden": {
 		"speaker": "旁白",
-		"text": "穿过石牌坊，左手边是一条曲折的抄手游廊，廊柱朱红、顶覆青瓦。廊外翠竹掩映，池中锦鲤悠然游弋，偶尔跃出水面。",
+		"text": "穿过石牌坊，眼前豁然开朗——一条朱红廊柱、青瓦覆顶的抄手游廊横亘眼前，廊下石径笔直通幽。东望远处修竹掩映白墙，西边池水粼粼，荷叶田田铺展水面，几尾锦鲤在荷影间悠然穿行。",
 		"next": "path_garden_2"
 	},
 	"path_garden_2": {
@@ -125,6 +125,46 @@ static var dialogs: Dictionary = {
 		"speaker": "刘姥姥",
 		"text": "这点心做得跟花儿似的，我都不忍心吃了！",
 		"events": ["visit_yihong_complete"]
+	},
+	"visit_daoxiang": {
+		"speaker": "旁白",
+		"text": "稻香村门前稻田青青，篱笆环绕，一派田园风光。李纨正坐在廊下做针线。",
+		"next": "visit_daoxiang_2"
+	},
+	"visit_daoxiang_2": {
+		"speaker": "刘姥姥",
+		"text": "哎呦！这地方跟我们乡下似的，看着就亲切！这稻子长得可真好！",
+		"next": "visit_daoxiang_3"
+	},
+	"visit_daoxiang_3": {
+		"speaker": "李纨",
+		"text": "姥姥请坐。这里虽简陋，倒也清净，正合我这寡居之人。",
+		"next": "visit_daoxiang_4"
+	},
+	"visit_daoxiang_4": {
+		"speaker": "刘姥姥",
+		"text": "姑娘这话说的！这叫雅致，哪叫简陋呢！我们乡下要是有这一半好，我做梦都能笑醒！",
+		"events": ["visit_daoxiang_complete"]
+	},
+	"visit_qiushuang": {
+		"speaker": "旁白",
+		"text": "秋爽斋内阔朗大方，窗明几净。院中梧桐亭亭，贾探春正伏案挥毫写字。",
+		"next": "visit_qiushuang_2"
+	},
+	"visit_qiushuang_2": {
+		"speaker": "刘姥姥",
+		"text": "哟！这位姑娘的字写得可真有劲道！比我见过的那些秀才都强！",
+		"next": "visit_qiushuang_3"
+	},
+	"visit_qiushuang_3": {
+		"speaker": "贾探春",
+		"text": "姥姥过奖了。我这儿虽不比别处奢华，倒也敞亮，正宜读书挥墨。姥姥快请进来坐。",
+		"next": "visit_qiushuang_4"
+	},
+	"visit_qiushuang_4": {
+		"speaker": "刘姥姥",
+		"text": "这院子真叫一个豁亮！秋风一吹，满院子梧桐叶沙沙响，怪不得叫秋爽斋呢！",
+		"events": ["visit_qiushuang_complete"]
 	},
 	"tea_ceremony": {
 		"speaker": "旁白",

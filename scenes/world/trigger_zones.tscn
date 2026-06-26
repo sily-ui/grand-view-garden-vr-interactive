@@ -5,7 +5,7 @@
 
 
 [sub_resource type="BoxShape3D" id="col_trigger"]
-size = Vector3(6, 3, 6)
+size = Vector3(8, 3, 8)
 
 
 
@@ -18,33 +18,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -84)
 script = ExtResource("3_et")
 dialog_id = "intro_arrival"
 visible_npc_name = "周瑞家"
-visible_npc_offset = Vector3(-1.8, -1.5, 1.2)
+visible_npc_offset = Vector3(-1.8, 0, 1.2)
+persist_after_trigger = true
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="IntroTrigger" unique_id=224453527]
 shape = SubResource("col_trigger")
 
 
-[node name="MeetJiamuTrigger" type="Area3D" parent="." unique_id=568422811]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 35)
-script = ExtResource("3_et")
-dialog_id = "meet_jiamu"
-required_condition = "intro_done"
-visible_npc_name = "贾母"
-visible_npc_offset = Vector3(0, -1.5, -2.4)
-
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeetJiamuTrigger" unique_id=997745255]
-shape = SubResource("col_trigger")
-
-
 [node name="BanquetTrigger" type="Area3D" parent="." unique_id=1557462623]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 35)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 17)
 script = ExtResource("3_et")
 dialog_id = "banquet"
 required_condition = "completed_tea"
+blocked_condition = "attended_banquet"
 visible_npc_name = "王熙凤"
-visible_npc_offset = Vector3(1.8, -1.5, -2.4)
+visible_npc_offset = Vector3(1.8, 0, 2.4)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BanquetTrigger" unique_id=919202834]
@@ -56,8 +45,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -84)
 script = ExtResource("3_et")
 dialog_id = "farewell"
 required_condition = "attended_banquet"
+blocked_condition = "game_completed"
 visible_npc_name = "刘姥姥"
-visible_npc_offset = Vector3(1.8, -1.5, 1.2)
+visible_npc_offset = Vector3(1.8, 0, 1.2)
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="FarewellTrigger" unique_id=1627396403]

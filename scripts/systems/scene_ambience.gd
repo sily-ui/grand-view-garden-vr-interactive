@@ -217,8 +217,13 @@ func _spawn_koi_splash() -> void:
 	splash.queue_free()
 
 func play_koi_jump_sequence() -> void:
+	var pond_points := [
+		Vector3(randf_range(-2.5, 2.5), 0.32, randf_range(-13.0, -7.0)),
+		Vector3(randf_range(-26.0, -22.0), 0.32, randf_range(7.0, 15.0)),
+		Vector3(randf_range(-20.0, -14.0), 0.32, randf_range(11.0, 20.0))
+	]
 	for i in range(3):
-		_spawn_koi_arc(Vector3(randf_range(-2.5, 2.5), 0.32, randf_range(-13.0, -7.0)), i * 0.22)
+		_spawn_koi_arc(pond_points[i], i * 0.22)
 
 func _spawn_koi_arc(start_pos: Vector3, delay: float) -> void:
 	await get_tree().create_timer(delay).timeout

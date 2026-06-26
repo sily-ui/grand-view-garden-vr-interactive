@@ -49,6 +49,11 @@ var _pond_size := Vector3(28, 0.15, 18)
 var _cache: Dictionary = {}
 
 # ═══════════════════════════════════════════════════════
+# 确定性随机数生成器（保证编辑器/运行时一致）
+# ═══════════════════════════════════════════════════════
+var _rng := RandomNumberGenerator.new()
+
+# ═══════════════════════════════════════════════════════
 # 初始化路径数据
 # ═══════════════════════════════════════════════════════
 func _init_paths() -> void:
@@ -80,7 +85,9 @@ func _init_paths() -> void:
 # ═══════════════════════════════════════════════════════
 func _ready() -> void:
 	_init_paths()
+	_rng.seed = 12345  # 固定种子保证编辑器/运行时一致
 	if Engine.is_editor_hint():
+		_cleanup_old_vegetation()
 		_preload_models()
 		_place_pond_vegetation()
 		_place_path_trees()
@@ -120,25 +127,28 @@ func _ready() -> void:
 # 清除旧球形植被（保留容器节点结构）
 # ═══════════════════════════════════════════════════════
 func _cleanup_old_vegetation() -> void:
+	# 编辑器用 free() 立即删除，运行时用 queue_free() 延迟删除
+	var free_fn := "free" if Engine.is_editor_hint() else "queue_free"
+
 	# 删除旧 LotusPad / LotusFlower（点状荷花）
 	var terrain := get_node_or_null("../Terrain")
 	if terrain:
 		for child in terrain.get_children():
 			if child.name.begins_with("LotusPad") or child.name.begins_with("LotusFlower"):
-				child.queue_free()
+				child.call(free_fn)
 
 	# 删除旧 Vegetation 下的球形树和花
 	var veg := get_node_or_null("../Vegetation")
 	if veg:
 		for child in veg.get_children():
-			child.queue_free()
+			child.call(free_fn)
 		# Vegetation 保留作新植被容器
 
 	# 删除旧 BambooGrove（竹子简模）
 	var bamboo_parent := get_node_or_null("../Buildings/XiaoxiangGuan/BambooGrove")
 	if bamboo_parent:
 		for child in bamboo_parent.get_children():
-			child.queue_free()
+			child.call(free_fn)
 
 # ═══════════════════════════════════════════════════════
 # 预加载模型
@@ -180,7 +190,7 @@ func _inst(path: String, parent: Node3D, pos: Vector3, scale_f: float = 1.0, rot
 	if rot_y >= 0:
 		node.rotation.y = rot_y
 	else:
-		node.rotation.y = randf() * TAU
+		node.rotation.y = _rng.randf() * TAU
 	# LOD + 阴影配置
 	if node is MeshInstance3D:
 		node.lod_bias = 0.7
@@ -189,7 +199,7 @@ func _inst(path: String, parent: Node3D, pos: Vector3, scale_f: float = 1.0, rot
 	return node
 
 func _rand_from(arr: Array) -> String:
-	return arr[randi() % arr.size()]
+	return arr[_rng.randi() % arr.size()]
 
 # ═══════════════════════════════════════════════════════
 # 一、荷塘精细化改造
@@ -207,8 +217,8 @@ func _place_pond_vegetation() -> void:
 		Vector3(-11, 0.08, -24), Vector3(-2, 0.08, -23), Vector3(-5, 0.08, -19),
 	]
 	for i in pond_positions.size():
-		var s := 0.6 + randf() * 0.5
-		var r := randf() * TAU
+		var s := 0.6 + _rng.randf() * 0.5
+		var r := _rng.randf() * TAU
 		_inst(_lily, terrain, pond_positions[i], s, r)
 
 	# 池塘岸边水生植物（芦苇用 Plant 替代）
@@ -219,7 +229,7 @@ func _place_pond_vegetation() -> void:
 		Vector3(-5, 0.1, -31),  Vector3(-3, 0.1, -31),   Vector3(-7, 0.1, -31),
 	]
 	for pos in shore_positions:
-		_inst(_plant_2, terrain, pos, 0.8 + randf() * 0.4, -1)
+		_inst(_plant_2, terrain, pos, 0.8 + _rng.randf() * 0.4, -1)
 
 # ═══════════════════════════════════════════════════════
 # 二、道路两侧 & 竹林
@@ -239,7 +249,7 @@ func _place_path_trees() -> void:
 		Vector3(7, 0, 8), Vector3(7, 0, 18),
 	]
 	for pos in willow_left + willow_right:
-		_inst(_rand_from(_tree_willow), veg, pos, 1.0 + randf() * 0.3, -1)
+		_inst(_rand_from(_tree_willow), veg, pos, 1.0 + _rng.randf() * 0.3, -1)
 
 	# 横向路径两侧阔叶树
 	var cross_tree_pos := [
@@ -248,7 +258,7 @@ func _place_path_trees() -> void:
 		Vector3(-20, 0, -5), Vector3(20, 0, -5),
 	]
 	for pos in cross_tree_pos:
-		_inst(_rand_from(_tree_common), veg, pos, 0.9 + randf() * 0.3, -1)
+		_inst(_rand_from(_tree_common), veg, pos, 0.9 + _rng.randf() * 0.3, -1)
 
 	# 潇湘馆竹林（替换旧竹子简模）
 	var bamboo_parent := get_node_or_null("../Buildings/XiaoxiangGuan/BambooGrove")
@@ -261,7 +271,7 @@ func _place_path_trees() -> void:
 		]
 		# 用 BirchTree 替代竹子（白桦树干细长，视觉上接近竹子效果）
 		for pos in bamboo_positions:
-			_inst(_rand_from(_tree_birch), bamboo_parent, pos, 0.7 + randf() * 0.3, -1)
+			_inst(_rand_from(_tree_birch), bamboo_parent, pos, 0.7 + _rng.randf() * 0.3, -1)
 
 	# 庭院间稀疏乔木（不做密集种植，保持通透感）
 	var sparse_tree_pos := [
@@ -272,7 +282,7 @@ func _place_path_trees() -> void:
 		Vector3(0, 0, -45), Vector3(0, 0, 48),
 	]
 	for pos in sparse_tree_pos:
-		_inst(_rand_from(_tree_common), veg, pos, 1.1 + randf() * 0.4, -1)
+		_inst(_rand_from(_tree_common), veg, pos, 1.1 + _rng.randf() * 0.4, -1)
 
 # ═══════════════════════════════════════════════════════
 # 三、建筑周边绿化（弱化方块边缘）
@@ -303,11 +313,11 @@ func _place_building_greenery() -> void:
 		]
 		for i in corners.size():
 			var path = [_shrub_1, _shrub_2, _berry_1, _berry_2][i % 4]
-			_inst(path, buildings, corners[i], 0.8 + randf() * 0.3, -1)
+			_inst(path, buildings, corners[i], 0.8 + _rng.randf() * 0.3, -1)
 
 		# 前门两侧各一株花丛
-		_inst(_flowers, buildings, base + Vector3(-4, 0, 6.5), 0.7, randf() * TAU)
-		_inst(_flowers, buildings, base + Vector3(4, 0, 6.5), 0.7, randf() * TAU)
+		_inst(_flowers, buildings, base + Vector3(-4, 0, 6.5), 0.7, _rng.randf() * TAU)
+		_inst(_flowers, buildings, base + Vector3(4, 0, 6.5), 0.7, _rng.randf() * TAU)
 
 # ═══════════════════════════════════════════════════════
 # 四、假山周边绿化
@@ -329,8 +339,8 @@ func _place_rockery_greenery() -> void:
 	]
 	for pos in rock1_pos + rock2_pos:
 		# 假山旁放苔藓岩石 + 灌木
-		if randf() > 0.5:
-			_inst(_rand_from(_rock_moss), features, pos, 0.5 + randf() * 0.4, -1)
+		if _rng.randf() > 0.5:
+			_inst(_rand_from(_rock_moss), features, pos, 0.5 + _rng.randf() * 0.4, -1)
 		else:
 			_inst(_rand_from([_shrub_1, _berry_1, _plant_3]), features, pos, 0.7, -1)
 
@@ -372,13 +382,13 @@ func _place_lawn_grass() -> void:
 		grass_positions.append(Vector3(x, 0.02, z))
 
 	for pos in grass_positions:
-		var path = [_grass_1, _grass_2, _grass_s][randi() % 3]
-		var s := 0.4 + randf() * 0.5
+		var path = [_grass_1, _grass_2, _grass_s][_rng.randi() % 3]
+		var s := 0.4 + _rng.randf() * 0.5
 		_inst(path, veg, pos, s, -1)
 		# 草丛旁随机放小花
-		if randf() > 0.7:
-			var flower_off := Vector3(randf_range(-1, 1), 0, randf_range(-1, 1))
-			_inst(_flowers, veg, pos + flower_off, 0.3 + randf() * 0.3, -1)
+		if _rng.randf() > 0.7:
+			var flower_off := Vector3(_rng.randf_range(-1, 1), 0, _rng.randf_range(-1, 1))
+			_inst(_flowers, veg, pos + flower_off, 0.3 + _rng.randf() * 0.3, -1)
 
 # ═══════════════════════════════════════════════════════
 # 六、路边小型绿植（引导行进路线）
@@ -392,17 +402,17 @@ func _place_roadside_plants() -> void:
 	var road_plant_pos: Array = []
 	var z_pos := -38.0
 	while z_pos < 45:
-		z_pos += 3.0 + randf() * 2.0
-		if randf() > 0.4:
-			road_plant_pos.append(Vector3(-2.5 - randf() * 0.5, 0.02, z_pos))
-		if randf() > 0.4:
-			road_plant_pos.append(Vector3(2.5 + randf() * 0.5, 0.02, z_pos))
+		z_pos += 3.0 + _rng.randf() * 2.0
+		if _rng.randf() > 0.4:
+			road_plant_pos.append(Vector3(-2.5 - _rng.randf() * 0.5, 0.02, z_pos))
+		if _rng.randf() > 0.4:
+			road_plant_pos.append(Vector3(2.5 + _rng.randf() * 0.5, 0.02, z_pos))
 
 	for pos in road_plant_pos:
-		var path = [_plant_1, _plant_2, _plant_3, _grass_s][randi() % 4]
-		_inst(path, veg, pos, 0.4 + randf() * 0.3, -1)
+		var path = [_plant_1, _plant_2, _plant_3, _grass_s][_rng.randi() % 4]
+		_inst(path, veg, pos, 0.4 + _rng.randf() * 0.3, -1)
 
 	# 横向路径（z=15 交叉路口）
 	for x in range(-30, 31, 4):
-		if randf() > 0.5:
+		if _rng.randf() > 0.5:
 			_inst(_plant_2, veg, Vector3(x, 0.02, 15.5), 0.5, -1)

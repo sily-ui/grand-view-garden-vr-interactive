@@ -5,6 +5,9 @@ class_name NPCBase
 @export var npc_name: String = ""
 @export var npc_title: String = ""
 @export var dialog_id: String = ""
+@export var required_condition: String = ""
+@export var completion_condition: String = ""
+@export var repeat_dialog: bool = false
 @export var patrol_speed: float = 2.0
 @export var patrol_points: Array[Vector3] = []
 
@@ -69,14 +72,30 @@ func _do_patrol() -> void:
 		look_at(look_target, Vector3.UP)
 
 func interact(_player: Node) -> void:
-	if has_talked:
+	if not _can_start_dialog():
 		return
 	current_state = NPCState.TALKING
 	look_at_player(_player)
-	if dialog_id != "":
-		has_talked = true
-		DialogManager.start_dialog(dialog_id)
-		DialogManager.dialog_ended.connect(_on_dialog_ended, CONNECT_ONE_SHOT)
+	has_talked = true
+	# 确保对话期间 NPC 本体与已生成的角色模型全程可见，
+	# 杜绝“只弹对话文字不显示 NPC 形象”的情况。
+	visible = true
+	var visual := get_node_or_null("ProceduralCharacterVisual")
+	if visual:
+		visual.visible = true
+	DialogManager.start_dialog(dialog_id)
+	DialogManager.dialog_ended.connect(_on_dialog_ended, CONNECT_ONE_SHOT)
+
+func _can_start_dialog() -> bool:
+	if dialog_id == "" or GameManager.is_dialog_active():
+		return false
+	if not repeat_dialog and has_talked:
+		return false
+	if required_condition != "" and not GameState.get_condition(required_condition, false):
+		return false
+	if completion_condition != "" and GameState.get_condition(completion_condition, false):
+		return false
+	return true
 
 func look_at_player(player: Node) -> void:
 	if player:
@@ -87,4 +106,8 @@ func _on_dialog_ended(_id: String) -> void:
 	current_state = NPCState.PATROL if patrol_points.size() > 0 else NPCState.IDLE
 
 func get_interaction_info() -> Dictionary:
+	if required_condition != "" and not GameState.get_condition(required_condition, false):
+		return {"name": npc_name, "action": "稍后再与之对话", "key": "E"}
+	if completion_condition != "" and GameState.get_condition(completion_condition, false):
+		return {"name": npc_name, "action": "已完成%s剧情" % npc_name, "key": "E"}
 	return {"name": npc_name, "action": "与%s对话" % npc_name, "key": "E"}

@@ -1286,7 +1286,7 @@ func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3,
 	var post_offset := width / 2.0 - 0.25
 	var post_count: int = int(length / 3.5) + 2
 
-	# 接地铺砖，略高于地面但低于玩家可跨台阶高度
+	# 接地铺砖，略高于地面但低于玩家可跨台阶高度（无碰撞，允许玩家横向穿过）
 	var gap_half: float = gap_width / 2.0
 	if gap_width > 0.0:
 		# 通道口左侧地板
@@ -1294,7 +1294,7 @@ func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3,
 		if left_len > 0.5:
 			var left_center: float = -length / 2.0 + left_len / 2.0
 			_make_box(cr, "CorridorFloor_L", Vector3(0, 0.04, left_center),
-				Vector3(floor_width, 0.08, left_len), mat_brick, true)
+				Vector3(floor_width, 0.08, left_len), mat_brick, false)
 			_make_mesh(cr, "CenterStonePath_L", Vector3(0, 0.105, left_center),
 				Vector3(floor_width - 0.45, 0.03, left_len - 0.35), mat_stone)
 		# 通道口右侧地板
@@ -1302,7 +1302,7 @@ func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3,
 		if right_len > 0.5:
 			var right_center: float = length / 2.0 - right_len / 2.0
 			_make_box(cr, "CorridorFloor_R", Vector3(0, 0.04, right_center),
-				Vector3(floor_width, 0.08, right_len), mat_brick, true)
+				Vector3(floor_width, 0.08, right_len), mat_brick, false)
 			_make_mesh(cr, "CenterStonePath_R", Vector3(0, 0.105, right_center),
 				Vector3(floor_width - 0.45, 0.03, right_len - 0.35), mat_stone)
 		# 通道口两端的收边柱
@@ -1313,15 +1313,15 @@ func _build_corridor(parent: Node3D, name_s: String, from: Vector3, to: Vector3,
 					Vector3(side_val * post_offset, 1.55, gap_edge_z), 0.12, 3.1, mat_wood_red, false)
 	else:
 		_make_box(cr, "CorridorFloor", Vector3(0, 0.04, 0),
-			Vector3(floor_width, 0.08, length), mat_brick, true)
+			Vector3(floor_width, 0.08, length), mat_brick, false)
 		_make_mesh(cr, "CenterStonePath", Vector3(0, 0.105, 0),
 			Vector3(floor_width - 0.45, 0.03, length - 0.35), mat_stone)
 
-	# 两端过渡踏步，避免从地面走上廊道时被碰撞边缘卡住
+	# 两端过渡踏步（无碰撞，允许玩家横向穿过游廊）
 	for end_side in [-1, 1]:
 		_make_box(cr, "Step_%d" % end_side,
 			Vector3(0, 0.025, end_side * (length / 2.0 + 0.45)),
-			Vector3(floor_width + 0.2, 0.05, 0.9), mat_brick, true)
+			Vector3(floor_width + 0.2, 0.05, 0.9), mat_brick, false)
 	_decorate_corridor_exits(cr, length, floor_width)
 
 	# 廊顶：坡屋面 + 薄檐 + 中脊，减少大块盒子压迫感
@@ -1378,7 +1378,7 @@ func _decorate_corridor_exits(corridor: Node3D, length: float, floor_width: floa
 	for end_side in [-1, 1]:
 		var end_z: float = float(end_side) * (length / 2.0 + 1.1)
 		_make_box(corridor, "ExitLanding_%d" % end_side,
-			Vector3(0, 0.055, end_z), Vector3(floor_width + 1.2, 0.08, 1.9), mat_stone, true)
+			Vector3(0, 0.055, end_z), Vector3(floor_width + 1.2, 0.08, 1.9), mat_stone, false)
 		_make_box(corridor, "ExitGoldLine_%d" % end_side,
 			Vector3(0, 0.125, end_z), Vector3(0.34, 0.035, 1.45), mat_gold, false)
 		_make_label(corridor, "ExitLabel_%d" % end_side, "出口",
@@ -1406,6 +1406,7 @@ func _build_core_courtyard_optimization() -> void:
 	_build_named_courtyard_frame(root, "HengwuFrame", Vector3(25, 0, -15), 24, 20, "蘅芜苑")
 	_build_named_courtyard_frame(root, "DaoxiangFrame", Vector3(-25, 0, -15), 26, 22, "稻香村")
 	_build_residential_courtyard_enclosures(root)
+	_build_npc_visuals(root)
 
 	_build_bluestone_route(root)
 	_build_pond_revetment(root)
@@ -1424,13 +1425,106 @@ func _build_residential_courtyard_enclosures(parent: Node3D) -> void:
 	parent.add_child(enclosures)
 
 	var courtyard_specs: Array[Dictionary] = [
-		{"name": "DaguanLouEnclosure", "pos": Vector3(0, 0, 25), "w": 30.0, "d": 20.0, "label": "大观楼", "gate": "south"},
+		{"name": "DaguanLouEnclosure", "pos": Vector3(0, 0, 25), "w": 30.0, "d": 20.0, "label": "大观楼", "gate": "south", "skip_walls": ["North"]},
 		{"name": "LongcuiAnEnclosure", "pos": Vector3(0, 0, 52), "w": 22.0, "d": 18.0, "label": "栊翠庵", "gate": "south"},
 		{"name": "ZhuijingeEnclosure", "pos": Vector3(40, 0, 25), "w": 22.0, "d": 18.0, "label": "缀锦阁", "gate": "west"},
 		{"name": "ZilingzhouEnclosure", "pos": Vector3(-25, 0, 20), "w": 20.0, "d": 18.0, "label": "紫菱洲", "gate": "east"},
 	]
 	for spec: Dictionary in courtyard_specs:
 		_build_partitioned_courtyard(enclosures, spec)
+
+# ═══════════════════════════════════════════════════════
+# NPC 人物模型触发器
+# 在场景中放置 EventTrigger，生成可见的 NPC 人物模型。
+# - 贾母：大观楼院内（玩家进入后即可见到）
+# - 王熙凤：大观楼南门外（玩家穿过南门洞即可见到）
+# - 林黛玉：潇湘馆竹径尽头
+# - 贾宝玉：怡红院门口
+# 触发器同时负责对话触发（require_e_key），立牌仅作说明补充。
+# ═══════════════════════════════════════════════════════
+func _build_npc_visuals(parent: Node3D) -> void:
+	# 清理 npcs.tscn 中与本系统重复的 NPC 节点（避免出现两个贾母等）
+	_clear_duplicate_npcs_from_scene(parent)
+
+	var npc_root := Node3D.new()
+	npc_root.name = "NPCVisualTriggers"
+	parent.add_child(npc_root)
+
+	# 贾母：大观楼建筑南侧院子 (0,0,32)，intro_done 后可见
+	# 建筑 z 范围 20~30，放在建筑南侧院子内，避免卡在建筑墙体里
+	_create_npc_trigger(npc_root, "JiaMuTrigger", "贾母",
+		Vector3(0, 0, 32), "intro_done", "met_jiamu",
+		"meet_jiamu", "按 E 与贾母对话")
+
+	# 王熙凤：大观楼南门外 (0,0,37)，met_jiamu 后可见
+	# 南墙 z=35，门洞 x=[-2.2,2.2]，放在南墙外侧 2 米
+	# 与导航终点 z=37 对齐，确保玩家到达导航点时即可进入触发区域
+	_create_npc_trigger(npc_root, "XifengTrigger", "王熙凤",
+		Vector3(0, 0, 37), "met_jiamu", "met_xifeng",
+		"meet_xifeng", "按 E 与王熙凤对话")
+
+	# 林黛玉：潇湘馆 (XiaoxiangDetails at -35,0,10) 竹径尽头
+	_create_npc_trigger(npc_root, "DaiyuTrigger", "林黛玉",
+		Vector3(-35, 0, 16), "met_xifeng", "visited_xiaoxiang",
+		"visit_xiaoxiang", "按 E 与林黛玉对话")
+
+	# 贾宝玉：怡红院 (YihongDetails at 35,0,10) 门口
+	_create_npc_trigger(npc_root, "BaoyuTrigger", "贾宝玉",
+		Vector3(35, 0, 15), "visited_xiaoxiang", "visited_yihong",
+		"visit_yihong", "按 E 与贾宝玉对话")
+
+	# 妙玉：栊翠庵 (LongcuiAnEnclosure at 0,0,52) 院内
+	# 院墙 z=43~61，南门 z=61 x=[-2.2,2.2]，放在院内靠近南门处
+	_create_npc_trigger(npc_root, "MiaoyuTrigger", "妙玉",
+		Vector3(0, 0, 57), "visited_yihong", "completed_tea",
+		"tea_ceremony", "按 E 与妙玉对话")
+
+func _create_npc_trigger(parent: Node3D, trigger_name: String, npc_name: String,
+		pos: Vector3, required_cond: String, blocked_cond: String,
+		dialog: String, prompt: String) -> void:
+	var trigger := Area3D.new()
+	trigger.name = trigger_name
+	trigger.position = pos
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(4.0, 3.0, 4.0)
+	col.shape = shape
+	trigger.add_child(col)
+
+	var trigger_script := load("res://scripts/systems/event_trigger.gd")
+	if trigger_script:
+		trigger.set_script(trigger_script)
+		trigger.set("dialog_id", dialog)
+		trigger.set("required_condition", required_cond)
+		trigger.set("blocked_condition", blocked_cond)
+		trigger.set("trigger_once", true)
+		trigger.set("persist_after_trigger", true)
+		trigger.set("visible_npc_name", npc_name)
+		# NPC 脚底着地：模型最低点(袍子底部)在 anchor 上方 0.095，anchor 与 trigger 同高即可
+		trigger.set("visible_npc_offset", Vector3(0, 0, 0))
+		trigger.set("require_e_key", true)
+		trigger.set("e_key_prompt", prompt)
+	parent.add_child(trigger)
+
+# 清理 npcs.tscn 中与本系统重复创建的 NPC 节点
+# 这些 NPC 使用旧的 NPCBase 交互系统，与本系统的 EventTrigger 重复
+# 本系统已在 _build_npc_visuals 中为贾母、王熙凤、林黛玉、贾宝玉创建 EventTrigger
+func _clear_duplicate_npcs_from_scene(root: Node) -> void:
+	# NPCs 容器来自 npcs.tscn，是场景根节点的直接子节点
+	# root 是 CoreCourtyardOptimization，需要从场景根节点查找
+	var tree_root := root.get_tree().root
+	var npcs_container: Node = tree_root.find_child("NPCs", true, false)
+	if npcs_container == null:
+		return
+	# 删除 NPCs 容器下与本系统重复的 NPC 节点
+	# 本系统会为这些角色创建 EventTrigger，旧节点会导致重复显示
+	# 注意：npcs.tscn 中的节点名称是 JiaMu/LinDaiyu/JiaBaoyu（不是 Daiyu/Baoyu）
+	var duplicate_names: Array[StringName] = [
+		&"JiaMu", &"LinDaiyu", &"JiaBaoyu", &"Miaoyu"
+	]
+	for child in npcs_container.get_children():
+		if child.name in duplicate_names:
+			child.queue_free()
 
 func _build_partitioned_courtyard(parent: Node3D, spec: Dictionary) -> void:
 	var frame := Node3D.new()
@@ -1444,11 +1538,16 @@ func _build_partitioned_courtyard(parent: Node3D, spec: Dictionary) -> void:
 	var wall_h := 2.9
 	var wall_t := 0.48
 	var gate_gap := 4.4
+	var skip_walls: Array = spec.get("skip_walls", [])
 
-	_build_partition_wall_pair(frame, "North", Vector3(0, wall_h / 2.0, -d / 2.0), w, wall_h, wall_t, gate_gap, gate_side == "north", false)
-	_build_partition_wall_pair(frame, "South", Vector3(0, wall_h / 2.0, d / 2.0), w, wall_h, wall_t, gate_gap, gate_side == "south", false)
-	_build_partition_wall_pair(frame, "East", Vector3(w / 2.0, wall_h / 2.0, 0), d, wall_h, wall_t, gate_gap, gate_side == "east", true)
-	_build_partition_wall_pair(frame, "West", Vector3(-w / 2.0, wall_h / 2.0, 0), d, wall_h, wall_t, gate_gap, gate_side == "west", true)
+	if not skip_walls.has("North"):
+		_build_partition_wall_pair(frame, "North", Vector3(0, wall_h / 2.0, -d / 2.0), w, wall_h, wall_t, gate_gap, gate_side == "north", false)
+	if not skip_walls.has("South"):
+		_build_partition_wall_pair(frame, "South", Vector3(0, wall_h / 2.0, d / 2.0), w, wall_h, wall_t, gate_gap, gate_side == "south", false)
+	if not skip_walls.has("East"):
+		_build_partition_wall_pair(frame, "East", Vector3(w / 2.0, wall_h / 2.0, 0), d, wall_h, wall_t, gate_gap, gate_side == "east", true)
+	if not skip_walls.has("West"):
+		_build_partition_wall_pair(frame, "West", Vector3(-w / 2.0, wall_h / 2.0, 0), d, wall_h, wall_t, gate_gap, gate_side == "west", true)
 
 	var gate_pos := Vector3.ZERO
 	var gate_rot := 0.0
@@ -1501,18 +1600,26 @@ func _build_named_courtyard_frame(parent: Node3D, name_s: String, pos: Vector3,
 	var wall_h := 3.2
 	var wall_t := 0.5
 	var gate_gap := 5.0
+	# 东西墙在 z=0 处留出侧门洞，供横向石板路（WestBluestone/EastBluestone）穿过
+	var side_gate_half := 2.5
+	var side_depth := d / 2.0 - side_gate_half
+	var side_center := side_gate_half + side_depth / 2.0
 	_make_box(frame, "Wall_N", Vector3(0, wall_h / 2.0, -d / 2.0), Vector3(w, wall_h, wall_t), mat_white_wall, true)
-	_make_box(frame, "Wall_E", Vector3(w / 2.0, wall_h / 2.0, 0), Vector3(wall_t, wall_h, d), mat_white_wall, true)
-	_make_box(frame, "Wall_W", Vector3(-w / 2.0, wall_h / 2.0, 0), Vector3(wall_t, wall_h, d), mat_white_wall, true)
+	# 东墙拆分为南北两段，中间留侧门洞
+	_make_box(frame, "Wall_E_N", Vector3(w / 2.0, wall_h / 2.0, -side_center), Vector3(wall_t, wall_h, side_depth), mat_white_wall, true)
+	_make_box(frame, "Wall_E_S", Vector3(w / 2.0, wall_h / 2.0, side_center), Vector3(wall_t, wall_h, side_depth), mat_white_wall, true)
+	# 西墙拆分为南北两段，中间留侧门洞
+	_make_box(frame, "Wall_W_N", Vector3(-w / 2.0, wall_h / 2.0, -side_center), Vector3(wall_t, wall_h, side_depth), mat_white_wall, true)
+	_make_box(frame, "Wall_W_S", Vector3(-w / 2.0, wall_h / 2.0, side_center), Vector3(wall_t, wall_h, side_depth), mat_white_wall, true)
 	_make_box(frame, "Wall_S_L", Vector3(-(w + gate_gap) / 4.0, wall_h / 2.0, d / 2.0), Vector3((w - gate_gap) / 2.0, wall_h, wall_t), mat_white_wall, true)
 	_make_box(frame, "Wall_S_R", Vector3((w + gate_gap) / 4.0, wall_h / 2.0, d / 2.0), Vector3((w - gate_gap) / 2.0, wall_h, wall_t), mat_white_wall, true)
 
-	for wall_name in ["Wall_N", "Wall_E", "Wall_W", "Wall_S_L", "Wall_S_R"]:
+	for wall_name in ["Wall_N", "Wall_E_N", "Wall_E_S", "Wall_W_N", "Wall_W_S", "Wall_S_L", "Wall_S_R"]:
 		var wall := frame.get_node_or_null(wall_name)
 		if wall and wall is StaticBody3D:
 			var cap_size := Vector3(w, 0.25, wall_t + 0.25)
-			if wall_name in ["Wall_E", "Wall_W"]:
-				cap_size = Vector3(wall_t + 0.25, 0.25, d)
+			if wall_name in ["Wall_E_N", "Wall_E_S", "Wall_W_N", "Wall_W_S"]:
+				cap_size = Vector3(wall_t + 0.25, 0.25, side_depth)
 			elif wall_name in ["Wall_S_L", "Wall_S_R"]:
 				cap_size = Vector3((w - gate_gap) / 2.0, 0.25, wall_t + 0.25)
 			_make_mesh(wall, "GreyTileCap", Vector3(0, wall_h / 2.0 + 0.15, 0), cap_size, mat_wall_top)

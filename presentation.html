@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>刘姥姥进大观园 —— 沉浸式 3D/VR 互动叙事体验</title>
+<style>
+/* ============ Reset & Base ============ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "LXGW WenKai", "Noto Serif SC", "SimSun", serif;
+  background: #0a0a0f;
+  color: #e8dcc8;
+  overflow-x: hidden;
+  line-height: 1.8;
+}
+a { color: #d4a574; text-decoration: none; }
+
+/* ============ Typography ============ */
+@font-face {
+  font-family: 'TitleFont';
+  src: local('LXGW WenKai'), local('Noto Serif SC'), local('SimSun');
+}
+h1, h2, h3 { font-weight: 400; letter-spacing: 0.08em; }
+
+/* ============ Scrollbar ============ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1a1a2e; }
+::-webkit-scrollbar-thumb { background: #8b4513; border-radius: 3px; }
+
+/* ============ Section Base ============ */
+section {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 5vw;
+}
+.section-inner {
+  max-width: 1200px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* ============ Background Overlays ============ */
+.bg-overlay {
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+
+/* ============ Hero Section ============ */
+#hero {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0d0d14 0%, #1a0f0a 40%, #2a1810 70%, #0d0d14 100%);
+  text-align: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+#hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 30%, rgba(139,69,19,0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 80%, rgba(100,50,20,0.1) 0%, transparent 60%);
+  z-index: 1;
+}
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: #a08060;
+  letter-spacing: 0.3em;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp 1s 0.3s forwards;
+}
+.hero-title {
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  color: #f0e0c0;
+  text-shadow: 0 0 60px rgba(180,120,60,0.3), 0 2px 4px rgba(0,0,0,0.5);
+  margin-bottom: 16px;
+  opacity: 0;
+  animation: fadeUp 1s 0.5s forwards;
+}
+.hero-en {
+  font-size: clamp(0.9rem, 2vw, 1.3rem);
+  color: #8a7050;
+  letter-spacing: 0.15em;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeUp 1s 0.7s forwards;
+}
+.hero-quote {
+  max-width: 680px;
+  margin: 0 auto 50px;
+  padding: 24px 32px;
+  border-left: 3px solid #8b4513;
+  border-right: 3px solid #8b4513;
+  font-size: 1.05rem;
+  color: #c0a080;
+  line-height: 2;
+  font-style: italic;
+  opacity: 0;
+  animation: fadeUp 1s 0.9s forwards;
+}
+.hero-avatars {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 50px;
+  opacity: 0;
+  animation: fadeUp 1s 1.1s forwards;
+}
+.hero-avatars img {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 2px solid #8b4513;
+  box-shadow: 0 0 20px rgba(139,69,19,0.3);
+  transition: transform 0.3s, box-shadow 0.3s;
+  object-fit: cover;
+}
+.hero-avatars img:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(200,150,80,0.5);
+}
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #6a5a4a;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  opacity: 0;
+  animation: fadeUp 1s 1.5s forwards;
+}
+.scroll-hint::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(#8b4513, transparent);
+  margin: 10px auto 0;
+  animation: scrollLine 2s infinite;
+}
+
+/* ============ Navigation ============ */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(139,69,19,0.2);
+  transition: transform 0.3s;
+}
+nav .logo {
+  font-size: 1.2rem;
+  color: #d4a574;
+  letter-spacing: 0.15em;
+}
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 28px;
+}
+nav li a {
+  color: #8a7a6a;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  transition: color 0.3s;
+  position: relative;
+}
+nav li a:hover { color: #d4a574; }
+nav li a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: #d4a574;
+  transition: width 0.3s;
+}
+nav li a:hover::after { width: 100%; }
+
+/* ============ Section Titles ============ */
+.section-tag {
+  font-size: 0.75rem;
+  color: #8b4513;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: #f0e0c0;
+  margin-bottom: 12px;
+}
+.section-desc {
+  font-size: 1rem;
+  color: #8a7a6a;
+  max-width: 600px;
+  margin-bottom: 50px;
+}
+
+/* ============ Cards Grid ============ */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+.card {
+  background: linear-gradient(135deg, rgba(26,20,15,0.9), rgba(20,16,12,0.95));
+  border: 1px solid rgba(139,69,19,0.2);
+  border-radius: 12px;
+  padding: 32px;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8b4513, transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(139,69,19,0.4);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+.card:hover::before { opacity: 1; }
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+.card h3 {
+  font-size: 1.2rem;
+  color: #e8d0b0;
+  margin-bottom: 10px;
+}
+.card p {
+  font-size: 0.9rem;
+  color: #8a7a6a;
+  line-height: 1.7;
+}
+
+/* ============ Stats Row ============ */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 24px;
+  margin-bottom: 60px;
+}
+.stat-item {
+  text-align: center;
+  padding: 28px 16px;
+  background: rgba(139,69,19,0.08);
+  border: 1px solid rgba(139,69,19,0.15);
+  border-radius: 10px;
+}
+.stat-num {
+  font-size: 2.8rem;
+  color: #d4a574;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-label {
+  font-size: 0.8rem;
+  color: #6a5a4a;
+  letter-spacing: 0.15em;
+}
+
+/* ============ Story Timeline ============ */
+.timeline {
+  position: relative;
+  padding-left: 40px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 14px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, #8b4513, #8b4513, transparent);
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 36px;
+  padding: 20px 24px;
+  background: rgba(26,20,15,0.6);
+  border: 1px solid rgba(139,69,19,0.15);
+  border-radius: 10px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -34px; top: 26px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #8b4513;
+  box-shadow: 0 0 12px rgba(139,69,19,0.5);
+}
+.timeline-item h3 {
+  color: #e8d0b0;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+.timeline-item p {
+  color: #8a7a6a;
+  font-size: 0.9rem;
+}
+
+/* ============ Character Grid ============ */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+.char-card {
+  text-align: center;
+  padding: 28px 16px;
+  background: rgba(26,20,15,0.7);
+  border: 1px solid rgba(139,69,19,0.15);
+  border-radius: 12px;
+  transition: transform 0.3s;
+}
+.char-card:hover { transform: translateY(-4px); }
+.char-card img {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  border: 2px solid #6a4020;
+  margin-bottom: 14px;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.char-card h4 {
+  color: #e8d0b0;
+  font-size: 1.1rem;
+  margin-bottom: 2px;
+}
+.char-card .char-title {
+  color: #8b4513;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+.char-card .char-desc {
+  color: #6a5a4a;
+  font-size: 0.8rem;
+  margin-top: 8px;
+}
+
+/* ============ Tech Stack ============ */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+.tech-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(26,20,15,0.6);
+  border: 1px solid rgba(139,69,19,0.12);
+  border-radius: 10px;
+}
+.tech-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(139,69,19,0.1);
+  border-radius: 10px;
+}
+.tech-info h4 {
+  color: #e8d0b0;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.tech-info p {
+  color: #6a5a4a;
+  font-size: 0.82rem;
+}
+
+/* ============ Asset Table ============ */
+.asset-table-wrap {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+.asset-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.asset-table th {
+  background: rgba(139,69,19,0.15);
+  color: #d4a574;
+  padding: 14px 16px;
+  text-align: left;
+  letter-spacing: 0.1em;
+  font-weight: 400;
+  border-bottom: 1px solid rgba(139,69,19,0.3);
+}
+.asset-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(139,69,19,0.08);
+  color: #a09080;
+}
+.asset-table tr:hover td {
+  background: rgba(139,69,19,0.05);
+}
+.asset-table .tag {
+  display: inline-block;
+  padding: 2px 10px;
+  background: rgba(139,69,19,0.15);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #c09060;
+  margin: 2px;
+}
+
+/* ============ Architecture Diagram ============ */
+.arch-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.arch-layer {
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(139,69,19,0.2);
+}
+.arch-layer h4 {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: #8b4513;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.arch-layer .arch-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.arch-chip {
+  padding: 6px 16px;
+  background: rgba(139,69,19,0.12);
+  border: 1px solid rgba(139,69,19,0.2);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  color: #c0a080;
+  white-space: nowrap;
+}
+
+/* ============ Voice Config ============ */
+.voice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.voice-card {
+  padding: 20px;
+  background: rgba(26,20,15,0.7);
+  border: 1px solid rgba(139,69,19,0.15);
+  border-radius: 10px;
+  border-left: 3px solid #8b4513;
+}
+.voice-card h4 {
+  color: #e8d0b0;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.voice-card .voice-style {
+  color: #8a7a6a;
+  font-size: 0.8rem;
+  font-style: italic;
+  margin-bottom: 6px;
+}
+.voice-card .voice-speed {
+  color: #6a5a4a;
+  font-size: 0.75rem;
+}
+
+/* ============ Footer ============ */
+footer {
+  padding: 60px 5vw 40px;
+  text-align: center;
+  border-top: 1px solid rgba(139,69,19,0.15);
+  background: #0a0a0f;
+}
+footer p {
+  color: #4a3a2a;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+/* ============ Animations ============ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scrollLine {
+  0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  50%  { opacity: 1; transform: scaleY(1); transform-origin: top; }
+  100% { opacity: 0; transform: scaleY(0); transform-origin: bottom; }
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 768px) {
+  section { padding: 60px 4vw; }
+  nav { padding: 12px 20px; }
+  nav ul { gap: 16px; }
+  nav li a { font-size: 0.8rem; }
+  .hero-avatars img { width: 56px; height: 56px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ Navigation ============ -->
+<nav>
+  <div class="logo">大观园</div>
+  <ul>
+    <li><a href="#hero">首页</a></li>
+    <li><a href="#about">简介</a></li>
+    <li><a href="#story">剧情</a></li>
+    <li><a href="#characters">角色</a></li>
+    <li><a href="#systems">系统</a></li>
+    <li><a href="#tech">技术</a></li>
+    <li><a href="#assets">素材</a></li>
+    <li><a href="#architecture">架构</a></li>
+  </ul>
+</nav>
+
+<!-- ============ Hero ============ -->
+<section id="hero">
+  <div class="section-inner">
+    <p class="hero-subtitle">沉浸式 3D/VR 互动叙事体验</p>
+    <h1 class="hero-title">刘姥姥进大观园</h1>
+    <p class="hero-en">Grand View Garden — VR Interactive Experience</p>
+    <blockquote class="hero-quote">
+      "一局输赢料不真，香销茶尽尚逡巡。<br>
+      欲知目下兴衰兆，须问旁观冷眼人。"<br>
+      <span style="font-size:0.85rem; color:#6a5a4a;">—— 《红楼梦》第二回</span>
+    </blockquote>
+    <div class="hero-avatars">
+      <img src="assets/textures/ui/avatar_liulaolao.png" alt="刘姥姥" title="刘姥姥">
+      <img src="assets/textures/ui/avatar_jiamu.png" alt="贾母" title="贾母">
+      <img src="assets/textures/ui/avatar_jiabaoyu.png" alt="贾宝玉" title="贾宝玉">
+      <img src="assets/textures/ui/avatar_lindaiyu.png" alt="林黛玉" title="林黛玉">
+      <img src="assets/textures/ui/avatar_wangxifeng.png" alt="王熙凤" title="王熙凤">
+      <img src="assets/textures/ui/avatar_xuebaochai.png" alt="薛宝钗" title="薛宝钗">
+      <img src="assets/textures/ui/avatar_xiren.png" alt="袭人" title="袭人">
+      <img src="assets/textures/ui/avatar_qingwen.png" alt="晴雯" title="晴雯">
+    </div>
+    <div class="scroll-hint">向下滚动探索</div>
+  </div>
+</section>
+
+<!-- ============ About ============ -->
+<section id="about">
+  <div class="bg-overlay" style="background: radial-gradient(ellipse at 30% 50%, rgba(139,69,19,0.06) 0%, transparent 60%);"></div>
+  <div class="section-inner reveal">
+    <p class="section-tag">About</p>
+    <h2 class="section-title">项目简介</h2>
+    <p class="section-desc">以中国古典名著《红楼梦》为蓝本，通过第一人称 3D 视角 + VR 支持，让玩家化身刘姥姥，亲历大观园的繁华与风雅。</p>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">29</div>
+        <div class="stat-label">自研脚本文件</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">42</div>
+        <div class="stat-label">剧情对话节点</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">40</div>
+        <div class="stat-label">AI 语音片段</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">9</div>
+        <div class="stat-label">角色音色配置</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">8</div>
+        <div class="stat-label">角色立绘头像</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">7</div>
+        <div class="stat-label">世界场景模块</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">6</div>
+        <div class="stat-label">UI 界面系统</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">10</div>
+        <div class="stat-label">剧情角色</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Story ============ -->
+<section id="story">
+  <div class="bg-overlay" style="background: radial-gradient(ellipse at 70% 40%, rgba(100,50,20,0.08) 0%, transparent 60%);"></div>
+  <div class="section-inner reveal">
+    <p class="section-tag">Story Flow</p>
+    <h2 class="section-title">剧情流程</h2>
+    <p class="section-desc">跟随刘姥姥的脚步，从荣国府大门到大观园深处，亲历原著经典桥段。</p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <h3>序幕 · 荣国府门外</h3>
+        <p>刘姥姥带着板儿，跟着周瑞家的来到荣国府。门前车马往来，石狮威武，红灯笼高悬。初次见面，刘姥姥惊叹不已。</p>
+      </div>
+      <div class="timeline-item">
+        <h3>第一幕 · 石牌坊与游廊</h3>
+        <p>穿过石牌坊，眼前豁然开朗——朱红廊柱、青瓦覆顶的抄手游廊横亘眼前。荷塘锦鲤悠然穿行，翠竹掩映白墙。</p>
+      </div>
+      <div class="timeline-item">
+        <h3>第二幕 · 拜见贾母</h3>
+        <p>正厅中拜见荣国府史太君贾母。玩家可选择不同应答方式，体验刘姥姥的拘谨或率真。凤姐在一旁察言观色。</p>
+      </div>
+      <div class="timeline-item">
+        <h3>第三幕 · 园中游览</h3>
+        <p>潇湘馆中见黛玉倚窗读书，怡红院里观宝玉闺房陈设，栊翠庵品妙玉清茶。每一处都有独特的氛围与故事。</p>
+      </div>
+      <div class="timeline-item">
+        <h3>第四幕 · 簪花宴席</h3>
+        <p>凤姐与鸳鸯合谋，将各色鲜花插满刘姥姥头上。"老刘老刘，食量大如牛"——全书最精彩的喜剧场景。</p>
+      </div>
+      <div class="timeline-item">
+        <h3>尾声 · 告别</h3>
+        <p>宴罢辞行，刘姥姥满载而归。这一日的见闻，将成为她日后救巧姐的伏笔。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Characters ============ -->
+<section id="characters">
+  <div class="section-inner reveal">
+    <p class="section-tag">Characters</p>
+    <h2 class="section-title">剧中人物</h2>
+    <p class="section-desc">8 位主要角色立绘，每人都有独立的 AI 语音音色与性格化台词。</p>
+
+    <div class="char-grid">
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_liulaolao.png" alt="刘姥姥">
+        <h4>刘姥姥</h4>
+        <div class="char-title">乡间老妪 · 主角</div>
+        <div class="char-desc">质朴豁达，嘴快手快，进大观园开眼界</div>
+      </div>
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_jiamu.png" alt="贾母">
+        <h4>贾母</h4>
+        <div class="char-title">荣国府史太君</div>
+        <div class="char-desc">慈爱雍容，低柔慢速，带年迈气息</div>
+      </div>
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_wangxifeng.png" alt="王熙凤">
+        <h4>王熙凤</h4>
+        <div class="char-title">琏二奶奶</div>
+        <div class="char-desc">明亮爽利，精明干练，语气带笑</div>
+      </div>
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_lindaiyu.png" alt="林黛玉">
+        <h4>林黛玉</h4>
+        <div class="char-title">潇湘妃子</div>
+        <div class="char-desc">清冷柔弱，带幽怨才气，低吟诗词</div>
+      </div>
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_jiabaoyu.png" alt="贾宝玉">
+        <h4>贾宝玉</h4>
+        <div class="char-title">怡红公子</div>
+        <div class="char-desc">温和随意，玩世不恭，天真亲切</div>
+      </div>
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_xuebaochai.png" alt="薛宝钗">
+        <h4>薛宝钗</h4>
+        <div class="char-title">蘅芜君</div>
+        <div class="char-desc">温婉大方，沉稳得体，大家闺秀</div>
+      </div>
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_xiren.png" alt="袭人">
+        <h4>袭人</h4>
+        <div class="char-title">宝玉贴身丫鬟</div>
+        <div class="char-desc">温柔体贴，细心周到</div>
+      </div>
+      <div class="char-card">
+        <img src="assets/textures/ui/avatar_qingwen.png" alt="晴雯">
+        <h4>晴雯</h4>
+        <div class="char-title">宝玉丫鬟</div>
+        <div class="char-desc">心高气傲，伶俐爽利</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Core Systems ============ -->
+<section id="systems">
+  <div class="bg-overlay" style="background: radial-gradient(ellipse at 50% 60%, rgba(80,40,15,0.08) 0%, transparent 50%);"></div>
+  <div class="section-inner reveal">
+    <p class="section-tag">Core Systems</p>
+    <h2 class="section-title">核心系统</h2>
+    <p class="section-desc">自研 6 大核心系统，打造完整的沉浸式叙事体验。</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <h3>剧情对话系统</h3>
+        <p>卷轴展开动画、打字机逐字效果、角色头像自动匹配、分支对话选择、事件触发机制。42 个对话节点覆盖完整剧情。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔊</div>
+        <h3>AI 语音配音系统</h3>
+        <p>基于 MiMo TTS VoiceDesign，9 个角色独立音色配置。每角色独立播放速度，对话时 BGM 自动闪避。40 条预生成语音。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧭</div>
+        <h3>剧情导航引导系统</h3>
+        <p>金色闪烁 3D 箭头指引 + HUD 方向提示。多阶段故事流程，通过半径判定自动推进，支持路线点序列。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌿</div>
+        <h3>场景氛围系统</h3>
+        <p>蝴蝶飞舞（QuadMesh + Tween）、落叶飘零、风粒子（GPUParticles3D）、鸟鸣音效、锦鲤跃水。动态园林生态。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📜</div>
+        <h3>解说立牌系统</h3>
+        <p>中式木质立牌 3D 模型，接近自动触发。角色百科弹窗（宣纸红木风格），包含原著背景故事与人物关系。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎨</div>
+        <h3>清代中式 UI</h3>
+        <p>宣纸纹理背景 + 红木边框，霞鹜文楷字体。卷轴动画对话框，古典中国色系配色，VR 适配文字清晰可读。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">👤</div>
+        <h3>玩家控制器</h3>
+        <p>第一人称视角 CharacterBody3D，WASD 移动 + 鼠标视角。行走/奔跑切换，跳跃 + 台阶自动吸附，射线交互检测。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💾</div>
+        <h3>存档系统</h3>
+        <p>游戏进度持久化，支持当前区域、已解锁区域、收集物品、对话历史、条件标记的完整存读档。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Voice Detail ============ -->
+<section id="voice">
+  <div class="section-inner reveal">
+    <p class="section-tag">AI Voice Design</p>
+    <h2 class="section-title">AI 语音音色设计</h2>
+    <p class="section-desc">使用 MiMo TTS VoiceDesign，为每个角色定义独特的音色描述与语速，实现性格化配音。</p>
+
+    <div class="voice-grid">
+      <div class="voice-card">
+        <h4>旁白</h4>
+        <div class="voice-style">成熟男性纪录片讲解员，语速稳，情绪克制</div>
+        <div class="voice-speed">播放速度: 1.25x · 9 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>刘姥姥</h4>
+        <div class="voice-style">乡下老太太进豪门开眼界，惊奇热络嘴快</div>
+        <div class="voice-speed">播放速度: 1.1x · 16 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>贾母</h4>
+        <div class="voice-style">老祖母声线，低柔慈爱雍容，带年迈气息</div>
+        <div class="voice-speed">播放速度: 1.1x · 4 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>王熙凤</h4>
+        <div class="voice-style">年轻女性，明亮爽利精明干练，语气带笑</div>
+        <div class="voice-speed">播放速度: 1.05x · 4 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>林黛玉</h4>
+        <div class="voice-style">清冷柔弱，带幽怨才气，语速偏慢如低吟</div>
+        <div class="voice-speed">播放速度: 0.92x · 2 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>贾宝玉</h4>
+        <div class="voice-style">少年公子，温和随意，玩世不恭天真亲切</div>
+        <div class="voice-speed">播放速度: 1.0x · 1 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>妙玉</h4>
+        <div class="voice-style">出家女子，清冷淡漠疏离，声音干净利落</div>
+        <div class="voice-speed">播放速度: 0.88x · 2 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>薛宝钗</h4>
+        <div class="voice-style">温婉大方沉稳得体，从容不迫大家闺秀</div>
+        <div class="voice-speed">播放速度: 1.05x · 0 条语音</div>
+      </div>
+      <div class="voice-card">
+        <h4>周瑞家</h4>
+        <div class="voice-style">中年仆妇，干练低眉，恭敬但不卑微</div>
+        <div class="voice-speed">播放速度: 1.0x · 1 条语音</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Tech Stack ============ -->
+<section id="tech">
+  <div class="bg-overlay" style="background: radial-gradient(ellipse at 60% 30%, rgba(60,30,10,0.08) 0%, transparent 50%);"></div>
+  <div class="section-inner reveal">
+    <p class="section-tag">Tech Stack</p>
+    <h2 class="section-title">技术栈</h2>
+    <p class="section-desc">基于 Godot 4.7 引擎，采用多项前沿技术实现高品质互动体验。</p>
+
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="tech-icon">🎮</div>
+        <div class="tech-info">
+          <h4>Godot 4.7</h4>
+          <p>开源游戏引擎，Forward Plus 渲染管线</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">📝</div>
+        <div class="tech-info">
+          <h4>GDScript</h4>
+          <p>原生脚本语言，29 个自研脚本文件</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">⚡</div>
+        <div class="tech-info">
+          <h4>Vulkan / DirectX 12</h4>
+          <p>高性能图形 API，支持全屏渲染</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🔧</div>
+        <div class="tech-info">
+          <h4>Jolt Physics</h4>
+          <p>高精度物理引擎，真实的碰撞与重力</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🤖</div>
+        <div class="tech-info">
+          <h4>MiMo TTS</h4>
+          <p>mimo-v2.5-tts 模型，VoiceDesign 角色音色</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🌳</div>
+        <div class="tech-info">
+          <h4>Beehave</h4>
+          <p>行为树插件，NPC 智能行为逻辑</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🧭</div>
+        <div class="tech-info">
+          <h4>Steering AI</h4>
+          <p>GDQuest 转向 AI 框架，寻路与避障</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🔌</div>
+        <div class="tech-info">
+          <h4>Godot AI MCP</h4>
+          <p>Model Context Protocol 集成，AI 辅助开发</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🔤</div>
+        <div class="tech-info">
+          <h4>霞鹜文楷</h4>
+          <p>LXGW WenKai 开源字体，古典美感</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🏗️</div>
+        <div class="tech-info">
+          <h4>Asset Placer</h4>
+          <p>场景资产放置器，可视化编辑</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🥽</div>
+        <div class="tech-info">
+          <h4>VR 支持</h4>
+          <p>适配 VR 视角，文字清晰可读</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">📐</div>
+        <div class="tech-info">
+          <h4>RichText3D</h4>
+          <p>自研 3D 富文本组件，BBCode 支持</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Assets ============ -->
+<section id="assets">
+  <div class="section-inner reveal">
+    <p class="section-tag">Assets & Resources</p>
+    <h2 class="section-title">素材资源</h2>
+    <p class="section-desc">完整的原创与开源素材体系，覆盖视觉、音频、字体各维度。</p>
+
+    <div class="asset-table-wrap">
+      <table class="asset-table">
+        <thead>
+          <tr>
+            <th>类别</th>
+            <th>内容</th>
+            <th>数量</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>角色立绘</td>
+            <td><span class="tag">刘姥姥</span><span class="tag">贾母</span><span class="tag">宝玉</span><span class="tag">黛玉</span><span class="tag">熙凤</span><span class="tag">宝钗</span><span class="tag">袭人</span><span class="tag">晴雯</span></td>
+            <td>8 张</td>
+            <td>圆形头像，用于对话 UI 与立牌系统</td>
+          </tr>
+          <tr>
+            <td>AI 语音</td>
+            <td><span class="tag">旁白</span><span class="tag">刘姥姥</span><span class="tag">贾母</span><span class="tag">熙凤</span><span class="tag">黛玉</span><span class="tag">宝玉</span><span class="tag">妙玉</span><span class="tag">李纨</span><span class="tag">周瑞家</span></td>
+            <td>40 条 WAV</td>
+            <td>MiMo TTS 预生成，9 个角色独立音色</td>
+          </tr>
+          <tr>
+            <td>背景音乐</td>
+            <td><span class="tag">庭院静谧</span><span class="tag">叙事对话</span><span class="tag">户外主题</span></td>
+            <td>3 首 OGG</td>
+            <td>对话时 BGM 自动闪避</td>
+          </tr>
+          <tr>
+            <td>环境音效</td>
+            <td><span class="tag">水流循环</span><span class="tag">风叶循环</span></td>
+            <td>2 个 OGG</td>
+            <td>3D 空间音频，增强氛围</td>
+          </tr>
+          <tr>
+            <td>字体</td>
+            <td><span class="tag">霞鹜文楷 LXGW WenKai</span></td>
+            <td>1 套</td>
+            <td>SIL OFL 1.1 开源字体，古典美感</td>
+          </tr>
+          <tr>
+            <td>世界场景</td>
+            <td><span class="tag">地形</span><span class="tag">建筑</span><span class="tag">植被</span><span class="tag">园林</span><span class="tag">NPC</span><span class="tag">触发区</span><span class="tag">物品</span></td>
+            <td>7 个场景</td>
+            <td>模块化场景设计，分层加载</td>
+          </tr>
+          <tr>
+            <td>UI 场景</td>
+            <td><span class="tag">主菜单</span><span class="tag">对话 UI</span><span class="tag">HUD</span><span class="tag">暂停</span><span class="tag">立牌</span><span class="tag">提示</span></td>
+            <td>6 个场景</td>
+            <td>清代中式 UI，宣纸红木风格</td>
+          </tr>
+          <tr>
+            <td>TTS 配置</td>
+            <td><span class="tag">VoiceDesign 角色音色描述</span></td>
+            <td>1 个 JSON</td>
+            <td>每角色独立音色风格与播放速度</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Architecture ============ -->
+<section id="architecture">
+  <div class="bg-overlay" style="background: radial-gradient(ellipse at 40% 50%, rgba(80,40,15,0.06) 0%, transparent 50%);"></div>
+  <div class="section-inner reveal">
+    <p class="section-tag">Architecture</p>
+    <h2 class="section-title">系统架构</h2>
+    <p class="section-desc">分层架构设计，从全局单例到场景模块，清晰解耦。</p>
+
+    <div class="arch-diagram">
+      <div class="arch-layer" style="background: rgba(139,69,19,0.08);">
+        <h4>全局单例层 · Autoloads</h4>
+        <div class="arch-items">
+          <span class="arch-chip">GameManager</span>
+          <span class="arch-chip">GameState</span>
+          <span class="arch-chip">EventBus</span>
+          <span class="arch-chip">SaveSystem</span>
+          <span class="arch-chip">DialogManager</span>
+          <span class="arch-chip">TTSSystem</span>
+        </div>
+      </div>
+      <div class="arch-layer" style="background: rgba(100,50,20,0.06);">
+        <h4>核心系统层 · Systems</h4>
+        <div class="arch-items">
+          <span class="arch-chip">对话系统</span>
+          <span class="arch-chip">语音系统</span>
+          <span class="arch-chip">导航引导</span>
+          <span class="arch-chip">场景氛围</span>
+          <span class="arch-chip">场景构建</span>
+          <span class="arch-chip">音频系统</span>
+          <span class="arch-chip">时间系统</span>
+          <span class="arch-chip">植被系统</span>
+        </div>
+      </div>
+      <div class="arch-layer" style="background: rgba(80,40,10,0.05);">
+        <h4>UI 界面层 · UI</h4>
+        <div class="arch-items">
+          <span class="arch-chip">对话界面</span>
+          <span class="arch-chip">游戏 HUD</span>
+          <span class="arch-chip">暂停菜单</span>
+          <span class="arch-chip">立牌系统</span>
+          <span class="arch-chip">牌匾系统</span>
+          <span class="arch-chip">建筑提示</span>
+        </div>
+      </div>
+      <div class="arch-layer" style="background: rgba(60,30,10,0.04);">
+        <h4>场景实体层 · Entities</h4>
+        <div class="arch-items">
+          <span class="arch-chip">玩家控制器</span>
+          <span class="arch-chip">NPC 基类</span>
+          <span class="arch-chip">NPC 可视化构建</span>
+          <span class="arch-chip">建筑基类</span>
+          <span class="arch-chip">自动门</span>
+          <span class="arch-chip">可交互物品</span>
+        </div>
+      </div>
+      <div class="arch-layer" style="background: rgba(50,25,10,0.03);">
+        <h4>插件扩展层 · Addons</h4>
+        <div class="arch-items">
+          <span class="arch-chip">Beehave 行为树</span>
+          <span class="arch-chip">Godot AI MCP</span>
+          <span class="arch-chip">Steering AI</span>
+          <span class="arch-chip">Asset Placer</span>
+          <span class="arch-chip">RichText3D</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Footer ============ -->
+<footer>
+  <p>刘姥姥进大观园 · 沉浸式 3D/VR 互动叙事体验</p>
+  <p style="margin-top: 8px;">Godot 4.7 · Forward Plus · Vulkan / DirectX 12 · MiMo TTS</p>
+  <p style="margin-top: 16px; color: #3a2a1a;">基于《红楼梦》经典桥段 · 致敬曹雪芹</p>
+</footer>
+
+<!-- ============ Scroll Reveal Script ============ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+});
+</script>
+
+</body>
+</html>

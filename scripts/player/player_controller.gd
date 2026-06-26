@@ -20,6 +20,8 @@ var is_running: bool = false
 var can_interact: bool = false
 var current_interactable: Node = null
 var current_location: String = "大观园"
+const NEARBY_INTERACT_DISTANCE := 3.2
+const NEARBY_INTERACT_FORWARD_DOT := 0.25
 
 func _ready() -> void:
 	floor_snap_length = step_height
@@ -33,6 +35,9 @@ func _ready() -> void:
 	EventBus.time_changed.connect(_on_time_changed)
 
 func _input(event: InputEvent) -> void:
+	if _has_blocking_mouse_ui():
+		return
+
 	if event is InputEventMouseButton and event.pressed and GameManager.is_playing() and Input.get_mouse_mode() != Input.MOUSE_MODE_VISIBLE:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
@@ -42,18 +47,23 @@ func _input(event: InputEvent) -> void:
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-look_limit), deg_to_rad(look_limit))
 	
 	# 对话中暂停玩家交互，对话输入交给 DialogUI 统一处理
-	if DialogManager.is_active:
+	if GameManager.is_dialog_active():
 		return
 	
-	var clicked_interact: bool = false
-	if event is InputEventMouseButton:
-		clicked_interact = event.pressed and event.button_index == MOUSE_BUTTON_LEFT
-	if (event.is_action_pressed("interact") or clicked_interact) and can_interact and current_interactable:
+	# 场景交互统一使用 E；左键留给立牌小传和对话 UI。
+	if event.is_action_pressed("interact") and can_interact and current_interactable:
 		if GameManager.is_playing():
 			current_interactable.interact(self)
 
 func _physics_process(delta: float) -> void:
 	if not GameManager.is_playing():
+		return
+	if _has_blocking_mouse_ui():
+		velocity.x = move_toward(velocity.x, 0, walk_speed)
+		velocity.z = move_toward(velocity.z, 0, walk_speed)
+		if not is_on_floor():
+			velocity.y -= gravity * delta
+		move_and_slide()
 		return
 	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
 		if get_viewport().gui_get_focus_owner() != null:
@@ -85,19 +95,64 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	check_interaction()
 
+func _has_blocking_mouse_ui() -> bool:
+	for node in get_tree().get_nodes_in_group("blocking_mouse_ui"):
+		if bool(node.get("visible")):
+			return true
+	return false
+
 func check_interaction() -> void:
-	if raycast.is_colliding():
-		var collider = raycast.get_collider()
-		if collider and collider.has_method("get_interaction_info"):
-			current_interactable = collider
-			can_interact = true
-			var info: Dictionary = collider.get_interaction_info()
-			interaction_prompt.text = "按 [E] / 鼠标左键 %s：%s" % [info.get("action", "交互"), info.get("name", "目标")]
-			interaction_prompt.visible = true
-			return
 	current_interactable = null
 	can_interact = false
 	interaction_prompt.visible = false
+
+	var target := _get_raycast_interactable()
+	if not target:
+		target = _get_nearby_interactable()
+	if not target:
+		return
+
+	current_interactable = target
+	can_interact = true
+	var info: Dictionary = target.get_interaction_info()
+	var action: String = info.get("action", "交互")
+	# action 为空表示建筑未解锁/前置剧情未满足，不显示准星提示，
+	# 避免"按 e 键稍后进入大观楼"等冗余文案干扰主线任务指引。
+	if action == "":
+		can_interact = false
+		current_interactable = null
+		return
+	interaction_prompt.text = "按 [E] %s：%s" % [action, info.get("name", "目标")]
+	interaction_prompt.visible = true
+
+func _get_raycast_interactable() -> Node:
+	if raycast.is_colliding():
+		var collider = raycast.get_collider()
+		if collider and collider.has_method("get_interaction_info"):
+			return collider
+	return null
+
+func _get_nearby_interactable() -> Node:
+	var best: Node = null
+	var best_score := INF
+	var forward := -camera.global_transform.basis.z
+	for node in get_tree().get_nodes_in_group("npc"):
+		if not node is Node3D or not node.has_method("get_interaction_info"):
+			continue
+		var to_target: Vector3 = node.global_position - camera.global_position
+		var distance := to_target.length()
+		if distance > NEARBY_INTERACT_DISTANCE:
+			continue
+		var flat_target := Vector3(to_target.x, 0, to_target.z)
+		if flat_target.length() > 0.01:
+			var dot := Vector3(forward.x, 0, forward.z).normalized().dot(flat_target.normalized())
+			if dot < NEARBY_INTERACT_FORWARD_DOT:
+				continue
+		var score := distance
+		if score < best_score:
+			best_score = score
+			best = node
+	return best
 
 func _on_building_entered(building_name: String) -> void:
 	current_location = building_name

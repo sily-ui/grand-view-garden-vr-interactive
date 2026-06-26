@@ -55,11 +55,13 @@ roughness = 0.8
 
 
 [node name="JiaMu" type="CharacterBody3D" parent="." unique_id=978947410 groups=["npc"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0, 27)
 script = ExtResource("2_npc")
 npc_name = "贾母"
 npc_title = "老太太"
 dialog_id = "meet_jiamu"
+required_condition = "intro_done"
+completion_condition = "met_jiamu"
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="JiaMu" unique_id=1036056925]
@@ -82,40 +84,14 @@ material_override = SubResource("mat_npc_jiamu")
 mesh = SubResource("mesh_npc_body")
 
 
-[node name="WangXifeng" type="CharacterBody3D" parent="." unique_id=1713168195 groups=["npc"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 20)
-script = ExtResource("2_npc")
-npc_name = "王熙凤"
-npc_title = "琏二奶奶"
-dialog_id = "meet_xifeng"
-
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WangXifeng" unique_id=1046605585]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("col_capsule")
-
-
-[node name="NameLabel" type="Label3D" parent="WangXifeng" unique_id=566384389]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
-modulate = Color(0.9, 0.3, 0.2, 1)
-text = "王熙凤"
-
-
-[node name="NavigationAgent3D" type="NavigationAgent3D" parent="WangXifeng" unique_id=1036510573]
-
-
-[node name="BodyMesh" type="MeshInstance3D" parent="WangXifeng" unique_id=763082452]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-material_override = SubResource("mat_npc_xifeng")
-mesh = SubResource("mesh_npc_body")
-
-
 [node name="LinDaiyu" type="CharacterBody3D" parent="." unique_id=979637015 groups=["npc"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 15)
+transform = Transform3D(0.394, 0, 0.919, 0, 1, 0, -0.919, 0, 0.394, -34, 0, 17.5)
 script = ExtResource("2_npc")
 npc_name = "林黛玉"
 npc_title = "潇湘妃子"
 dialog_id = "visit_xiaoxiang"
+required_condition = "met_xifeng"
+completion_condition = "visited_xiaoxiang"
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LinDaiyu" unique_id=968068976]
@@ -144,6 +120,8 @@ script = ExtResource("2_npc")
 npc_name = "贾宝玉"
 npc_title = "宝二爷"
 dialog_id = "visit_yihong"
+required_condition = "visited_xiaoxiang"
+completion_condition = "visited_yihong"
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="JiaBaoyu" unique_id=2011667248]
@@ -172,6 +150,8 @@ script = ExtResource("2_npc")
 npc_name = "妙玉"
 npc_title = "槛外人"
 dialog_id = "tea_ceremony"
+required_condition = "visited_yihong"
+completion_condition = "completed_tea"
 
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Miaoyu" unique_id=929194702]
@@ -195,7 +175,7 @@ mesh = SubResource("mesh_npc_body")
 
 
 [node name="LiWan" type="CharacterBody3D" parent="." unique_id=922176789 groups=["npc"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -10)
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -25, 0, -6)
 script = ExtResource("2_npc")
 npc_name = "李纨"
 npc_title = "稻香老农"

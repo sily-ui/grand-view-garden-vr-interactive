@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=27 format=3]
 
 
 
@@ -52,6 +52,26 @@ roughness = 0.85
 [sub_resource type="SphereMesh" id="mesh_lotus_bud"]
 radius = 0.25
 height = 0.5
+
+
+[sub_resource type="StandardMaterial3D" id="mat_koi"]
+albedo_color = Color(0.95, 0.34, 0.12, 1)
+roughness = 0.55
+
+
+[sub_resource type="CapsuleMesh" id="mesh_koi"]
+radius = 0.12
+height = 0.5
+
+
+[sub_resource type="StandardMaterial3D" id="mat_koi_gold"]
+albedo_color = Color(0.95, 0.78, 0.2, 1)
+roughness = 0.55
+
+
+[sub_resource type="CapsuleMesh" id="mesh_koi_small"]
+radius = 0.08
+height = 0.34
 
 
 [sub_resource type="StandardMaterial3D" id="mat_bridge_stone"]
@@ -210,6 +230,39 @@ mesh = SubResource("mesh_lotus_bud")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.3, -22)
 material_override = SubResource("mat_lotus_pink")
 mesh = SubResource("mesh_lotus_bud")
+
+
+[node name="KoiFish" type="Node3D" parent="." unique_id=882100001]
+
+
+[node name="Koi1" type="MeshInstance3D" parent="KoiFish" unique_id=882100002]
+transform = Transform3D(0.6, 0, 0.8, 0, 1, 0, -0.8, 0, 0.6, -8, 0.08, -20)
+material_override = SubResource("mat_koi")
+mesh = SubResource("mesh_koi")
+
+
+[node name="Koi2" type="MeshInstance3D" parent="KoiFish" unique_id=882100003]
+transform = Transform3D(0.8, 0, -0.6, 0, 1, 0, 0.6, 0, 0.8, -11, 0.08, -24)
+material_override = SubResource("mat_koi_gold")
+mesh = SubResource("mesh_koi")
+
+
+[node name="Koi3" type="MeshInstance3D" parent="KoiFish" unique_id=882100004]
+transform = Transform3D(0.5, 0, 0.87, 0, 1, 0, -0.87, 0, 0.5, -3, 0.08, -21)
+material_override = SubResource("mat_koi")
+mesh = SubResource("mesh_koi_small")
+
+
+[node name="Koi4" type="MeshInstance3D" parent="KoiFish" unique_id=882100005]
+transform = Transform3D(0.9, 0, 0.44, 0, 1, 0, -0.44, 0, 0.9, -7, 0.08, -26)
+material_override = SubResource("mat_koi_gold")
+mesh = SubResource("mesh_koi")
+
+
+[node name="Koi5" type="MeshInstance3D" parent="KoiFish" unique_id=882100006]
+transform = Transform3D(0.7, 0, -0.71, 0, 1, 0, 0.71, 0, 0.7, -13, 0.08, -22)
+material_override = SubResource("mat_koi")
+mesh = SubResource("mesh_koi_small")
 
 
 [node name="Bridge" type="Node3D" parent="." unique_id=844252204]

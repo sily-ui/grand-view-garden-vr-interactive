@@ -67,7 +67,7 @@ func _apply_tts_playback_speed(speed: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
-		if DialogManager.is_active:
+		if GameManager.is_dialog_active():
 			return
 		if visible:
 			_on_resume()

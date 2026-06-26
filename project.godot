@@ -23,6 +23,8 @@ SaveSystem="*res://scripts/systems/save_system.gd"
 DialogManager="*res://scripts/dialog/dialog_manager.gd"
 TTSSystem="*res://scripts/systems/tts_system.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
+BeehaveGlobalMetrics="*uid://c3ktl6ontsdt7"
+BeehaveGlobalDebugger="*uid://bl3ma400hpvsh"
 
 [display]
 
@@ -38,7 +40,7 @@ project/assembly_name="刘姥姥进大观园"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
+enabled=PackedStringArray("res://addons/asset_placer/plugin.cfg", "res://addons/beehave/plugin.cfg", "res://addons/godot_ai/plugin.cfg")
 
 [input]
 

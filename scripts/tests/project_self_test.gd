@@ -57,6 +57,8 @@ func _run_interaction_checks() -> void:
 	var sign_count := _count_nodes_with_prefix(_main_scene, "Sign_")
 	_add_check("交互剧情", "解说立牌数量不少于 8", sign_count >= 8, "当前数量: %d" % sign_count)
 	_add_check("交互剧情", "立牌 UI 层存在", _find_node_by_name(_main_scene, "SignboardUILayer") != null, "宣纸红木弹窗")
+	var signboard_ui := _find_node_by_name(_main_scene, "SignboardUILayer")
+	_add_check("交互剧情", "立牌 UI 释放鼠标", signboard_ui != null and signboard_ui.is_in_group("blocking_mouse_ui"), "打开小传时玩家控制器不应重新捕获鼠标")
 	_add_check("交互剧情", "头像控件存在", _find_node_by_name(_main_scene, "AvatarRect") != null, "剧情头像显示")
 	_add_check("交互剧情", "建筑讲解按钮存在", _find_node_by_name(_main_scene, "BuildingPromptButton") != null, "建筑触发后可 Hover 并点击查看讲解")
 	_add_check("交互剧情", "立牌触发 Area3D 足够", _count_nodes_by_class(_main_scene, "Area3D") >= 8, "含建筑入口与立牌触发区")
@@ -67,11 +69,56 @@ func _run_guidance_checks() -> void:
 	if guide:
 		_add_check("任务引导", "贾母后引导找王熙凤", guide.has_method("has_stage_named") and guide.has_stage_named("找王熙凤问路"), "补齐会面贾母后的下一 NPC")
 		_add_check("任务引导", "院落游览阶段完整", guide.has_method("has_stage_named") and guide.has_stage_named("游潇湘馆") and guide.has_stage_named("游怡红院") and guide.has_stage_named("栊翠庵品茶"), "找王熙凤后继续引导院落剧情")
-		GameState.set_condition("intro_done", true)
-		GameState.set_condition("met_jiamu", true)
+		_add_check("任务引导", "拜见贾母分段绕行", guide.has_method("get_stage_route_count") and guide.get_stage_route_count("去拜见贾母") >= 2, "避免正厅目标隔墙直线指引")
+		var game_state := root.get_node_or_null("GameState")
+		_add_check("任务引导", "GameState Autoload 可用", game_state != null and game_state.has_method("set_condition"), "自测通过运行时节点访问 Autoload")
+		if game_state:
+			game_state.set_condition("intro_done", true)
+			game_state.set_condition("met_jiamu", true)
+			guide.set("passed_waypoint_indices", {1: true, 2: true, 3: true, 4: true, 5: true})
 		_add_check("任务引导", "当前提示指向王熙凤", guide.has_method("get_current_hint") and "王熙凤" in guide.get_current_hint(), "不会停在贾母会面后")
 	var banquet_trigger := _find_node_by_name(_main_scene, "BanquetTrigger")
 	_add_check("任务引导", "宴席触发等待品茶完成", banquet_trigger != null and banquet_trigger.get("required_condition") == "completed_tea", "防止贾母会面后跳过王熙凤和各院游览")
+	_add_check("任务引导", "入园门洞已替代实墙", _find_node_by_name(_main_scene, "EntranceInnerGate") != null, "导航目标前方应有明确门洞")
+	_run_guidance_point_support_checks()
+
+func _run_guidance_point_support_checks() -> void:
+	var points: Array[Dictionary] = [
+		{"name": "Intro/Farewell 触发区", "pos": Vector3(0, 1.5, -84)},
+		{"name": "PathGate 触发区", "pos": Vector3(0, 1.5, -62)},
+		{"name": "PathGarden 触发区", "pos": Vector3(0, 1.5, -10)},
+		{"name": "贾母/赴宴触发区", "pos": Vector3(0, 1.5, 27)},
+		{"name": "拜见贾母路线点: 游廊中央入园", "pos": Vector3(0, 1.5, -2)},
+		{"name": "拜见贾母路线点: 中路北行", "pos": Vector3(0, 1.5, 15)},
+		{"name": "拜见贾母路线点: 南门入口", "pos": Vector3(0, 1.5, 35)},
+		{"name": "稻香村门前落脚点", "pos": Vector3(-25, 1.5, -6)},
+		{"name": "王熙凤目标点", "pos": Vector3(0.0, 1.5, 33.0)},
+		{"name": "潇湘馆目标点", "pos": Vector3(-35, 1.5, 15)},
+		{"name": "怡红院引导落脚点", "pos": Vector3(35, 1.5, 18)},
+		{"name": "栊翠庵引导落脚点", "pos": Vector3(0, 1.5, 60)},
+		{"name": "赴宴路线点: 庵门回廊", "pos": Vector3(12, 1.5, 52)},
+		{"name": "赴宴路线点: 大观楼南门", "pos": Vector3(0, 1.5, 35)}
+	]
+	for point in points:
+		var support := _support_probe(point["pos"])
+		_add_check("任务引导", point["name"] + " 位于可承托面", bool(support["hit"]), String(support["detail"]))
+
+func _support_probe(pos: Vector3) -> Dictionary:
+	if not _main_scene:
+		return {"hit": false, "detail": "主场景未加载"}
+	var space: PhysicsDirectSpaceState3D = _main_scene.get_world_3d().direct_space_state
+	var query := PhysicsRayQueryParameters3D.create(Vector3(pos.x, 2.25, pos.z), Vector3(pos.x, -4.0, pos.z))
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	var hit: Dictionary = space.intersect_ray(query)
+	if hit.is_empty():
+		return {"hit": false, "detail": "未检测到路面/廊道/地面碰撞承托"}
+	var collider: Node = hit.get("collider") as Node
+	var collider_name: String = collider.name if collider else "未知碰撞体"
+	var hit_pos: Vector3 = hit.get("position", Vector3.ZERO) as Vector3
+	if hit_pos.y > 1.2:
+		return {"hit": false, "detail": "%s 过高，不是玩家脚下通道面 @ (%.1f, %.2f, %.1f)" % [collider_name, hit_pos.x, hit_pos.y, hit_pos.z]}
+	return {"hit": true, "detail": "%s @ (%.1f, %.2f, %.1f)" % [collider_name, hit_pos.x, hit_pos.y, hit_pos.z]}
 
 func _run_resource_checks() -> void:
 	var avatar_paths := [
@@ -93,6 +140,9 @@ func _run_navigation_collision_checks() -> void:
 	_add_check("导航碰撞", "NavigationRegion3D 存在", _count_nodes_by_class(_main_scene, "NavigationRegion3D") >= 1, "保留原导航区域")
 	_add_check("导航碰撞", "StaticBody3D 碰撞节点充足", _count_nodes_by_class(_main_scene, "StaticBody3D") >= 20, "围墙、院落、建筑碰撞")
 	_add_check("导航碰撞", "CollisionShape3D 数量充足", _count_nodes_by_class(_main_scene, "CollisionShape3D") >= 20, "碰撞体检查")
+	_add_check("导航碰撞", "南侧游廊中轴留出通路", _find_node_by_name(_main_scene, "SouthVeranda") != null and _find_node_by_name(_main_scene, "CorridorFloor_L") != null, "桥后不再被整条游廊视觉封住")
+	_add_check("导航碰撞", "正厅门前连接路存在", _find_node_by_name(_main_scene, "MainHallGateBluestone") != null and _find_node_by_name(_main_scene, "MainHallApproachVeranda") != null, "回廊最终通向大观楼门前")
+	_add_check("导航碰撞", "正厅游廊中央开口", _find_node_by_name(_main_scene, "MainHallVeranda") != null and _find_node_by_name(_main_scene, "GapEdgePillar_-1_-1") != null, "王熙凤与大观楼南门前不应被整排柱栏挡住")
 	_add_check("导航碰撞", "玩家输入脚本仍挂载", _find_node_by_name(_main_scene, "Player") != null and _find_node_by_name(_main_scene, "Player").get_script() != null, "保留玩家控制")
 
 func _run_performance_checks(load_time_ms: int) -> void:
@@ -154,7 +204,7 @@ func _write_report() -> void:
 	lines.append("- 通过: %d" % _pass_count())
 	lines.append("- 失败: %d" % _failure_count())
 	lines.append("")
-	for category in ["场景加载", "空间布局", "交互剧情", "资源归档", "导航碰撞", "性能光影"]:
+	for category in ["场景加载", "空间布局", "交互剧情", "任务引导", "资源归档", "导航碰撞", "性能光影"]:
 		lines.append("## " + category)
 		for check in _checks:
 			if check["category"] == category:
